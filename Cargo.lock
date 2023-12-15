@@ -3386,7 +3386,6 @@ dependencies = [
  "hex",
  "hyper",
  "itertools 0.11.0",
- "model",
  "num",
  "observe",
  "prometheus",

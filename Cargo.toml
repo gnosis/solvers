@@ -40,7 +40,6 @@ web3 = "0.19"
 
 ethrpc = { git = "https://github.com/cowprotocol/services.git", tag = "v2.236.0", package = "ethrpc" }
 contracts = { git = "https://github.com/cowprotocol/services.git", tag = "v2.236.0", package = "contracts" }
-model = { git = "https://github.com/cowprotocol/services.git", tag = "v2.236.0", package = "model" }
 observe = { git = "https://github.com/cowprotocol/services.git", tag = "v2.236.0", package = "observe" }
 shared = { git = "https://github.com/cowprotocol/services.git", tag = "v2.236.0", package = "shared" }
 
