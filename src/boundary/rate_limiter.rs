@@ -4,6 +4,7 @@ use {
     thiserror::Error,
 };
 
+// todo: copy implementation from shared
 pub struct RateLimiter {
     inner: shared::RateLimiter,
 }

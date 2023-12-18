@@ -11,11 +11,8 @@ use {
 };
 
 mod balancer;
-mod baseline;
 mod dex;
-mod legacy;
 mod mock;
-mod naive;
 mod oneinch;
 mod paraswap;
 mod zeroex;

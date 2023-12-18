@@ -30,21 +30,6 @@ pub struct Args {
 #[derive(Subcommand, Debug)]
 #[clap(rename_all = "lowercase")]
 pub enum Command {
-    /// solve individual orders exclusively via provided onchain liquidity
-    Baseline {
-        #[clap(long, env)]
-        config: PathBuf,
-    },
-    /// optimistically batch similar orders and get difference from AMMs
-    Naive {
-        #[clap(long, env)]
-        config: PathBuf,
-    },
-    /// forward auction to solver implementing the legacy HTTP interface
-    Legacy {
-        #[clap(long, env)]
-        config: PathBuf,
-    },
     /// solve individual orders using Balancer API
     Balancer {
         #[clap(long, env)]
