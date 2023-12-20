@@ -13,7 +13,7 @@ FROM docker.io/debian:bullseye-slim
 
 # Handle signal handlers properly
 RUN apt-get update && apt-get install -y ca-certificates tini && apt-get clean
-COPY --from=cargo-build /src/target/release /usr/local/bin/solvers
+COPY --from=cargo-build /src/target/release/solvers /usr/local/bin/solvers
 
 CMD echo "Specify binary..."
 ENTRYPOINT ["/usr/bin/tini", "--"]
