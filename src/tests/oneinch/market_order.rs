@@ -117,7 +117,7 @@ async fn sell() {
             ),
         }
     ])
-    .await;
+        .await;
 
     let engine = tests::SolverEngine::new("oneinch", super::config(&api.address)).await;
 
@@ -207,7 +207,8 @@ async fn sell() {
                 }
               ],
               "score": {
-                "riskadjusted": 0.5
+                "kind": "riskadjusted",
+                    "successProbability": 0.5,
               }
             }
           ]

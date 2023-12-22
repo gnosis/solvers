@@ -146,7 +146,7 @@ async fn sell() {
             }),
         },
     ])
-    .await;
+        .await;
 
     let engine = tests::SolverEngine::new("paraswap", paraswap::config(&api.address)).await;
 
@@ -236,7 +236,8 @@ async fn sell() {
                 }
               ],
               "score": {
-                "riskadjusted": 0.5
+                "kind": "riskadjusted",
+                    "successProbability": 0.5,
               }
             }
           ]
@@ -400,7 +401,7 @@ async fn buy() {
             }),
         },
     ])
-    .await;
+        .await;
 
     let engine = tests::SolverEngine::new("paraswap", paraswap::config(&api.address)).await;
 
@@ -490,7 +491,8 @@ async fn buy() {
                 }
               ],
               "score": {
-                "riskadjusted": 0.5
+                "kind": "riskadjusted",
+                    "successProbability": 0.5,
               }
             }
           ]

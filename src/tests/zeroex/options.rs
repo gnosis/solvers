@@ -178,7 +178,7 @@ async fn test() {
             "buyTokenToEthRate": "5897.78797929831826547",
         }),
     }])
-    .await;
+        .await;
 
     let config = tests::Config::String(format!(
         r"
@@ -294,7 +294,8 @@ enable-slippage-protection = true
                     },
                 ],
                 "score": {
-                    "riskadjusted": 0.5
+                    "kind": "riskadjusted",
+                    "successProbability": 0.5,
                 }
             }]
         }),

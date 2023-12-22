@@ -86,7 +86,7 @@ async fn sell() {
             "buyTokenToEthRate": "5897.78797929831826547",
         }),
     }])
-    .await;
+        .await;
 
     let engine = tests::SolverEngine::new("zeroex", zeroex::config(&api.address)).await;
 
@@ -187,7 +187,8 @@ async fn sell() {
                     },
                 ],
                 "score": {
-                    "riskadjusted": 0.5
+                    "kind": "riskadjusted",
+                    "successProbability": 0.5,
                 }
             }]
         }),
@@ -368,7 +369,8 @@ async fn buy() {
                     },
                 ],
                 "score": {
-                    "riskadjusted": 0.5
+                    "kind": "riskadjusted",
+                    "successProbability": 0.5,
                 }
             }]
         }),
