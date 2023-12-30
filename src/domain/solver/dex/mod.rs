@@ -5,8 +5,7 @@ use {
     crate::{
         boundary::rate_limiter::{RateLimiter, RateLimiterError},
         domain::{
-            self,
-            auction,
+            self, auction,
             dex::{self, slippage},
             order::{self, Order},
             solution,
@@ -45,6 +44,10 @@ pub struct Dex {
     rate_limiter: RateLimiter,
 }
 
+/// The amount of time we aim the solver to finish before the final deadline is
+/// reached.
+const DEADLINE_SLACK: chrono::Duration = chrono::Duration::milliseconds(500);
+
 impl Dex {
     pub fn new(dex: infra::dex::Dex, config: infra::config::dex::Config) -> Self {
         let rate_limiter = RateLimiter::new(config.rate_limiting_strategy, "dex_api".to_string());
@@ -72,7 +75,12 @@ impl Dex {
             }
         };
 
-        let deadline = auction.deadline.remaining().unwrap_or_default();
+        let deadline = auction
+            .deadline
+            .clone()
+            .reduce(DEADLINE_SLACK)
+            .remaining()
+            .unwrap_or_default();
         if tokio::time::timeout(deadline, solve_orders).await.is_err() {
             tracing::debug!("reached deadline; stopping to solve");
         }
