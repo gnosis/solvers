@@ -245,7 +245,7 @@ components:
       properties:
         kind:
           type: string
-          enum: [constantproduct]
+          enum: [constantProduct]
         tokens:
           description: |
             A mapping of token address to its reserve amounts.
@@ -266,7 +266,7 @@ components:
       properties:
         kind:
           type: string
-          enum: [weightedproduct]
+          enum: [weightedProduct]
         tokens:
           description: |
             A mapping of token address to its reserve amounts with weights.
@@ -286,7 +286,7 @@ components:
           $ref: "#/components/schemas/Decimal"
         version:
           type: string
-          enum: ["v0", "v3plus"]
+          enum: ["v0", "v3Plus"]
 
     StablePool:
       description: |
@@ -334,7 +334,7 @@ components:
       properties:
         kind:
           type: string
-          enum: [concentratedliquidity]
+          enum: [concentratedLiquidity]
         tokens:
           type: array
           items:
@@ -350,7 +350,7 @@ components:
             A map of tick indices to their liquidity values.
           type: object
           additionalProperties:
-            $ref: "#/components/schemas/TokenAmount"
+            $ref: "#/components/schemas/BigInt"
         fee:
           $ref: "#/components/schemas/Decimal"
 
@@ -369,7 +369,7 @@ components:
       properties:
         kind:
           type: string
-          enum: [limitorder]
+          enum: [limitOrder]
         hash:
           $ref: "#/components/schemas/Digest"
         makerToken:
@@ -735,7 +735,7 @@ components:
               properties:
                 kind:
                   type: string
-                  enum: [riskadjusted]
+                  enum: [riskAdjusted]
                 successProbability:
                   description: |
                     The revert probability of the solution. Used by the driver to compute a risk-adjusted score.

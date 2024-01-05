@@ -5,7 +5,8 @@ use {
     crate::{
         boundary::rate_limiter::{RateLimiter, RateLimiterError},
         domain::{
-            self, auction,
+            self,
+            auction,
             dex::{self, slippage},
             order::{self, Order},
             solution,

@@ -156,7 +156,7 @@ async fn sell() {
                     }
                 ],
                 "score": {
-                    "kind": "riskadjusted",
+                    "kind": "riskAdjusted",
                     "successProbability": 0.5,
                 }
             }]
@@ -314,7 +314,7 @@ async fn buy() {
                     }
                 ],
                 "score": {
-                    "kind": "riskadjusted",
+                    "kind": "riskAdjusted",
                     "successProbability": 0.5,
                 }
             }]
