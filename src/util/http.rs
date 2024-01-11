@@ -42,7 +42,7 @@ pub(crate) use roundtrip;
 
 #[doc(hidden)]
 pub async fn roundtrip_internal<T, E>(
-    request: RequestBuilder,
+    mut request: RequestBuilder,
     log_request: impl FnOnce(&Method, &Url, Option<&str>, &str),
     log_response: impl FnOnce(StatusCode, &str, &str),
 ) -> Result<T, RoundtripError<E>>
@@ -50,6 +50,9 @@ where
     T: DeserializeOwned,
     E: DeserializeOwned,
 {
+    if let Some(id) = observe::request_id::get_task_local_storage() {
+        request = request.header("X-REQUEST-ID", id);
+    }
     let (client, request) = request.build_split();
     let request = request.map_err(Error::from)?;
 
