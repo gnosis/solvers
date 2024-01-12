@@ -34,6 +34,7 @@ pub enum Kind {
     NonBufferableTokensUsed(TokensUsed),
     SolverAccountInsufficientBalance(RequiredEther),
     Settled(Settlement),
+    PostprocessingTimedOut,
 }
 
 /// The result of winning solver trying to settle the transaction onchain.
