@@ -157,6 +157,16 @@ impl Dex {
             })
             .and_then(|result| result)
             .ok()
+            .filter(|swap| {
+                let valid = swap.satisfies(order);
+                if !valid {
+                    tracing::debug!("swap does not satisfy order");
+                }
+                if order.partially_fillable && !valid {
+                    self.fills.reduce_next_try(order.uid);
+                }
+                valid
+            })
     }
 
     async fn solve_order(
