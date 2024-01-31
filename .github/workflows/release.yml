@@ -49,6 +49,7 @@ jobs:
           git push origin --tags
 
       - name: "Create release"
+        if: ${{ steps.check_changes.outputs.has_changes }}
         uses: "actions/github-script@v6"
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
