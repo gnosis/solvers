@@ -1,0 +1,15 @@
+name: publish-docker-image
+on:
+  push:
+    branches: [main]
+    tags: [v*]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      DOCKERHUB_PROJECT: solvers
+      DOCKER_NAME: ${{ secrets.DOCKER_NAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v2
+      - run: docker/publish-docker-image.sh ${GITHUB_REF#refs/*/}
