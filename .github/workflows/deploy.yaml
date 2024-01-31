@@ -39,7 +39,7 @@ jobs:
       - uses: cowprotocol/autodeploy-action@v2
         if: ${{ github.ref == 'refs/heads/main' }}
         with:
-          images: ghcr.io/cowprotocol/solvers:main
+          images: ghcr.io/gnosis/solvers:main
           tag: ${{ secrets.AUTODEPLOY_TAG }}
           url: ${{ secrets.AUTODEPLOY_URL }}
           token: ${{ secrets.AUTODEPLOY_TOKEN }}
