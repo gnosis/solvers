@@ -2,6 +2,7 @@ name: Weekly Release
 
 on:
   workflow_dispatch:
+  pull_request:
   schedule:
     # At 00:00 on Monday
     - cron: "0 0 * * 1"
@@ -21,7 +22,7 @@ jobs:
       - name: Check for changes since last tag
         id: check_changes
         run: |
-          LATEST_TAG=$(git tag --sort=-authordate --merged=main | head --lines 1)
+          LATEST_TAG=$(git tag --merged=main --sort=-committerdate | head -n 1)
           CHANGES=$(git log $LATEST_TAG..HEAD --oneline)
           if [[ -z "$CHANGES" ]]; then
             echo "No changes since the last tag."
