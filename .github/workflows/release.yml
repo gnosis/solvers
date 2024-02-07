@@ -13,11 +13,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
+          ref: main
           fetch-depth: 0 # Fetch all history for all branches and tags
           # Requires "Read and Write access to code" permission
           token: ${{ secrets.RELEASE_ACTION_ACCESS_TOKEN }}
 
+      - name: Check for changes since last tag
+        id: check_changes
+        run: |
+          LATEST_TAG=$(git tag --merged=main --sort=-committerdate | head -n 1)
+          CHANGES=$(git log $LATEST_TAG..HEAD --oneline)
+          if [[ -z "$CHANGES" ]]; then
+            echo "No changes since the last tag."
+          else
+            echo "Changes detected since the last tag."
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: Create Tag
+        if: ${{ steps.check_changes.outputs.has_changes }}
         id: tag_version
         run: |
           # Extracts the latest version tag, bumps the minor version
@@ -35,6 +49,7 @@ jobs:
           git push origin --tags
 
       - name: "Create release"
+        if: ${{ steps.check_changes.outputs.has_changes }}
         uses: "actions/github-script@v6"
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
