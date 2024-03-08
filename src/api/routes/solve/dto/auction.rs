@@ -5,7 +5,7 @@ use {
         util::{conv, serialize},
     },
     bigdecimal::BigDecimal,
-    ethereum_types::{H160, U256},
+    ethereum_types::{H160, H256, U256},
     itertools::Itertools as _,
     serde::Deserialize,
     serde_with::{serde_as, DisplayFromStr},
@@ -161,6 +161,7 @@ enum Liquidity {
 struct ConstantProductPool {
     id: String,
     address: H160,
+    router: H160,
     #[serde_as(as = "serialize::U256")]
     gas_estimate: U256,
     tokens: HashMap<H160, ConstantProductReserve>,
@@ -209,6 +210,7 @@ impl ConstantProductPool {
 struct WeightedProductPool {
     id: String,
     address: H160,
+    balancer_pool_id: H256,
     #[serde_as(as = "serialize::U256")]
     gas_estimate: U256,
     tokens: HashMap<H160, WeightedProductReserve>,
@@ -279,6 +281,7 @@ impl WeightedProductPool {
 struct StablePool {
     id: String,
     address: H160,
+    balancer_pool_id: H256,
     #[serde_as(as = "serialize::U256")]
     gas_estimate: U256,
     tokens: HashMap<H160, StableReserve>,
@@ -336,6 +339,7 @@ impl StablePool {
 struct ConcentratedLiquidityPool {
     id: String,
     address: H160,
+    router: H160,
     #[serde_as(as = "serialize::U256")]
     gas_estimate: U256,
     tokens: Vec<H160>,
