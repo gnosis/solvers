@@ -218,7 +218,7 @@ impl Single {
             trades: vec![Trade::Fulfillment(Fulfillment::new(order, executed, fee)?)],
             interactions,
             score,
-            gas: Some(self.gas),
+            gas: Some(eth::Gas(Self::SETTLEMENT_OVERHEAD.into()) + self.gas),
         })
     }
 }
