@@ -128,6 +128,7 @@ impl Solutions {
                             success_probability: score.0,
                         },
                     },
+                    gas: solution.gas.map(|gas| gas.0.as_u64()),
                 })
                 .collect(),
         }
@@ -150,6 +151,8 @@ struct Solution {
     trades: Vec<Trade>,
     interactions: Vec<Interaction>,
     score: Score,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    gas: Option<u64>,
 }
 
 #[derive(Debug, Serialize)]
