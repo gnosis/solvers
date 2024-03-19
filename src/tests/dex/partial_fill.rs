@@ -277,7 +277,7 @@ endpoint = 'http://{}/sor'
                     "kind": "riskAdjusted",
                     "successProbability": 0.5,
                 },
-                "gas": 88892,
+                "gas": 195283,
             }]
         })
     );
@@ -627,7 +627,7 @@ endpoint = 'http://{}/sor'
                     "kind": "riskAdjusted",
                     "successProbability": 0.5,
                 },
-                "gas": 88892,
+                "gas": 195283,
             }]
         })
     );
@@ -896,7 +896,7 @@ async fn market() {
                     "kind": "riskAdjusted",
                     "successProbability": 0.5,
                 },
-                "gas": 88892,
+                "gas": 195283,
             }]
         })
     );
