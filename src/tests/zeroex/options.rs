@@ -297,7 +297,7 @@ enable-slippage-protection = true
                     "kind": "riskAdjusted",
                     "successProbability": 0.5,
                 },
-                "gas": 127886,
+                "gas": 234277,
             }]
         }),
     );

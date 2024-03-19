@@ -239,7 +239,7 @@ async fn sell() {
                 "kind": "riskAdjusted",
                     "successProbability": 0.5,
               },
-              "gas": 242300,
+              "gas": 348691,
             }
           ]
         }),
@@ -493,9 +493,9 @@ async fn buy() {
               ],
               "score": {
                 "kind": "riskAdjusted",
-                    "successProbability": 0.5,
+                "successProbability": 0.5,
               },
-              "gas": 106935,
+              "gas": 213326,
             }
           ]
         }),

@@ -208,9 +208,9 @@ async fn sell() {
               ],
               "score": {
                 "kind": "riskAdjusted",
-                    "successProbability": 0.5,
+                "successProbability": 0.5,
               },
-              "gas": 100000,
+              "gas": 206391,
             }
           ]
         }),
