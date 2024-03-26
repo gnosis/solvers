@@ -61,6 +61,12 @@ struct Config {
     #[serde(with = "humantime_serde", default = "default_max_back_off")]
     max_back_off: Duration,
 
+    /// Offset applied to the gas estimate for a solution to hackily address
+    /// systematic over- or under-estimation of the execution cost of orders.
+    /// To be configured in units of gas.
+    #[serde(default)]
+    solution_gas_offset: i64,
+
     /// Settings specific to the wrapped dex API.
     dex: toml::Value,
 }
@@ -148,6 +154,7 @@ pub async fn load<T: DeserializeOwned>(path: &Path) -> (super::Config, T) {
             config.max_back_off,
         )
         .unwrap(),
+        solution_gas_offset: config.solution_gas_offset.into(),
     };
     (config, dex)
 }

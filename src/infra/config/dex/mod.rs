@@ -27,4 +27,5 @@ pub struct Config {
     pub smallest_partial_fill: eth::Ether,
     pub risk: Risk,
     pub rate_limiting_strategy: RateLimitingStrategy,
+    pub solution_gas_offset: eth::SignedGas,
 }
