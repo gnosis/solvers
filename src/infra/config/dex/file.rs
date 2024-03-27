@@ -61,9 +61,8 @@ struct Config {
     #[serde(with = "humantime_serde", default = "default_max_back_off")]
     max_back_off: Duration,
 
-    /// Offset applied to the gas estimate for a solution to hackily address
-    /// systematic over- or under-estimation of the execution cost of orders.
-    /// To be configured in units of gas.
+    /// Units of gas that get added to the gas estimate for executing a
+    /// computed trade route to arrive at a gas estimate for a whole settlement.
     #[serde(default)]
     solution_gas_offset: i64,
 
