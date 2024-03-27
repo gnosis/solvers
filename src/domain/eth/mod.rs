@@ -58,7 +58,7 @@ impl std::ops::Add<SignedGas> for Gas {
 }
 
 /// Gas amount.
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Gas(pub U256);
 
 impl std::ops::Add for Gas {
@@ -106,4 +106,27 @@ pub struct Tx {
     pub value: Ether,
     pub input: Bytes<Vec<u8>>,
     pub access_list: AccessList,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn add_gas_offset() {
+        let gas = |value: u128| Gas(value.into());
+        let offset = |value| SignedGas::from(value);
+
+        // saturating sub
+        assert_eq!(gas(100) + offset(-101), gas(0));
+
+        // regular sub
+        assert_eq!(gas(100) + offset(-90), gas(10));
+
+        // saturating add
+        assert_eq!(Gas(U256::MAX) + offset(100), Gas(U256::MAX));
+
+        // regular add
+        assert_eq!(gas(100) + offset(100), gas(200));
+    }
 }
