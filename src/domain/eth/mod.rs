@@ -115,7 +115,7 @@ mod tests {
     #[test]
     fn add_gas_offset() {
         let gas = |value: u128| Gas(value.into());
-        let offset = |value| SignedGas::from(value);
+        let offset = SignedGas::from;
 
         // saturating sub
         assert_eq!(gas(100) + offset(-101), gas(0));
