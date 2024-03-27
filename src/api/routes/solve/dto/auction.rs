@@ -145,7 +145,6 @@ pub struct Quote {
     pub fee: eth::U256,
 }
 
-
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 enum Kind {
