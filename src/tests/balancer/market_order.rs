@@ -44,7 +44,12 @@ async fn sell() {
     }])
     .await;
 
-    let engine = tests::SolverEngine::new("balancer", balancer::config(&api.address)).await;
+    let node = tests::mock::node::constant_gas_estimate(195283).await;
+    let engine = tests::SolverEngine::new(
+        "balancer",
+        balancer::config_with_node(&api.address, &node.address),
+    )
+    .await;
 
     let solution = engine
         .solve(json!({
@@ -203,7 +208,12 @@ async fn buy() {
     }])
     .await;
 
-    let engine = tests::SolverEngine::new("balancer", balancer::config(&api.address)).await;
+    let node = tests::mock::node::constant_gas_estimate(195283).await;
+    let engine = tests::SolverEngine::new(
+        "balancer",
+        balancer::config_with_node(&api.address, &node.address),
+    )
+    .await;
 
     let solution = engine
         .solve(json!({

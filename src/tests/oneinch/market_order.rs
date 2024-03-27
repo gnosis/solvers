@@ -119,7 +119,12 @@ async fn sell() {
     ])
         .await;
 
-    let engine = tests::SolverEngine::new("oneinch", super::config(&api.address)).await;
+    let node = tests::mock::node::constant_gas_estimate(206391).await;
+    let engine = tests::SolverEngine::new(
+        "oneinch",
+        super::config_with_node(&api.address, &node.address),
+    )
+    .await;
 
     let solution = engine
         .solve(json!({

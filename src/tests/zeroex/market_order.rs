@@ -88,7 +88,12 @@ async fn sell() {
     }])
         .await;
 
-    let engine = tests::SolverEngine::new("zeroex", zeroex::config(&api.address)).await;
+    let node = mock::node::constant_gas_estimate(234277).await;
+    let engine = tests::SolverEngine::new(
+        "zeroex",
+        zeroex::config_with_node(&api.address, &node.address),
+    )
+    .await;
 
     let solution = engine
         .solve(json!({
@@ -271,7 +276,12 @@ async fn buy() {
     }])
     .await;
 
-    let engine = tests::SolverEngine::new("zeroex", zeroex::config(&api.address)).await;
+    let node = mock::node::constant_gas_estimate(217391).await;
+    let engine = tests::SolverEngine::new(
+        "zeroex",
+        zeroex::config_with_node(&api.address, &node.address),
+    )
+    .await;
 
     let solution = engine
         .solve(json!({

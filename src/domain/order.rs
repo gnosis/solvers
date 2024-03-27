@@ -36,7 +36,7 @@ impl Order {
 
     /// Returns `true` if the order expects a solver-computed fee.
     pub fn solver_determines_fee(&self) -> bool {
-        self.class == Class::Limit
+        self.class != Class::Liquidity && self.fee.0.is_zero()
     }
 }
 
