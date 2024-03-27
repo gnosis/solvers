@@ -114,7 +114,37 @@ struct Order {
     kind: Kind,
     partially_fillable: bool,
     class: Class,
+    fee_policies: Option<Vec<FeePolicy>>,
 }
+
+#[serde_as]
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum FeePolicy {
+    #[serde(rename_all = "camelCase")]
+    Surplus { factor: f64, max_volume_factor: f64 },
+    #[serde(rename_all = "camelCase")]
+    PriceImprovement {
+        factor: f64,
+        max_volume_factor: f64,
+        quote: Quote,
+    },
+    #[serde(rename_all = "camelCase")]
+    Volume { factor: f64 },
+}
+
+#[serde_as]
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Quote {
+    #[serde_as(as = "serialize::U256")]
+    pub sell_amount: eth::U256,
+    #[serde_as(as = "serialize::U256")]
+    pub buy_amount: eth::U256,
+    #[serde_as(as = "serialize::U256")]
+    pub fee: eth::U256,
+}
+
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
