@@ -196,7 +196,6 @@ components:
         - buyToken
         - sellAmount
         - buyAmount
-        - feeAmount
         - kind
         - partiallyFillable
         - class
@@ -210,8 +209,6 @@ components:
         sellAmount:
           $ref: "#/components/schemas/TokenAmount"
         buyAmount:
-          $ref: "#/components/schemas/TokenAmount"
-        feeAmount:
           $ref: "#/components/schemas/TokenAmount"
         kind:
           $ref: "#/components/schemas/OrderKind"

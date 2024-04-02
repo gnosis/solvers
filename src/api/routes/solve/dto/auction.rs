@@ -62,7 +62,6 @@ impl Auction {
                         Class::Limit => order::Class::Limit,
                         Class::Liquidity => order::Class::Liquidity,
                     },
-                    fee: order::Fee(order.fee_amount),
                     partially_fillable: order.partially_fillable,
                 })
                 .collect(),
@@ -109,8 +108,6 @@ struct Order {
     sell_amount: U256,
     #[serde_as(as = "serialize::U256")]
     buy_amount: U256,
-    #[serde_as(as = "serialize::U256")]
-    fee_amount: U256,
     kind: Kind,
     partially_fillable: bool,
     class: Class,
