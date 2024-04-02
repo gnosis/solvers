@@ -74,7 +74,6 @@ async fn test() {
                     "buyToken": "0x2222222222222222222222222222222222222222",
                     "sellAmount": "1000000000000000000",
                     "buyAmount": "1000000000000000000",
-                    "feeAmount": "1000000000000000",
                     "kind": "sell",
                     "partiallyFillable": false,
                     "class": "market",

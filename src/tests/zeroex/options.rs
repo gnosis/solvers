@@ -226,7 +226,6 @@ enable-slippage-protection = true
                     "buyToken": "0xe41d2489571d322189246dafa5ebde1f4699f498",
                     "sellAmount": "1000000000000000000",
                     "buyAmount": "5000000000000000000000",
-                    "feeAmount": "1000000000000000",
                     "kind": "sell",
                     "partiallyFillable": false,
                     "class": "market",

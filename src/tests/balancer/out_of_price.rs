@@ -78,7 +78,6 @@ async fn sell() {
                     "sellAmount": "1000000000000000000",
                     // Way too much...
                     "buyAmount": "1000000000000000000000000000000000000",
-                    "feeAmount": "1000000000000000",
                     "kind": "sell",
                     "partiallyFillable": false,
                     "class": "market",
@@ -167,7 +166,6 @@ async fn buy() {
                     // Way too little...
                     "sellAmount": "1",
                     "buyAmount": "100000000000000000000",
-                    "feeAmount": "1000000000000000",
                     "kind": "buy",
                     "partiallyFillable": false,
                     "class": "market",
