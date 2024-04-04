@@ -3,7 +3,6 @@
 #![recursion_limit = "256"]
 
 mod api;
-mod boundary;
 mod domain;
 mod infra;
 mod run;

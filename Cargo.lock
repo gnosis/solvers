@@ -125,9 +125,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a4668cab20f66d8d020e1fbc0ebe47217433c1b6c8f2040faf858554e394ace6"
 
 [[package]]
+name = "app-data"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.252.0#5430414e90bc3cd121e0f307093ac4adccc675b6"
+dependencies = [
+ "anyhow",
+ "app-data-hash",
+ "bytes-hex",
+ "hex",
+ "primitive-types",
+ "serde",
+ "serde_json",
+ "serde_with",
+]
+
+[[package]]
 name = "app-data-hash"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.237.0#12d1af497c0f53cbb0cd842feafcd7687b872a0c"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.252.0#5430414e90bc3cd121e0f307093ac4adccc675b6"
 dependencies = [
  "hex-literal",
  "tiny-keccak",
@@ -150,28 +165,6 @@ dependencies = [
  "memchr",
  "pin-project-lite",
  "tokio",
-]
-
-[[package]]
-name = "async-stream"
-version = "0.3.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd56dd203fef61ac097dd65721a419ddccb106b2d2b70ba60a6b529f03961a51"
-dependencies = [
- "async-stream-impl",
- "futures-core",
- "pin-project-lite",
-]
-
-[[package]]
-name = "async-stream-impl"
-version = "0.3.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "16e62a023e7c117e27523144c5d2459f4397fcc3cab0085af8e2224f643a0193"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.41",
 ]
 
 [[package]]
@@ -712,6 +705,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2bd12c1caf447e69cd4528f47f94d203fd2582878ecb9e9465484c4148a8223"
 
 [[package]]
+name = "bytes-hex"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.252.0#5430414e90bc3cd121e0f307093ac4adccc675b6"
+dependencies = [
+ "hex",
+ "serde",
+ "serde_json",
+ "serde_with",
+]
+
+[[package]]
 name = "bytes-utils"
 version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -836,11 +840,10 @@ dependencies = [
 [[package]]
 name = "contracts"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.237.0#12d1af497c0f53cbb0cd842feafcd7687b872a0c"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.252.0#5430414e90bc3cd121e0f307093ac4adccc675b6"
 dependencies = [
  "ethcontract",
  "ethcontract-generate",
- "maplit",
  "serde",
 ]
 
@@ -1000,7 +1003,7 @@ dependencies = [
 [[package]]
 name = "database"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.237.0#12d1af497c0f53cbb0cd842feafcd7687b872a0c"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.252.0#5430414e90bc3cd121e0f307093ac4adccc675b6"
 dependencies = [
  "bigdecimal",
  "chrono",
@@ -1008,6 +1011,7 @@ dependencies = [
  "futures",
  "hex",
  "sqlx",
+ "strum",
 ]
 
 [[package]]
@@ -1189,7 +1193,6 @@ dependencies = [
  "aws-config",
  "aws-sdk-kms",
  "ethcontract-common",
- "ethcontract-derive",
  "futures",
  "futures-timer",
  "hex",
@@ -1223,20 +1226,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ethcontract-derive"
-version = "0.25.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2e68257cfdf589ae3f9d2edd348072e2bf105fa87288fc0a7f5e090e20a2acd4"
-dependencies = [
- "anyhow",
- "ethcontract-common",
- "ethcontract-generate",
- "proc-macro2",
- "quote",
- "syn 2.0.41",
-]
-
-[[package]]
 name = "ethcontract-generate"
 version = "0.25.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1249,19 +1238,6 @@ dependencies = [
  "quote",
  "syn 2.0.41",
  "url",
-]
-
-[[package]]
-name = "ethcontract-mock"
-version = "0.25.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7c017cc834bf73743adb5956f4033e4e1053f3651ab52ff1e5be0a09c3fc7e13"
-dependencies = [
- "ethcontract",
- "hex",
- "mockall",
- "predicates 3.1.0",
- "rlp",
 ]
 
 [[package]]
@@ -1281,7 +1257,7 @@ dependencies = [
 [[package]]
 name = "ethrpc"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.237.0#12d1af497c0f53cbb0cd842feafcd7687b872a0c"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.252.0#5430414e90bc3cd121e0f307093ac4adccc675b6"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2182,7 +2158,7 @@ dependencies = [
  "fragile",
  "lazy_static",
  "mockall_derive",
- "predicates 2.1.5",
+ "predicates",
  "predicates-tree",
 ]
 
@@ -2201,19 +2177,20 @@ dependencies = [
 [[package]]
 name = "model"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.237.0#12d1af497c0f53cbb0cd842feafcd7687b872a0c"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.252.0#5430414e90bc3cd121e0f307093ac4adccc675b6"
 dependencies = [
  "anyhow",
+ "app-data",
  "app-data-hash",
  "bigdecimal",
+ "bytes-hex",
  "chrono",
  "derivative",
  "hex",
  "hex-literal",
  "lazy_static",
- "maplit",
  "num",
- "number 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.237.0)",
+ "number",
  "primitive-types",
  "secp256k1",
  "serde",
@@ -2384,19 +2361,6 @@ dependencies = [
 [[package]]
 name = "number"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.237.0#12d1af497c0f53cbb0cd842feafcd7687b872a0c"
-dependencies = [
- "anyhow",
- "bigdecimal",
- "num",
- "primitive-types",
- "serde",
- "serde_with",
-]
-
-[[package]]
-name = "number"
-version = "0.1.0"
 source = "git+https://github.com/cowprotocol/services.git?tag=v2.252.0#5430414e90bc3cd121e0f307093ac4adccc675b6"
 dependencies = [
  "anyhow",
@@ -2419,7 +2383,7 @@ dependencies = [
 [[package]]
 name = "observe"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.237.0#12d1af497c0f53cbb0cd842feafcd7687b872a0c"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.252.0#5430414e90bc3cd121e0f307093ac4adccc675b6"
 dependencies = [
  "atty",
  "futures",
@@ -2487,6 +2451,18 @@ dependencies = [
  "libc",
  "pkg-config",
  "vcpkg",
+]
+
+[[package]]
+name = "order-validation"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.252.0#5430414e90bc3cd121e0f307093ac4adccc675b6"
+dependencies = [
+ "cached",
+ "contracts",
+ "ethcontract",
+ "thiserror",
+ "tracing",
 ]
 
 [[package]]
@@ -2657,20 +2633,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "predicates"
-version = "3.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "68b87bfd4605926cdfefc1c3b5f8fe560e3feca9d5552cf68c466d3d8236c7e8"
-dependencies = [
- "anstyle",
- "difflib",
- "float-cmp",
- "normalize-line-endings",
- "predicates-core",
- "regex",
-]
-
-[[package]]
 name = "predicates-core"
 version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2819,6 +2781,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
 dependencies = [
  "getrandom",
+]
+
+[[package]]
+name = "rate-limit"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.252.0#5430414e90bc3cd121e0f307093ac4adccc675b6"
+dependencies = [
+ "anyhow",
+ "futures",
+ "humantime",
+ "observe",
+ "prometheus",
+ "prometheus-metric-storage",
+ "reqwest",
+ "thiserror",
+ "tokio",
+ "tracing",
 ]
 
 [[package]]
@@ -3281,13 +3260,14 @@ dependencies = [
 [[package]]
 name = "shared"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.237.0#12d1af497c0f53cbb0cd842feafcd7687b872a0c"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.252.0#5430414e90bc3cd121e0f307093ac4adccc675b6"
 dependencies = [
  "anyhow",
+ "app-data",
  "app-data-hash",
- "async-stream",
  "async-trait",
  "bigdecimal",
+ "bytes-hex",
  "cached",
  "chrono",
  "clap",
@@ -3296,24 +3276,27 @@ dependencies = [
  "delay_map",
  "derivative",
  "ethcontract",
- "ethcontract-mock",
  "ethrpc",
  "flate2",
  "futures",
  "gas-estimation",
  "hex",
  "hex-literal",
+ "humantime",
+ "indexmap 2.2.6",
  "itertools 0.11.0",
  "lazy_static",
  "maplit",
  "mockall",
  "model",
  "num",
- "number 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.237.0)",
+ "number",
  "observe",
+ "order-validation",
  "primitive-types",
  "prometheus",
  "prometheus-metric-storage",
+ "rate-limit",
  "reqwest",
  "secp256k1",
  "serde",
@@ -3423,6 +3406,7 @@ dependencies = [
  "observe",
  "prometheus",
  "prometheus-metric-storage",
+ "rate-limit",
  "reqwest",
  "serde",
  "serde_json",
@@ -3447,7 +3431,7 @@ dependencies = [
  "bigdecimal",
  "chrono",
  "hex",
- "number 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.252.0)",
+ "number",
  "serde",
  "serde_with",
  "web3",
