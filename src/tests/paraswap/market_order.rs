@@ -240,10 +240,6 @@ async fn sell() {
                   "order": "0x2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a"
                 }
               ],
-              "score": {
-                "kind": "riskAdjusted",
-                    "successProbability": 0.5,
-              },
               "gas": 348691,
             }
           ]
@@ -501,10 +497,6 @@ async fn buy() {
                   "order": "0x2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a"
                 }
               ],
-              "score": {
-                "kind": "riskAdjusted",
-                "successProbability": 0.5,
-              },
               "gas": 213326,
             }
           ]
