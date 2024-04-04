@@ -1260,7 +1260,7 @@ dependencies = [
  "ethcontract",
  "hex",
  "mockall",
- "predicates 3.0.4",
+ "predicates 3.1.0",
  "rlp",
 ]
 
@@ -1588,7 +1588,7 @@ dependencies = [
  "futures-sink",
  "futures-util",
  "http",
- "indexmap 2.1.0",
+ "indexmap 2.2.6",
  "slab",
  "tokio",
  "tokio-util 0.7.10",
@@ -1942,9 +1942,9 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "2.1.0"
+version = "2.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d530e1a18b1cb4c484e6e34556a0d948706958449fca0cab753d649f2bce3d1f"
+checksum = "168fb715dda47215e360912c096649d23d58bf392ac62f73919e831745e40f26"
 dependencies = [
  "equivalent",
  "hashbrown 0.14.3",
@@ -2213,7 +2213,7 @@ dependencies = [
  "lazy_static",
  "maplit",
  "num",
- "number",
+ "number 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.237.0)",
  "primitive-types",
  "secp256k1",
  "serde",
@@ -2385,6 +2385,19 @@ dependencies = [
 name = "number"
 version = "0.1.0"
 source = "git+https://github.com/cowprotocol/services.git?tag=v2.237.0#12d1af497c0f53cbb0cd842feafcd7687b872a0c"
+dependencies = [
+ "anyhow",
+ "bigdecimal",
+ "num",
+ "primitive-types",
+ "serde",
+ "serde_with",
+]
+
+[[package]]
+name = "number"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.252.0#5430414e90bc3cd121e0f307093ac4adccc675b6"
 dependencies = [
  "anyhow",
  "bigdecimal",
@@ -2645,14 +2658,13 @@ dependencies = [
 
 [[package]]
 name = "predicates"
-version = "3.0.4"
+version = "3.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6dfc28575c2e3f19cb3c73b93af36460ae898d426eba6fc15b9bd2a5220758a0"
+checksum = "68b87bfd4605926cdfefc1c3b5f8fe560e3feca9d5552cf68c466d3d8236c7e8"
 dependencies = [
  "anstyle",
  "difflib",
  "float-cmp",
- "itertools 0.11.0",
  "normalize-line-endings",
  "predicates-core",
  "regex",
@@ -3184,16 +3196,17 @@ dependencies = [
 
 [[package]]
 name = "serde_with"
-version = "3.4.0"
+version = "3.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "64cd236ccc1b7a29e7e2739f27c0b2dd199804abc4290e32f59f3b68d6405c23"
+checksum = "ee80b0e361bbf88fd2f6e242ccd19cfda072cb0faa6ae694ecee08199938569a"
 dependencies = [
  "base64 0.21.5",
  "chrono",
  "hex",
  "indexmap 1.9.3",
- "indexmap 2.1.0",
+ "indexmap 2.2.6",
  "serde",
+ "serde_derive",
  "serde_json",
  "serde_with_macros",
  "time",
@@ -3201,9 +3214,9 @@ dependencies = [
 
 [[package]]
 name = "serde_with_macros"
-version = "3.4.0"
+version = "3.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "93634eb5f75a2323b16de4748022ac4297f9e76b6dced2be287a099f41b5e788"
+checksum = "6561dc161a9224638a31d876ccdfefbc1df91d3f3a8342eddb35f055d48c7655"
 dependencies = [
  "darling",
  "proc-macro2",
@@ -3296,7 +3309,7 @@ dependencies = [
  "mockall",
  "model",
  "num",
- "number",
+ "number 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.237.0)",
  "observe",
  "primitive-types",
  "prometheus",
@@ -3415,6 +3428,7 @@ dependencies = [
  "serde_json",
  "serde_with",
  "shared",
+ "solvers-dto",
  "tempfile",
  "thiserror",
  "tokio",
@@ -3422,6 +3436,20 @@ dependencies = [
  "tower",
  "tower-http",
  "tracing",
+ "web3",
+]
+
+[[package]]
+name = "solvers-dto"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.252.0#5430414e90bc3cd121e0f307093ac4adccc675b6"
+dependencies = [
+ "bigdecimal",
+ "chrono",
+ "hex",
+ "number 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.252.0)",
+ "serde",
+ "serde_with",
  "web3",
 ]
 
@@ -3498,7 +3526,7 @@ dependencies = [
  "futures-util",
  "hashlink",
  "hex",
- "indexmap 2.1.0",
+ "indexmap 2.2.6",
  "log",
  "memchr",
  "native-tls",
@@ -3995,7 +4023,7 @@ version = "0.19.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1b5bb770da30e5cbfde35a2d7b9b8a2c4b8ef89548a7a6aeab5c9a576e3e7421"
 dependencies = [
- "indexmap 2.1.0",
+ "indexmap 2.2.6",
  "serde",
  "serde_spanned",
  "toml_datetime",
@@ -4008,7 +4036,7 @@ version = "0.20.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "70f427fce4d84c72b5b732388bf4a9f4531b53f74e2887e3ecb2481f68f66d81"
 dependencies = [
- "indexmap 2.1.0",
+ "indexmap 2.2.6",
  "toml_datetime",
  "winnow",
 ]
