@@ -111,13 +111,14 @@ pub struct Single {
     pub output: eth::Asset,
     /// The swap interactions for the single order settlement.
     pub interactions: Vec<Interaction>,
-    /// The estimated gas needed for swapping the sell amount to buy amount
-    /// already including the additional overhead of calling the settlement
-    /// contract.
+    /// The estimated gas needed for swapping the sell amount to buy amount.
     pub gas: eth::Gas,
 }
 
 impl Single {
+    /// An approximation for the overhead of executing a trade in a settlement.
+    const SETTLEMENT_OVERHEAD: u64 = 106_391;
+
     /// Creates a full solution for a single order solution given gas and sell
     /// token prices.
     pub fn into_solution(
@@ -143,7 +144,13 @@ impl Single {
             // full order fee as well as a solver computed fee. Note that this
             // is fine for now, since there is no way to create limit orders
             // with non-zero fees.
-            Fee::Surplus(sell_token?.ether_value(eth::Ether(swap.0.checked_mul(gas_price.0 .0)?))?)
+            Fee::Surplus(
+                sell_token?.ether_value(eth::Ether(
+                    swap.0
+                        .checked_add(Self::SETTLEMENT_OVERHEAD.into())?
+                        .checked_mul(gas_price.0 .0)?,
+                ))?,
+            )
         } else {
             Fee::Protocol
         };
@@ -191,7 +198,7 @@ impl Single {
             ]),
             trades: vec![Trade::Fulfillment(Fulfillment::new(order, executed, fee)?)],
             interactions,
-            gas: Some(self.gas),
+            gas: Some(eth::Gas(Self::SETTLEMENT_OVERHEAD.into()) + self.gas),
         })
     }
 }

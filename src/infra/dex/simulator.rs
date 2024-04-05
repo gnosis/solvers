@@ -15,9 +15,6 @@ pub struct Simulator {
     web3: ethrpc::Web3,
     settlement: eth::ContractAddress,
     authenticator: eth::ContractAddress,
-    /// Configurable offset to adjust for systematic under- or
-    /// over-estimating of gas costs.
-    gas_offset: eth::SignedGas,
 }
 
 impl Simulator {
@@ -26,13 +23,11 @@ impl Simulator {
         url: &reqwest::Url,
         settlement: eth::ContractAddress,
         authenticator: eth::ContractAddress,
-        gas_offset: eth::SignedGas,
     ) -> Self {
         Self {
             web3: blockchain::rpc(url),
             settlement,
             authenticator,
-            gas_offset,
         }
     }
 
@@ -112,9 +107,9 @@ impl Simulator {
                 "could not simulate dex swap to get gas used; fall back to gas estimate provided \
                  by dex API"
             );
-            swap.gas + self.gas_offset
+            swap.gas
         } else {
-            eth::Gas(gas) + self.gas_offset
+            eth::Gas(gas)
         })
     }
 }

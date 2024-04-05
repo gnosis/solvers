@@ -54,7 +54,6 @@ impl Dex {
                 &config.node_url,
                 config.contracts.settlement,
                 config.contracts.authenticator,
-                config.solution_gas_offset,
             ),
             slippage: config.slippage,
             concurrent_requests: config.concurrent_requests,
