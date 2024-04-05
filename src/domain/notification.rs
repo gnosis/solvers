@@ -2,7 +2,7 @@ use {
     super::{
         auction,
         eth::{self, Ether, TokenAddress},
-        solution::{self, SuccessProbability},
+        solution,
     },
     std::collections::BTreeSet,
 };
@@ -30,7 +30,6 @@ pub enum Kind {
     EmptySolution,
     DuplicatedSolutionId,
     SimulationFailed(BlockNo, Transaction, SimulationSucceededAtLeastOnce),
-    ScoringFailed(ScoreKind),
     NonBufferableTokensUsed(TokensUsed),
     SolverAccountInsufficientBalance(RequiredEther),
     Settled(Settlement),
@@ -44,23 +43,6 @@ pub enum Settlement {
     Revert(TransactionHash),
     SimulationRevert,
     Fail,
-}
-
-#[derive(Debug)]
-pub enum ScoreKind {
-    ZeroScore,
-    ScoreHigherThanQuality(Score, Quality),
-    SuccessProbabilityOutOfRange(SuccessProbability),
-    ObjectiveValueNonPositive(Quality, GasCost),
-}
-
-#[derive(Debug, Copy, Clone)]
-pub struct Score(pub eth::U256);
-
-impl From<eth::U256> for Score {
-    fn from(value: eth::U256) -> Self {
-        Self(value)
-    }
 }
 
 #[derive(Debug, Copy, Clone)]

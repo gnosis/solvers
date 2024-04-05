@@ -122,12 +122,6 @@ impl Solutions {
                             }
                         })
                         .collect(),
-                    score: match solution.score.clone() {
-                        solution::Score::Solver(score) => Score::Solver { score },
-                        solution::Score::RiskAdjusted(score) => Score::RiskAdjusted {
-                            success_probability: score.0,
-                        },
-                    },
                     gas: solution.gas.map(|gas| gas.0.as_u64()),
                 })
                 .collect(),
@@ -150,7 +144,6 @@ struct Solution {
     prices: HashMap<H160, U256>,
     trades: Vec<Trade>,
     interactions: Vec<Interaction>,
-    score: Score,
     #[serde(skip_serializing_if = "Option::is_none")]
     gas: Option<u64>,
 }
@@ -310,17 +303,4 @@ enum SigningScheme {
     EthSign,
     PreSign,
     Eip1271,
-}
-
-/// A score for a solution. The score is used to rank solutions.
-#[serde_as]
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase", tag = "kind")]
-pub enum Score {
-    Solver {
-        #[serde_as(as = "serialize::U256")]
-        score: U256,
-    },
-    #[serde(rename_all = "camelCase")]
-    RiskAdjusted { success_probability: f64 },
 }
