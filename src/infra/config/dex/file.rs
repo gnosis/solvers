@@ -45,10 +45,6 @@ struct Config {
     #[serde_as(as = "serialize::U256")]
     smallest_partial_fill: eth::U256,
 
-    /// Parameters used to calculate the revert risk of a solution.
-    /// (gas_amount_factor, gas_price_factor, nmb_orders_factor, intercept)
-    risk_parameters: (f64, f64, f64, f64),
-
     /// Back-off growth factor for rate limiting.
     #[serde(default = "default_back_off_growth_factor")]
     back_off_growth_factor: f64,

@@ -36,7 +36,6 @@ pub enum Kind {
     EmptySolution,
     DuplicatedSolutionId,
     SimulationFailed(BlockNo, Transaction, SimulationSucceededAtLeastOnce),
-    ScoringFailed(ScoreKind),
     NonBufferableTokensUsed(TokensUsed),
     SolverAccountInsufficientBalance(RequiredEther),
     Settled(Settlement),
@@ -56,4 +55,22 @@ pub enum Settlement {
 #[derive(Debug)]
 pub enum ScoreKind {
     InvalidClearingPrices,
+}
+
+#[derive(Debug, Copy, Clone)]
+pub struct Quality(pub eth::U256);
+
+impl From<eth::U256> for Quality {
+    fn from(value: eth::U256) -> Self {
+        Self(value)
+    }
+}
+
+#[derive(Debug, Copy, Clone)]
+pub struct GasCost(pub eth::U256);
+
+impl From<eth::U256> for GasCost {
+    fn from(value: eth::U256) -> Self {
+        Self(value)
+    }
 }

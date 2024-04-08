@@ -127,7 +127,6 @@ async fn tested_amounts_adjust_depending_on_response() {
     let config = tests::Config::String(format!(
         r"
 node-url = 'http://{}'
-risk-parameters = [0,0,0,0]
 [dex]
 endpoint = 'http://{}/sor'
         ",
@@ -459,7 +458,6 @@ async fn moves_surplus_fee_to_buy_token() {
     let config = tests::Config::String(format!(
         r"
 node-url = 'http://{}'
-risk-parameters = [0,0,0,0]
 [dex]
 endpoint = 'http://{}/sor'
         ",

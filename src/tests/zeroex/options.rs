@@ -185,7 +185,6 @@ async fn test() {
         r"
 node-url = 'http://{}'
 relative-slippage = '0.1'
-risk-parameters = [0,0,0,0]
 [dex]
 endpoint = 'http://{}/swap/v1/'
 api-key = 'abc123'
