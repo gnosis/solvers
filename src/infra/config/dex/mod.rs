@@ -23,5 +23,4 @@ pub struct Config {
     pub concurrent_requests: NonZeroUsize,
     pub smallest_partial_fill: eth::Ether,
     pub rate_limiting_strategy: rate_limit::Strategy,
-    pub solution_gas_offset: eth::SignedGas,
 }
