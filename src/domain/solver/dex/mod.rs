@@ -7,6 +7,7 @@ use {
         domain::{
             auction,
             dex::{self, slippage},
+            eth,
             order::{self, Order},
             solution,
             solver::dex::fills::Fills,
@@ -39,6 +40,10 @@ pub struct Dex {
 
     /// Handles 429 Too Many Requests error with a retry mechanism
     rate_limiter: RateLimiter,
+
+    /// Amount of gas that gets added to each swap to tweak the cost coverage of
+    /// the solver.
+    gas_offset: eth::Gas,
 }
 
 /// The amount of time we aim the solver to finish before the final deadline is
@@ -59,6 +64,7 @@ impl Dex {
             concurrent_requests: config.concurrent_requests,
             fills: Fills::new(config.smallest_partial_fill),
             rate_limiter,
+            gas_offset: config.gas_offset,
         }
     }
 
@@ -175,7 +181,13 @@ impl Dex {
         let swap = self.try_solve(order, &dex_order, tokens, gas_price).await?;
         let sell = tokens.reference_price(&order.sell.token);
         let Some(solution) = swap
-            .into_solution(order.clone(), gas_price, sell, &self.simulator)
+            .into_solution(
+                order.clone(),
+                gas_price,
+                sell,
+                &self.simulator,
+                self.gas_offset,
+            )
             .await
         else {
             tracing::debug!("no solution for swap");

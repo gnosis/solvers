@@ -108,6 +108,7 @@ impl Swap {
         gas_price: auction::GasPrice,
         sell_token: Option<auction::Price>,
         simulator: &infra::dex::Simulator,
+        gas_offset: eth::Gas,
     ) -> Option<solution::Solution> {
         let gas = if order.class == order::Class::Limit {
             match simulator.gas(order.owner(), &self).await {
@@ -141,7 +142,7 @@ impl Swap {
             interactions,
             gas,
         }
-        .into_solution(gas_price, sell_token)
+        .into_solution(gas_price, sell_token, gas_offset)
     }
 
     pub fn satisfies(&self, order: &domain::order::Order) -> bool {
