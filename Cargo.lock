@@ -2190,7 +2190,7 @@ dependencies = [
  "hex-literal",
  "lazy_static",
  "num",
- "number",
+ "number 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.252.0)",
  "primitive-types",
  "secp256k1",
  "serde",
@@ -2356,6 +2356,19 @@ checksum = "4161fcb6d602d4d2081af7c3a45852d875a03dd337a6bfdd6e06407b61342a43"
 dependencies = [
  "hermit-abi 0.3.3",
  "libc",
+]
+
+[[package]]
+name = "number"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.252.0#5430414e90bc3cd121e0f307093ac4adccc675b6"
+dependencies = [
+ "anyhow",
+ "bigdecimal",
+ "num",
+ "primitive-types",
+ "serde",
+ "serde_with",
 ]
 
 [[package]]
@@ -3290,7 +3303,7 @@ dependencies = [
  "mockall",
  "model",
  "num",
- "number",
+ "number 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.252.0)",
  "observe",
  "order-validation",
  "primitive-types",
