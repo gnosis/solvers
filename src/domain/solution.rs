@@ -32,14 +32,6 @@ impl Solution {
         Self { id, ..self }
     }
 
-    /// Sets the provided gas.
-    pub fn with_gas(self, gas: eth::Gas) -> Self {
-        Self {
-            gas: Some(gas),
-            ..self
-        }
-    }
-
     /// Returns `self` with eligible interactions internalized using the
     /// Settlement contract buffers.
     ///
@@ -139,7 +131,7 @@ impl Single {
             input,
             output,
             interactions,
-            gas,
+            gas: swap,
         } = self;
 
         if (order.sell.token, order.buy.token) != (input.token, output.token) {
