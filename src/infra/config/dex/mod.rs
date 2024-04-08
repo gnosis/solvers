@@ -5,7 +5,7 @@ pub mod paraswap;
 pub mod zeroex;
 
 use {
-    crate::domain::{dex::slippage, eth, Risk},
+    crate::domain::{dex::slippage, eth},
     std::num::NonZeroUsize,
 };
 
@@ -22,7 +22,6 @@ pub struct Config {
     pub slippage: slippage::Limits,
     pub concurrent_requests: NonZeroUsize,
     pub smallest_partial_fill: eth::Ether,
-    pub risk: Risk,
     pub rate_limiting_strategy: rate_limit::Strategy,
     pub solution_gas_offset: eth::SignedGas,
 }

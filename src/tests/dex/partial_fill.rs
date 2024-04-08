@@ -127,7 +127,6 @@ async fn tested_amounts_adjust_depending_on_response() {
     let config = tests::Config::String(format!(
         r"
 node-url = 'http://{}'
-risk-parameters = [0,0,0,0]
 [dex]
 endpoint = 'http://{}/sor'
         ",
@@ -262,10 +261,6 @@ endpoint = 'http://{}/sor'
                         "order": "0x2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a"
                     }
                 ],
-                "score": {
-                    "kind": "riskAdjusted",
-                    "successProbability": 0.5,
-                },
                 "gas": 195283,
             }]
         })
@@ -463,7 +458,6 @@ async fn moves_surplus_fee_to_buy_token() {
     let config = tests::Config::String(format!(
         r"
 node-url = 'http://{}'
-risk-parameters = [0,0,0,0]
 [dex]
 endpoint = 'http://{}/sor'
         ",
@@ -596,10 +590,6 @@ endpoint = 'http://{}/sor'
                         "order": "0x2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a"
                     }
                 ],
-                "score": {
-                    "kind": "riskAdjusted",
-                    "successProbability": 0.5,
-                },
                 "gas": 195283,
             }]
         })
@@ -870,10 +860,6 @@ async fn market() {
                         "order": "0x2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a"
                     }
                 ],
-                "score": {
-                    "kind": "riskAdjusted",
-                    "successProbability": 0.5,
-                },
                 "gas": 195283,
             }]
         })
