@@ -294,10 +294,6 @@ enable-slippage-protection = true
                         ],
                     },
                 ],
-                "score": {
-                    "kind": "riskAdjusted",
-                    "successProbability": 0.5,
-                },
                 "gas": 234277,
             }]
         }),
