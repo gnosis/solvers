@@ -483,7 +483,6 @@ components:
         - buyAmount
         - validTo
         - appData
-        - feeAmount
         - kind
         - partiallyFillable
         - sellTokenBalance
@@ -505,8 +504,6 @@ components:
           type: integer
         appData:
           $ref: "#/components/schemas/AppData"
-        feeAmount:
-          $ref: "#/components/schemas/TokenAmount"
         kind:
           $ref: "#/components/schemas/OrderKind"
         partiallyFillable:
