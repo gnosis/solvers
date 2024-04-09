@@ -2190,7 +2190,7 @@ dependencies = [
  "hex-literal",
  "lazy_static",
  "num",
- "number",
+ "number 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.237.0)",
  "primitive-types",
  "secp256k1",
  "serde",
@@ -2362,6 +2362,19 @@ dependencies = [
 name = "number"
 version = "0.1.0"
 source = "git+https://github.com/cowprotocol/services.git?tag=v2.253.0#2e6fbac515927e88dc40b720f1bb135cf8425075"
+dependencies = [
+ "anyhow",
+ "bigdecimal",
+ "num",
+ "primitive-types",
+ "serde",
+ "serde_with",
+]
+
+[[package]]
+name = "number"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.253.1#a940bc1d0421a66abdcfa2db7fc72b4b8068ff42"
 dependencies = [
  "anyhow",
  "bigdecimal",
@@ -3290,7 +3303,7 @@ dependencies = [
  "mockall",
  "model",
  "num",
- "number",
+ "number 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.237.0)",
  "observe",
  "order-validation",
  "primitive-types",
