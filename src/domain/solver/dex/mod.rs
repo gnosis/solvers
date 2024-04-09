@@ -1,6 +1,8 @@
 //! A simple solver that matches orders directly with swaps from the external
 //! DEX and DEX aggregator APIs.
 
+use crate::domain::eth;
+
 use {
     crate::{
         boundary::rate_limiter::{RateLimiter, RateLimiterError},
@@ -108,12 +110,13 @@ impl Dex {
         dex_order: &dex::Order,
         tokens: &auction::Tokens,
         gas_price: auction::GasPrice,
+        partially_fillable: bool,
     ) -> Option<dex::Swap> {
         let dex_err_handler = |err: infra::dex::Error| {
             infra::metrics::solve_error(err.format_variant());
             match &err {
                 err @ infra::dex::Error::NotFound => {
-                    if order.partially_fillable {
+                    if partially_fillable {
                         // Only adjust the amount to try next if we are sure the API
                         // worked
                         // correctly yet still wasn't able to provide a
@@ -171,9 +174,28 @@ impl Dex {
         gas_price: auction::GasPrice,
     ) -> Option<solution::Solution> {
         let order = order.get();
+        let sell = match tokens.reference_price(&order.sell.token) {
+            Some(price) => price,
+            None => {
+                // no reference price exists for quote requests, issue another request to
+                // determine native token price
+                let dex_order = self.native_price_request(order);
+                let swap = self
+                    .try_solve(order, &dex_order, tokens, gas_price, false)
+                    .await?;
+                // how many units of buy_token are bought for one unit of sell_token
+                // (buy_amount / sell_amount).
+                let price = self.native_token_price_estimation_amount.to_f64_lossy()
+                    / swap.input.amount.to_f64_lossy();
+                match to_normalized_price(price) {
+                    Some(price) => auction::Price(eth::Ether(price)),
+                    None => return None,
+                }
+            }
+        };
         let dex_order = self.fills.dex_order(order, tokens)?;
-        let swap = self.try_solve(order, &dex_order, tokens, gas_price).await?;
-        let sell = tokens.reference_price(&order.sell.token);
+        let swap = self.try_solve(order, &dex_order, tokens, gas_price, order.partially_fillable).await?;
+
         let Some(solution) = swap
             .into_solution(order.clone(), gas_price, sell, &self.simulator)
             .await
@@ -187,5 +209,25 @@ impl Dex {
         self.fills.increase_next_try(order.uid);
 
         Some(solution.with_buffers_internalizations(tokens))
+    }
+
+    fn native_price_request(&self, order: &Order) -> dex::Order {
+        dex::Order {
+            sell: order.sell.token,
+            buy: self.weth.0.into(),
+            side: order::Side::Buy,
+            amount: self.native_token_price_estimation_amount,
+        }
+    }
+}
+
+fn to_normalized_price(price: f64) -> Option<U256> {
+    let uint_max = 2.0_f64.powi(256);
+
+    let price_in_eth = 1e18 * price;
+    if price_in_eth.is_normal() && price_in_eth >= 1. && price_in_eth < uint_max {
+        Some(U256::from_f64_lossy(price_in_eth))
+    } else {
+        None
     }
 }

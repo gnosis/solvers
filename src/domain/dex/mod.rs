@@ -106,7 +106,7 @@ impl Swap {
         self,
         order: order::Order,
         gas_price: auction::GasPrice,
-        sell_token: Option<auction::Price>,
+        sell_token: auction::Price,
         simulator: &infra::dex::Simulator,
     ) -> Option<solution::Solution> {
         let gas = if order.class == order::Class::Limit {
