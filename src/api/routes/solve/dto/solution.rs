@@ -57,7 +57,6 @@ impl Solutions {
                                         receiver: trade.order.receiver,
                                         valid_to: trade.order.valid_to,
                                         app_data: trade.order.app_data.0,
-                                        fee_amount: 0.into(),
                                         kind: match trade.order.side {
                                             crate::domain::order::Side::Buy => Kind::Buy,
                                             crate::domain::order::Side::Sell => Kind::Sell,
@@ -198,8 +197,6 @@ struct JitOrder {
     valid_to: u32,
     #[serde_as(as = "serialize::Hex")]
     app_data: [u8; 32],
-    #[serde_as(as = "serialize::U256")]
-    fee_amount: U256,
     kind: Kind,
     partially_fillable: bool,
     sell_token_balance: SellTokenBalance,
