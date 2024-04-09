@@ -2,7 +2,7 @@ use {
     super::{
         auction,
         eth::{self, Ether, TokenAddress},
-        solution,
+        solution::{self},
     },
     std::collections::BTreeSet,
 };
@@ -19,8 +19,14 @@ pub type SimulationSucceededAtLeastOnce = bool;
 #[derive(Debug)]
 pub struct Notification {
     pub auction_id: auction::Id,
-    pub solution_id: Option<solution::Id>,
+    pub solution_id: Option<Id>,
     pub kind: Kind,
+}
+
+#[derive(Debug, Clone)]
+pub enum Id {
+    Single(solution::Id),
+    Merged(Vec<u64>),
 }
 
 /// All types of notifications solvers can be informed about.
@@ -30,9 +36,11 @@ pub enum Kind {
     EmptySolution,
     DuplicatedSolutionId,
     SimulationFailed(BlockNo, Transaction, SimulationSucceededAtLeastOnce),
+    ScoringFailed(ScoreKind),
     NonBufferableTokensUsed(TokensUsed),
     SolverAccountInsufficientBalance(RequiredEther),
     Settled(Settlement),
+    DriverError(String),
     PostprocessingTimedOut,
 }
 
@@ -45,20 +53,7 @@ pub enum Settlement {
     Fail,
 }
 
-#[derive(Debug, Copy, Clone)]
-pub struct Quality(pub eth::U256);
-
-impl From<eth::U256> for Quality {
-    fn from(value: eth::U256) -> Self {
-        Self(value)
-    }
-}
-
-#[derive(Debug, Copy, Clone)]
-pub struct GasCost(pub eth::U256);
-
-impl From<eth::U256> for GasCost {
-    fn from(value: eth::U256) -> Self {
-        Self(value)
-    }
+#[derive(Debug)]
+pub enum ScoreKind {
+    InvalidClearingPrices,
 }

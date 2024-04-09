@@ -44,6 +44,7 @@ contracts = { git = "https://github.com/cowprotocol/services.git", tag = "v2.237
 ethrpc = { git = "https://github.com/cowprotocol/services.git", tag = "v2.237.0", package = "ethrpc" }
 observe = { git = "https://github.com/cowprotocol/services.git", tag = "v2.237.0", package = "observe" }
 shared = { git = "https://github.com/cowprotocol/services.git", tag = "v2.237.0", package = "shared" }
+dto =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.253.0", package = "solvers-dto" }
 
 [dev-dependencies]
 glob = "0.3"
