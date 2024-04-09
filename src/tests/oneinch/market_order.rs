@@ -119,12 +119,7 @@ async fn sell() {
     ])
         .await;
 
-    let node = tests::mock::node::constant_gas_estimate(206391).await;
-    let engine = tests::SolverEngine::new(
-        "oneinch",
-        super::config_with_node(&api.address, &node.address),
-    )
-    .await;
+    let engine = tests::SolverEngine::new("oneinch", super::config(&api.address)).await;
 
     let solution = engine
         .solve(json!({
@@ -210,10 +205,6 @@ async fn sell() {
                   "order": "0x2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a"
                 }
               ],
-              "score": {
-                "kind": "riskAdjusted",
-                "successProbability": 0.5,
-              },
               "gas": 206391,
             }
           ]

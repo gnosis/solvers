@@ -148,12 +148,7 @@ async fn sell() {
     ])
         .await;
 
-    let node = tests::mock::node::constant_gas_estimate(348691).await;
-    let engine = tests::SolverEngine::new(
-        "paraswap",
-        paraswap::config_with_node(&api.address, &node.address),
-    )
-    .await;
+    let engine = tests::SolverEngine::new("paraswap", paraswap::config(&api.address)).await;
 
     let solution = engine
         .solve(json!({
@@ -239,10 +234,6 @@ async fn sell() {
                   "order": "0x2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a"
                 }
               ],
-              "score": {
-                "kind": "riskAdjusted",
-                    "successProbability": 0.5,
-              },
               "gas": 348691,
             }
           ]
@@ -408,12 +399,7 @@ async fn buy() {
     ])
         .await;
 
-    let node = tests::mock::node::constant_gas_estimate(213326).await;
-    let engine = tests::SolverEngine::new(
-        "paraswap",
-        paraswap::config_with_node(&api.address, &node.address),
-    )
-    .await;
+    let engine = tests::SolverEngine::new("paraswap", paraswap::config(&api.address)).await;
 
     let solution = engine
         .solve(json!({
@@ -499,10 +485,6 @@ async fn buy() {
                   "order": "0x2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a"
                 }
               ],
-              "score": {
-                "kind": "riskAdjusted",
-                "successProbability": 0.5,
-              },
               "gas": 213326,
             }
           ]

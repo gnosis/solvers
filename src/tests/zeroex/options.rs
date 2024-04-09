@@ -180,12 +180,10 @@ async fn test() {
     }])
         .await;
 
-    let node = mock::node::constant_gas_estimate(234277).await;
     let config = tests::Config::String(format!(
         r"
-node-url = 'http://{}'
+node-url = 'http://localhost:8545'
 relative-slippage = '0.1'
-risk-parameters = [0,0,0,0]
 [dex]
 endpoint = 'http://{}/swap/v1/'
 api-key = 'abc123'
@@ -194,7 +192,7 @@ affiliate = '0x0123456789012345678901234567890123456789'
 enable-rfqt = true
 enable-slippage-protection = true
         ",
-        node.address, api.address
+        api.address
     ));
     let engine = tests::SolverEngine::new("zeroex", config).await;
 
@@ -293,10 +291,6 @@ enable-slippage-protection = true
                         ],
                     },
                 ],
-                "score": {
-                    "kind": "riskAdjusted",
-                    "successProbability": 0.5,
-                },
                 "gas": 234277,
             }]
         }),

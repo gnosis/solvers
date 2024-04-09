@@ -107,19 +107,21 @@ impl Swap {
         order: order::Order,
         gas_price: auction::GasPrice,
         sell_token: Option<auction::Price>,
-        risk: &domain::Risk,
         simulator: &infra::dex::Simulator,
     ) -> Option<solution::Solution> {
-        let gas = match simulator.gas(order.owner(), &self).await {
-            Ok(value) => value,
-            Err(err) => {
-                tracing::warn!(?err, "gas simulation failed");
-                return None;
+        let gas = if order.class == order::Class::Limit {
+            match simulator.gas(order.owner(), &self).await {
+                Ok(value) => value,
+                Err(err) => {
+                    tracing::warn!(?err, "gas simulation failed");
+                    return None;
+                }
             }
+        } else {
+            // We are fine with just using heuristic gas for market orders,
+            // since it doesn't really play a role in the final solution.
+            self.gas
         };
-        let score = solution::Score::RiskAdjusted(solution::SuccessProbability(
-            risk.success_probability(gas, gas_price, 1),
-        ));
 
         let allowance = self.allowance();
         let interactions = vec![solution::Interaction::Custom(solution::CustomInteraction {
@@ -139,7 +141,7 @@ impl Swap {
             interactions,
             gas,
         }
-        .into_solution(gas_price, sell_token, score)
+        .into_solution(gas_price, sell_token)
     }
 
     pub fn satisfies(&self, order: &domain::order::Order) -> bool {

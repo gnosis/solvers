@@ -3,7 +3,7 @@
 use {
     crate::{
         boundary::rate_limiter::RateLimitingStrategy,
-        domain::{dex::slippage, eth, Risk},
+        domain::{dex::slippage, eth},
         infra::{blockchain, config::unwrap_or_log, contracts},
         util::serialize,
     },
@@ -45,10 +45,6 @@ struct Config {
     #[serde_as(as = "serialize::U256")]
     smallest_partial_fill: eth::U256,
 
-    /// Parameters used to calculate the revert risk of a solution.
-    /// (gas_amount_factor, gas_price_factor, nmb_orders_factor, intercept)
-    risk_parameters: (f64, f64, f64, f64),
-
     /// Back-off growth factor for rate limiting.
     #[serde(default = "default_back_off_growth_factor")]
     back_off_growth_factor: f64,
@@ -60,11 +56,6 @@ struct Config {
     /// Maximum back-off time in seconds for rate limiting.
     #[serde(with = "humantime_serde", default = "default_max_back_off")]
     max_back_off: Duration,
-
-    /// Units of gas that get added to the gas estimate for executing a
-    /// computed trade route to arrive at a gas estimate for a whole settlement.
-    #[serde(default)]
-    solution_gas_offset: i64,
 
     /// Settings specific to the wrapped dex API.
     dex: toml::Value,
@@ -141,19 +132,12 @@ pub async fn load<T: DeserializeOwned>(path: &Path) -> (super::Config, T) {
         .expect("invalid slippage limits"),
         concurrent_requests: config.concurrent_requests,
         smallest_partial_fill: eth::Ether(config.smallest_partial_fill),
-        risk: Risk {
-            gas_amount_factor: config.risk_parameters.0,
-            gas_price_factor: config.risk_parameters.1,
-            nmb_orders_factor: config.risk_parameters.2,
-            intercept: config.risk_parameters.3,
-        },
         rate_limiting_strategy: RateLimitingStrategy::try_new(
             config.back_off_growth_factor,
             config.min_back_off,
             config.max_back_off,
         )
         .unwrap(),
-        solution_gas_offset: config.solution_gas_offset.into(),
     };
     (config, dex)
 }

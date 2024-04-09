@@ -5,7 +5,6 @@ use {
     crate::{
         boundary::rate_limiter::{RateLimiter, RateLimiterError},
         domain::{
-            self,
             auction,
             dex::{self, slippage},
             order::{self, Order},
@@ -38,9 +37,6 @@ pub struct Dex {
     /// fillable orders).
     fills: Fills,
 
-    /// Parameters used to calculate the revert risk of a solution.
-    risk: domain::Risk,
-
     /// Handles 429 Too Many Requests error with a retry mechanism
     rate_limiter: RateLimiter,
 }
@@ -58,12 +54,10 @@ impl Dex {
                 &config.node_url,
                 config.contracts.settlement,
                 config.contracts.authenticator,
-                config.solution_gas_offset,
             ),
             slippage: config.slippage,
             concurrent_requests: config.concurrent_requests,
             fills: Fills::new(config.smallest_partial_fill),
-            risk: config.risk,
             rate_limiter,
         }
     }
@@ -181,7 +175,7 @@ impl Dex {
         let swap = self.try_solve(order, &dex_order, tokens, gas_price).await?;
         let sell = tokens.reference_price(&order.sell.token);
         let Some(solution) = swap
-            .into_solution(order.clone(), gas_price, sell, &self.risk, &self.simulator)
+            .into_solution(order.clone(), gas_price, sell, &self.simulator)
             .await
         else {
             tracing::debug!("no solution for swap");

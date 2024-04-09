@@ -1,4 +1,4 @@
-![pull request](https://github.com/cowprotocol/solvers/workflows/pull%20request/badge.svg) ![deploy](https://github.com/cowprotocol/solvers/workflows/deploy/badge.svg)
+![pull request](https://github.com/gnosis/solvers/workflows/pull%20request/badge.svg) ![deploy](https://github.com/gnosis/solvers/workflows/deploy/badge.svg)
 # SOLVERS
 
 ## Description
