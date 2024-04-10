@@ -58,6 +58,12 @@ struct Config {
 
     /// Settings specific to the wrapped dex API.
     dex: toml::Value,
+
+    /// Amount of gas that gets added to each swap to adjust the cost coverage
+    /// of the solver.
+    #[serde(default = "default_gas_offset")]
+    #[serde_as(as = "serialize::U256")]
+    gas_offset: eth::U256,
 }
 
 fn default_relative_slippage() -> BigDecimal {
@@ -82,6 +88,12 @@ fn default_min_back_off() -> Duration {
 
 fn default_max_back_off() -> Duration {
     Duration::from_secs(8)
+}
+
+fn default_gas_offset() -> eth::U256 {
+    // Rough estimation of the gas overhead of settling a single
+    // trade via the settlement contract.
+    106_391.into()
 }
 
 /// Loads the base solver configuration from a TOML file.
@@ -137,6 +149,7 @@ pub async fn load<T: DeserializeOwned>(path: &Path) -> (super::Config, T) {
             config.max_back_off,
         )
         .unwrap(),
+        gas_offset: eth::Gas(config.gas_offset),
     };
     (config, dex)
 }

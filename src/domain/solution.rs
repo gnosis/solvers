@@ -116,15 +116,13 @@ pub struct Single {
 }
 
 impl Single {
-    /// An approximation for the overhead of executing a trade in a settlement.
-    const SETTLEMENT_OVERHEAD: u64 = 106_391;
-
     /// Creates a full solution for a single order solution given gas and sell
     /// token prices.
     pub fn into_solution(
         self,
         gas_price: auction::GasPrice,
         sell_token: Option<auction::Price>,
+        gas_offset: eth::Gas,
     ) -> Option<Solution> {
         let Self {
             order,
@@ -147,7 +145,7 @@ impl Single {
             Fee::Surplus(
                 sell_token?.ether_value(eth::Ether(
                     swap.0
-                        .checked_add(Self::SETTLEMENT_OVERHEAD.into())?
+                        .checked_add(gas_offset.0)?
                         .checked_mul(gas_price.0 .0)?,
                 ))?,
             )
@@ -198,7 +196,7 @@ impl Single {
             ]),
             trades: vec![Trade::Fulfillment(Fulfillment::new(order, executed, fee)?)],
             interactions,
-            gas: Some(eth::Gas(Self::SETTLEMENT_OVERHEAD.into()) + self.gas),
+            gas: Some(gas_offset + self.gas),
         })
     }
 }
