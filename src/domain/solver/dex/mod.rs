@@ -3,7 +3,6 @@
 
 use {
     crate::{
-        boundary::rate_limiter::{RateLimiter, RateLimiterError},
         domain::{
             auction,
             dex::{self, slippage},
@@ -39,7 +38,7 @@ pub struct Dex {
     fills: Fills,
 
     /// Handles 429 Too Many Requests error with a retry mechanism
-    rate_limiter: RateLimiter,
+    rate_limiter: rate_limit::RateLimiter,
 
     /// Amount of gas that gets added to each swap to tweak the cost coverage of
     /// the solver.
@@ -52,7 +51,10 @@ const DEADLINE_SLACK: chrono::Duration = chrono::Duration::milliseconds(500);
 
 impl Dex {
     pub fn new(dex: infra::dex::Dex, config: infra::config::dex::Config) -> Self {
-        let rate_limiter = RateLimiter::new(config.rate_limiting_strategy, "dex_api".to_string());
+        let rate_limiter = rate_limit::RateLimiter::from_strategy(
+            config.rate_limiting_strategy,
+            "dex_api".to_string(),
+        );
         Self {
             dex,
             simulator: infra::dex::Simulator::new(
@@ -154,7 +156,7 @@ impl Dex {
             })
             .await
             .map_err(|err| match err {
-                RateLimiterError::RateLimited => infra::dex::Error::RateLimited,
+                rate_limit::Error::RateLimited => infra::dex::Error::RateLimited,
             })
             .and_then(|result| result)
             .ok()

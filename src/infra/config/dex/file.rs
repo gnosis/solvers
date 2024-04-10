@@ -2,7 +2,6 @@
 
 use {
     crate::{
-        boundary::rate_limiter::RateLimitingStrategy,
         domain::{dex::slippage, eth},
         infra::{blockchain, config::unwrap_or_log, contracts},
         util::serialize,
@@ -144,7 +143,7 @@ pub async fn load<T: DeserializeOwned>(path: &Path) -> (super::Config, T) {
         .expect("invalid slippage limits"),
         concurrent_requests: config.concurrent_requests,
         smallest_partial_fill: eth::Ether(config.smallest_partial_fill),
-        rate_limiting_strategy: RateLimitingStrategy::try_new(
+        rate_limiting_strategy: rate_limit::Strategy::try_new(
             config.back_off_growth_factor,
             config.min_back_off,
             config.max_back_off,
