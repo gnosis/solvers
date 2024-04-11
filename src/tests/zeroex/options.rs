@@ -14,7 +14,6 @@ async fn test() {
              &buyToken=0xe41d2489571d322189246dafa5ebde1f4699f498\
              &sellAmount=1000000000000000000\
              &slippagePercentage=0.1\
-             &gasPrice=15000000000\
              &takerAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41\
              &excludedSources=Uniswap_V2%2CBalancer_V2\
              &skipValidation=true\

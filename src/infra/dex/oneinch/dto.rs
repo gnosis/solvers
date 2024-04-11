@@ -3,7 +3,7 @@
 
 use {
     crate::{
-        domain::{auction, dex, order},
+        domain::{dex, order},
         util::serialize,
     },
     bigdecimal::BigDecimal,
@@ -88,12 +88,7 @@ pub struct Query {
 }
 
 impl Query {
-    pub fn with_domain(
-        self,
-        order: &dex::Order,
-        slippage: &dex::Slippage,
-        gas_price: auction::GasPrice,
-    ) -> Option<Self> {
+    pub fn with_domain(self, order: &dex::Order, slippage: &dex::Slippage) -> Option<Self> {
         // Buy orders are not supported on 1Inch
         if order.side == order::Side::Buy {
             return None;
@@ -104,7 +99,6 @@ impl Query {
             to_token_address: order.buy.0,
             amount: order.amount.get(),
             slippage: Slippage::from_domain(slippage),
-            gas_price: Some(gas_price.0 .0),
             ..self
         })
     }

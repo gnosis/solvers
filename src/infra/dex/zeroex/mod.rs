@@ -1,6 +1,6 @@
 use {
     crate::{
-        domain::{auction, dex, eth, order},
+        domain::{dex, eth, order},
         util,
     },
     ethereum_types::H160,
@@ -78,12 +78,8 @@ impl ZeroEx {
         &self,
         order: &dex::Order,
         slippage: &dex::Slippage,
-        gas_price: auction::GasPrice,
     ) -> Result<dex::Swap, Error> {
-        let query = self
-            .defaults
-            .clone()
-            .with_domain(order, slippage, gas_price);
+        let query = self.defaults.clone().with_domain(order, slippage);
         let quote = {
             // Set up a tracing span to make debugging of API requests easier.
             // Historically, debugging API requests to external DEXs was a bit
