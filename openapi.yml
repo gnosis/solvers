@@ -234,8 +234,6 @@ components:
             then the order is a "fill-or-kill" order, meaning it needs to be
             completely filled or not at all.
           type: boolean
-        executed:
-          $ref: "#/components/schemas/TokenAmount"
         preInteractions:
           type: array
           items:
@@ -244,7 +242,7 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/InteractionData"
-        sellTokenBalance:
+        sellTokenSource:
           allOf:
             - $ref: "#/components/schemas/SellTokenBalance"
           default: "erc20"
