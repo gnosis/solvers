@@ -64,6 +64,7 @@ pub fn from_domain(solutions: &[solution::Solution]) -> super::Solutions {
                         }
                     })
                     .collect(),
+                // todo: add pre/post interactions once https://github.com/cowprotocol/services/pull/2679 is released
                 interactions: solution
                     .interactions
                     .iter()
