@@ -1,5 +1,5 @@
 use {
-    crate::domain::{order, solution},
+    crate::domain::{eth, order, solution},
     dto::solution::*,
 };
 
@@ -64,7 +64,8 @@ pub fn from_domain(solutions: &[solution::Solution]) -> super::Solutions {
                         }
                     })
                     .collect(),
-                // todo: add pre/post interactions once https://github.com/cowprotocol/services/pull/2679 is released
+                pre_interactions: interaction_data_from_domain(&solution.pre_interactions),
+                post_interactions: interaction_data_from_domain(&solution.post_interactions),
                 interactions: solution
                     .interactions
                     .iter()
@@ -118,4 +119,15 @@ pub fn from_domain(solutions: &[solution::Solution]) -> super::Solutions {
             })
             .collect(),
     }
+}
+
+fn interaction_data_from_domain(interaction_data: &[eth::Interaction]) -> Vec<Call> {
+    interaction_data
+        .iter()
+        .map(|interaction| Call {
+            target: interaction.target.0,
+            value: interaction.value.0,
+            calldata: interaction.calldata.clone(),
+        })
+        .collect()
 }

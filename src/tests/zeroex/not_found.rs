@@ -41,16 +41,28 @@ async fn test() {
                     "buyToken": "0x2222222222222222222222222222222222222222",
                     "sellAmount": "1000000000000000000",
                     "buyAmount": "1000000000000000000",
+                    "fullSellAmount": "1000000000000000000",
+                    "fullBuyAmount": "100000000000000000000",
                     "kind": "sell",
                     "partiallyFillable": false,
                     "class": "market",
+                    "sellTokenSource": "erc20",
+                    "buyTokenDestination": "erc20",
+                    "preInteractions": [],
+                    "postInteractions": [],
+                    "owner": "0x5b1e2c2762667331bc91648052f646d1b0d35984",
+                    "validTo": 0,
+                    "appData": "0x6000000000000000000000000000000000000000000000000000000000000007",
+                    "signingScheme": "presign",
+                    "signature": "0x",
                 },
             ],
             "liquidity": [],
             "effectiveGasPrice": "15000000000",
             "deadline": "2106-01-01T00:00:00.000Z",
         }))
-        .await;
+        .await
+        .unwrap();
 
     assert_eq!(
         solution,
