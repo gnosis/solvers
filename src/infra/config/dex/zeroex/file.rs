@@ -75,6 +75,7 @@ pub async fn load(path: &Path) -> super::Config {
             settlement,
             enable_rfqt: config.enable_rfqt,
             enable_slippage_protection: config.enable_slippage_protection,
+            block_stream: base.block_stream.clone(),
         },
         base,
     }

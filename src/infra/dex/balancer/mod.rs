@@ -5,6 +5,7 @@ use {
     },
     contracts::ethcontract::I256,
     ethereum_types::U256,
+    ethrpc::current_block::CurrentBlockStream,
     std::sync::atomic::{self, AtomicU64},
     tracing::Instrument,
 };
@@ -14,13 +15,16 @@ mod vault;
 
 /// Bindings to the Balancer Smart Order Router (SOR) API.
 pub struct Sor {
-    client: reqwest::Client,
+    client: super::Client,
     endpoint: reqwest::Url,
     vault: vault::Vault,
     settlement: eth::ContractAddress,
 }
 
 pub struct Config {
+    /// Stream that yields every new block.
+    pub block_stream: CurrentBlockStream,
+
     /// The URL for the Balancer SOR API.
     pub endpoint: reqwest::Url,
 
@@ -40,7 +44,7 @@ impl Sor {
 
     pub fn new(config: Config) -> Self {
         Self {
-            client: reqwest::Client::new(),
+            client: super::Client::new(Default::default(), config.block_stream),
             endpoint: config.endpoint,
             vault: vault::Vault::new(config.vault),
             settlement: config.settlement,
@@ -151,7 +155,7 @@ impl Sor {
         let quote = util::http::roundtrip!(
             <dto::Quote, util::serialize::Never>;
             self.client
-                .post(self.endpoint.clone())
+                .request(reqwest::Method::POST, self.endpoint.clone())
                 .json(query)
         )
         .await?;

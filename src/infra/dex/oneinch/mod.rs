@@ -4,6 +4,7 @@ use {
         util,
     },
     ethereum_types::H160,
+    ethrpc::current_block::CurrentBlockStream,
     std::sync::atomic::{self, AtomicU64},
     tracing::Instrument,
 };
@@ -12,7 +13,7 @@ mod dto;
 
 /// Bindings to the 1Inch swap API.
 pub struct OneInch {
-    client: reqwest::Client,
+    client: super::Client,
     endpoint: reqwest::Url,
     defaults: dto::Query,
     spender: eth::ContractAddress,
@@ -39,6 +40,9 @@ pub struct Config {
     pub main_route_parts: Option<u32>,
     pub connector_tokens: Option<u32>,
     pub complexity_level: Option<u32>,
+
+    /// Stream that yields every new block.
+    pub block_stream: CurrentBlockStream,
 }
 
 pub enum Liquidity {
@@ -51,7 +55,7 @@ pub const DEFAULT_URL: &str = "https://api.1inch.io/v5.0/1/";
 
 impl OneInch {
     pub async fn new(config: Config) -> Result<Self, Error> {
-        let client = reqwest::Client::new();
+        let client = super::Client::new(Default::default(), config.block_stream);
         let endpoint = config
             .endpoint
             .unwrap_or_else(|| DEFAULT_URL.parse().unwrap());
@@ -62,7 +66,7 @@ impl OneInch {
             Liquidity::Exclude(excluded) => {
                 let liquidity = util::http::roundtrip!(
                     <dto::Liquidity, dto::Error>;
-                    client.get(util::url::join(&endpoint, "liquidity-sources"))
+                    client.request(reqwest::Method::GET, util::url::join(&endpoint, "liquidity-sources"))
                 )
                 .await?;
 
@@ -89,7 +93,7 @@ impl OneInch {
         let spender = eth::ContractAddress(
             util::http::roundtrip!(
                 <dto::Spender, dto::Error>;
-                client.get(util::url::join(&endpoint, "approve/spender"))
+                client.request(reqwest::Method::GET, util::url::join(&endpoint, "approve/spender"))
             )
             .await?
             .address,
@@ -150,7 +154,7 @@ impl OneInch {
         let swap = util::http::roundtrip!(
             <dto::Swap, dto::Error>;
             self.client
-                .get(util::url::join(&self.endpoint, "swap"))
+                .request(reqwest::Method::GET, util::url::join(&self.endpoint, "swap"))
                 .query(query)
         )
         .await?;

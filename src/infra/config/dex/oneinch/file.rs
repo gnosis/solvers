@@ -67,6 +67,7 @@ pub async fn load(path: &Path) -> super::Config {
             main_route_parts: config.main_route_parts,
             connector_tokens: config.connector_tokens,
             complexity_level: config.complexity_level,
+            block_stream: base.block_stream.clone(),
         },
         base,
     }

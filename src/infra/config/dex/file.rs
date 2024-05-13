@@ -64,6 +64,10 @@ struct Config {
     #[serde(default = "default_gas_offset")]
     #[serde_as(as = "serialize::U256")]
     gas_offset: eth::U256,
+
+    /// How often the solver should poll the current block.
+    #[serde(with = "humantime_serde", default = "default_block_poll_interval")]
+    current_block_poll_interval: Duration,
 }
 
 fn default_relative_slippage() -> BigDecimal {
@@ -88,6 +92,10 @@ fn default_min_back_off() -> Duration {
 
 fn default_max_back_off() -> Duration {
     Duration::from_secs(8)
+}
+
+fn default_block_poll_interval() -> Duration {
+    Duration::from_secs(1)
 }
 
 fn default_gas_offset() -> eth::U256 {
@@ -130,6 +138,13 @@ pub async fn load<T: DeserializeOwned>(path: &Path) -> (super::Config, T) {
         (contracts.settlement, contracts.authenticator)
     };
 
+    let block_stream = ethrpc::current_block::current_block_stream(
+        config.node_url.clone(),
+        config.current_block_poll_interval,
+    )
+    .await
+    .unwrap();
+
     let config = super::Config {
         node_url: config.node_url,
         contracts: super::Contracts {
@@ -150,6 +165,7 @@ pub async fn load<T: DeserializeOwned>(path: &Path) -> (super::Config, T) {
         )
         .unwrap(),
         gas_offset: eth::Gas(config.gas_offset),
+        block_stream,
     };
     (config, dex)
 }

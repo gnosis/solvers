@@ -4,6 +4,7 @@ use {
         util,
     },
     ethereum_types::H160,
+    ethrpc::current_block::CurrentBlockStream,
     std::sync::atomic::{self, AtomicU64},
     tracing::Instrument,
 };
@@ -12,12 +13,15 @@ mod dto;
 
 /// Bindings to the 0x swap API.
 pub struct ZeroEx {
-    client: reqwest::Client,
+    client: super::Client,
     endpoint: reqwest::Url,
     defaults: dto::Query,
 }
 
 pub struct Config {
+    /// The stream that yields every new block.
+    pub block_stream: CurrentBlockStream,
+
     /// The base URL for the 0x swap API.
     pub endpoint: reqwest::Url,
 
@@ -53,9 +57,10 @@ impl ZeroEx {
             let mut headers = reqwest::header::HeaderMap::new();
             headers.insert("0x-api-key", key);
 
-            reqwest::Client::builder()
+            let client = reqwest::Client::builder()
                 .default_headers(headers)
-                .build()?
+                .build()?;
+            super::Client::new(client, config.block_stream)
         };
         let defaults = dto::Query {
             taker_address: Some(config.settlement.0),
@@ -128,7 +133,7 @@ impl ZeroEx {
         let quote = util::http::roundtrip!(
             <dto::Quote, dto::Error>;
             self.client
-                .get(util::url::join(&self.endpoint, "quote"))
+                .request(reqwest::Method::GET, util::url::join(&self.endpoint, "quote"))
                 .query(query)
         )
         .await?;

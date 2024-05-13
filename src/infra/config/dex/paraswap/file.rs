@@ -43,6 +43,7 @@ pub async fn load(path: &Path) -> super::Config {
             exclude_dexs: config.exclude_dexs,
             address: config.address,
             partner: config.partner,
+            block_stream: base.block_stream.clone(),
         },
         base,
     }

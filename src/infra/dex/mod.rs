@@ -1,4 +1,8 @@
-use crate::domain::{auction, dex};
+use {
+    crate::domain::{auction, dex},
+    ethrpc::current_block::CurrentBlockStream,
+    reqwest::RequestBuilder,
+};
 
 pub mod balancer;
 pub mod oneinch;
@@ -50,6 +54,32 @@ pub enum Error {
     RateLimited,
     #[error(transparent)]
     Other(Box<dyn std::error::Error + Send + Sync>),
+}
+
+/// A wrapper around [`reqwest::Client`] to pre-set commonly used headers
+/// and other properties on each request.
+struct Client {
+    /// Client to send requests.
+    client: reqwest::Client,
+
+    /// Block stream to read the current block.
+    block_stream: CurrentBlockStream,
+}
+
+impl Client {
+    pub fn new(client: reqwest::Client, block_stream: CurrentBlockStream) -> Self {
+        Self {
+            client,
+            block_stream,
+        }
+    }
+
+    /// Prepares a request build which already has additional headers set.
+    pub fn request(&self, method: reqwest::Method, url: reqwest::Url) -> RequestBuilder {
+        self.client.request(method, url)
+            // Set this header to easily support caching in an egress proxy.
+            .header("X-CURRENT-BLOCK-HASH", self.block_stream.borrow().hash.to_string())
+    }
 }
 
 impl Error {
