@@ -72,6 +72,12 @@ components:
       type: string
       example: "13.37"
 
+    BalancerPoolId:
+      description: |
+        A hex-encoded 32 byte string containing the pool address (0..20), the pool specialization (20..22) and the poolnonce (22..32).
+      type: string
+      example: "0xc88c76dd8b92408fe9bea1a54922a31e232d873c0002000000000000000005b2"
+
     Digest:
       description: |
         A hex-encoded 32 byte digest.
@@ -294,6 +300,7 @@ components:
         - kind
         - tokens
         - fee
+        - router
       properties:
         kind:
           type: string
@@ -306,6 +313,8 @@ components:
             $ref: "#/components/schemas/TokenReserve"
         fee:
           $ref: "#/components/schemas/Decimal"
+        router:
+          $ref: "#/components/schemas/Address"
 
     WeightedProductPool:
       description: |
@@ -315,6 +324,7 @@ components:
         - kind
         - tokens
         - fee
+        - balancer_pool_id
       properties:
         kind:
           type: string
@@ -338,7 +348,9 @@ components:
           $ref: "#/components/schemas/Decimal"
         version:
           type: string
-          enum: ["v0", "v3Plus"]
+          enum: [ "v0", "v3Plus" ]
+        balancer_pool_id:
+          $ref: "#/components/schemas/BalancerPoolId"
 
     StablePool:
       description: |
@@ -349,6 +361,7 @@ components:
         - tokens
         - amplificationParameter
         - fee
+        - balancer_pool_id
       properties:
         kind:
           type: string
@@ -370,6 +383,8 @@ components:
           $ref: "#/components/schemas/Decimal"
         fee:
           $ref: "#/components/schemas/Decimal"
+        balancer_pool_id:
+          $ref: "#/components/schemas/BalancerPoolId"
 
     ConcentratedLiquidityPool:
       description: |
@@ -383,6 +398,7 @@ components:
         - tick
         - liquidityNet
         - fee
+        - router
       properties:
         kind:
           type: string
@@ -405,6 +421,8 @@ components:
             $ref: "#/components/schemas/BigInt"
         fee:
           $ref: "#/components/schemas/Decimal"
+        router:
+          $ref: "#/components/schemas/Address"
 
     ForeignLimitOrder:
       description: |
@@ -535,6 +553,7 @@ components:
         - buyAmount
         - validTo
         - appData
+        - feeAmount
         - kind
         - partiallyFillable
         - sellTokenBalance
@@ -556,6 +575,8 @@ components:
           type: integer
         appData:
           $ref: "#/components/schemas/AppData"
+        feeAmount:
+          $ref: "#/components/schemas/TokenAmount"
         kind:
           $ref: "#/components/schemas/OrderKind"
         partiallyFillable:
