@@ -2157,7 +2157,7 @@ dependencies = [
  "hex-literal",
  "lazy_static",
  "num",
- "number",
+ "number 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.258.0)",
  "primitive-types",
  "secp256k1",
  "serde",
@@ -2316,6 +2316,19 @@ checksum = "4161fcb6d602d4d2081af7c3a45852d875a03dd337a6bfdd6e06407b61342a43"
 dependencies = [
  "hermit-abi 0.3.3",
  "libc",
+]
+
+[[package]]
+name = "number"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.255.0#9cae92c9e6750a5994c0e6bd24ac626588f2258d"
+dependencies = [
+ "anyhow",
+ "bigdecimal",
+ "num",
+ "primitive-types",
+ "serde",
+ "serde_with",
 ]
 
 [[package]]
@@ -3248,7 +3261,7 @@ dependencies = [
  "mockall",
  "model",
  "num",
- "number",
+ "number 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.258.0)",
  "observe",
  "order-validation",
  "primitive-types",
@@ -3384,14 +3397,12 @@ dependencies = [
 [[package]]
 name = "solvers-dto"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.258.0#d8b01fcc7848a994d6e4a35af5f0b08da43b4f7e"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.255.0#9cae92c9e6750a5994c0e6bd24ac626588f2258d"
 dependencies = [
- "app-data",
  "bigdecimal",
- "bytes-hex",
  "chrono",
  "hex",
- "number",
+ "number 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.255.0)",
  "serde",
  "serde_with",
  "web3",
