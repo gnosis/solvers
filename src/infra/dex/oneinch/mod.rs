@@ -42,7 +42,7 @@ pub struct Config {
     pub complexity_level: Option<u32>,
 
     /// Stream that yields every new block.
-    pub block_stream: CurrentBlockStream,
+    pub block_stream: Option<CurrentBlockStream>,
 }
 
 pub enum Liquidity {

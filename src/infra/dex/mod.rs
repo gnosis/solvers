@@ -63,22 +63,26 @@ struct Client {
     client: reqwest::Client,
 
     /// Block stream to read the current block.
-    block_stream: CurrentBlockStream,
+    block_stream: Option<CurrentBlockStream>,
 }
 
 impl Client {
-    pub fn new(client: reqwest::Client, block_stream: CurrentBlockStream) -> Self {
+    pub fn new(client: reqwest::Client, block_stream: Option<CurrentBlockStream>) -> Self {
         Self {
             client,
             block_stream,
         }
     }
 
-    /// Prepares a request build which already has additional headers set.
+    /// Prepares a request builder which already has additional headers set.
     pub fn request(&self, method: reqwest::Method, url: reqwest::Url) -> RequestBuilder {
-        self.client.request(method, url)
+        let request = self.client.request(method, url);
+        if let Some(stream) = &self.block_stream {
             // Set this header to easily support caching in an egress proxy.
-            .header("X-CURRENT-BLOCK-HASH", self.block_stream.borrow().hash.to_string())
+            request.header("X-CURRENT-BLOCK-HASH", stream.borrow().hash.to_string())
+        } else {
+            request
+        }
     }
 }
 

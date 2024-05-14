@@ -19,9 +19,6 @@ pub struct ZeroEx {
 }
 
 pub struct Config {
-    /// The stream that yields every new block.
-    pub block_stream: CurrentBlockStream,
-
     /// The base URL for the 0x swap API.
     pub endpoint: reqwest::Url,
 
@@ -46,6 +43,9 @@ pub struct Config {
 
     /// Whether or not to enable slippage protection.
     pub enable_slippage_protection: bool,
+
+    /// The stream that yields every new block.
+    pub block_stream: Option<CurrentBlockStream>,
 }
 
 impl ZeroEx {

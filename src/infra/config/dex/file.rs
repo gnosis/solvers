@@ -65,9 +65,12 @@ struct Config {
     #[serde_as(as = "serialize::U256")]
     gas_offset: eth::U256,
 
-    /// How often the solver should poll the current block.
-    #[serde(with = "humantime_serde", default = "default_block_poll_interval")]
-    current_block_poll_interval: Duration,
+    /// How often the solver should poll the current block. If this value
+    /// is set each request will also have the `X-CURRENT-BLOCK-HASH` header set
+    /// updated based on the configured polling interval.
+    /// This is useful for caching requests on an egress proxy.
+    #[serde(with = "humantime_serde", default)]
+    current_block_poll_interval: Option<Duration>,
 }
 
 fn default_relative_slippage() -> BigDecimal {
@@ -92,10 +95,6 @@ fn default_min_back_off() -> Duration {
 
 fn default_max_back_off() -> Duration {
     Duration::from_secs(8)
-}
-
-fn default_block_poll_interval() -> Duration {
-    Duration::from_secs(1)
 }
 
 fn default_gas_offset() -> eth::U256 {
@@ -138,12 +137,14 @@ pub async fn load<T: DeserializeOwned>(path: &Path) -> (super::Config, T) {
         (contracts.settlement, contracts.authenticator)
     };
 
-    let block_stream = ethrpc::current_block::current_block_stream(
-        config.node_url.clone(),
-        config.current_block_poll_interval,
-    )
-    .await
-    .unwrap();
+    let block_stream = match config.current_block_poll_interval {
+        Some(interval) => Some(
+            ethrpc::current_block::current_block_stream(config.node_url.clone(), interval)
+                .await
+                .unwrap(),
+        ),
+        None => None,
+    };
 
     let config = super::Config {
         node_url: config.node_url,

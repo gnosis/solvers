@@ -23,7 +23,7 @@ pub struct Sor {
 
 pub struct Config {
     /// Stream that yields every new block.
-    pub block_stream: CurrentBlockStream,
+    pub block_stream: Option<CurrentBlockStream>,
 
     /// The URL for the Balancer SOR API.
     pub endpoint: reqwest::Url,

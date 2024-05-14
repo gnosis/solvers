@@ -32,7 +32,7 @@ pub struct Config {
     pub partner: String,
 
     /// A stream that yields every new block.
-    pub block_stream: CurrentBlockStream,
+    pub block_stream: Option<CurrentBlockStream>,
 }
 
 impl ParaSwap {
