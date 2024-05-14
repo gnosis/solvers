@@ -5,6 +5,7 @@
 //! each file in `tests/`, which makes `cargo test` slower.
 
 use {
+    anyhow::Context,
     reqwest::Url,
     std::{io::Write, path::PathBuf},
     tokio::{sync::oneshot, task::JoinHandle},
@@ -71,20 +72,21 @@ impl SolverEngine {
     }
 
     /// Solves a raw JSON auction.
-    pub async fn solve(&self, auction: serde_json::Value) -> serde_json::Value {
+    pub async fn solve(&self, auction: serde_json::Value) -> anyhow::Result<serde_json::Value> {
         let client = reqwest::Client::new();
         let url = shared::url::join(&self.url, "solve");
-        let response = client.post(url).json(&auction).send().await.unwrap();
+        let response = client.post(url).json(&auction).send().await?;
 
         if !response.status().is_success() {
-            panic!(
-                "HTTP {}: {:?}",
-                response.status(),
-                response.text().await.unwrap(),
-            );
+            let status = response.status();
+            let text = response.text().await?;
+            anyhow::bail!("HTTP {}: {:?}", status, text);
         }
 
-        response.json().await.unwrap()
+        response
+            .json()
+            .await
+            .context("Failed to parse JSON response")
     }
 }
 
