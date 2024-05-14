@@ -160,7 +160,7 @@ async fn sell() {
                     "postInteractions": [],
                     "owner": "0x5b1e2c2762667331bc91648052f646d1b0d35984",
                     "validTo": 0,
-                    "appData": "0x6000000000000000000000000000000000000000000000000000000000000007",
+                    "appData": "0x0000000000000000000000000000000000000000000000000000000000000000",
                     "signingScheme": "presign",
                     "signature": "0x",
                 }
@@ -311,7 +311,7 @@ async fn buy_not_supported() {
                     "postInteractions": [],
                     "owner": "0x5b1e2c2762667331bc91648052f646d1b0d35984",
                     "validTo": 0,
-                    "appData": "0x6000000000000000000000000000000000000000000000000000000000000007",
+                    "appData": "0x0000000000000000000000000000000000000000000000000000000000000000",
                     "signingScheme": "presign",
                     "signature": "0x",
                 }

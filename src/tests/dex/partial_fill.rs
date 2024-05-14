@@ -191,7 +191,7 @@ endpoint = 'http://{}/sor'
                 "postInteractions": [],
                 "owner": "0x5b1e2c2762667331bc91648052f646d1b0d35984",
                 "validTo": 0,
-                "appData": "0x6000000000000000000000000000000000000000000000000000000000000007",
+                "appData": "0x0000000000000000000000000000000000000000000000000000000000000000",
                 "signingScheme": "presign",
                 "signature": "0x",
             }
@@ -396,7 +396,7 @@ async fn tested_amounts_wrap_around() {
                 "postInteractions": [],
                 "owner": "0x5b1e2c2762667331bc91648052f646d1b0d35984",
                 "validTo": 0,
-                "appData": "0x6000000000000000000000000000000000000000000000000000000000000007",
+                "appData": "0x0000000000000000000000000000000000000000000000000000000000000000",
                 "signingScheme": "presign",
                 "signature": "0x",
             }
@@ -559,7 +559,7 @@ endpoint = 'http://{}/sor'
                 "postInteractions": [],
                 "owner": "0x5b1e2c2762667331bc91648052f646d1b0d35984",
                 "validTo": 0,
-                "appData": "0x6000000000000000000000000000000000000000000000000000000000000007",
+                "appData": "0x0000000000000000000000000000000000000000000000000000000000000000",
                 "signingScheme": "presign",
                 "signature": "0x",
             }
@@ -745,7 +745,7 @@ async fn insufficient_room_for_surplus_fee() {
                     "postInteractions": [],
                     "owner": "0x5b1e2c2762667331bc91648052f646d1b0d35984",
                     "validTo": 0,
-                    "appData": "0x6000000000000000000000000000000000000000000000000000000000000007",
+                    "appData": "0x0000000000000000000000000000000000000000000000000000000000000000",
                     "signingScheme": "presign",
                     "signature": "0x",
                 }
@@ -857,7 +857,7 @@ async fn market() {
                     "postInteractions": [],
                     "owner": "0x5b1e2c2762667331bc91648052f646d1b0d35984",
                     "validTo": 0,
-                    "appData": "0x6000000000000000000000000000000000000000000000000000000000000007",
+                    "appData": "0x0000000000000000000000000000000000000000000000000000000000000000",
                     "signingScheme": "presign",
                     "signature": "0x",
                 }
