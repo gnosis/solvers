@@ -29,6 +29,9 @@ pub struct Config {
 
     /// Our partner name.
     pub partner: String,
+
+    /// For which chain the solver is configured.
+    pub chain_id: eth::ChainId,
 }
 
 impl ParaSwap {
@@ -98,7 +101,7 @@ impl ParaSwap {
             self.client
                 .post(util::url::join(
                     &self.config.endpoint,
-                    "transactions/1?ignoreChecks=true",
+                    &format!("transactions/{}?ignoreChecks=true", self.config.chain_id.network_id())
                 ))
                 .json(&body)
         )
