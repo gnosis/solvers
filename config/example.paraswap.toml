@@ -8,3 +8,4 @@ exclude-dexs = ["ParaSwapPool","ParaSwapLimitOrders"] # which dexs to ignore as 
 address = "0xdd2e786980CD58ACc5F64807b354c981f4094936" # public address of the solver
 endpoint = "https://apiv5.paraswap.io" # paraswap API URL to use
 partner = "$YOUR_PARTNER_ID"
+chain-id = 1

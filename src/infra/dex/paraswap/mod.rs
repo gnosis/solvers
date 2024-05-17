@@ -31,6 +31,9 @@ pub struct Config {
     /// Our partner name.
     pub partner: String,
 
+    /// For which chain the solver is configured.
+    pub chain_id: eth::ChainId,
+
     /// A stream that yields every new block.
     pub block_stream: Option<CurrentBlockStream>,
 }
@@ -101,7 +104,7 @@ impl ParaSwap {
             self.client
                 .request(reqwest::Method::POST, util::url::join(
                     &self.config.endpoint,
-                    "transactions/1?ignoreChecks=true",
+                    &format!("transactions/{}?ignoreChecks=true", self.config.chain_id.network_id())
                 ))
                 .json(&body)
         )
@@ -137,6 +140,7 @@ impl From<util::http::RoundtripError<dto::Error>> for Error {
                 "ESTIMATED_LOSS_GREATER_THAN_MAX_IMPACT"
                 | "No routes found with enough liquidity"
                 | "Too much slippage on quote, please try again" => Self::NotFound,
+                "Rate limited" | "Rate limit pricing" => Self::RateLimited,
                 _ => Self::Api(err.error),
             },
         }

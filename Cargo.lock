@@ -131,8 +131,23 @@ version = "0.1.0"
 source = "git+https://github.com/cowprotocol/services.git?tag=v2.258.0#d8b01fcc7848a994d6e4a35af5f0b08da43b4f7e"
 dependencies = [
  "anyhow",
- "app-data-hash",
- "bytes-hex",
+ "app-data-hash 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.258.0)",
+ "bytes-hex 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.258.0)",
+ "hex",
+ "primitive-types",
+ "serde",
+ "serde_json",
+ "serde_with",
+]
+
+[[package]]
+name = "app-data"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.258.1-temp-solvers-dto#06429202b85b5406f7ad11a2d9f3be5769644d9b"
+dependencies = [
+ "anyhow",
+ "app-data-hash 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.258.1-temp-solvers-dto)",
+ "bytes-hex 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.258.1-temp-solvers-dto)",
  "hex",
  "primitive-types",
  "serde",
@@ -144,6 +159,15 @@ dependencies = [
 name = "app-data-hash"
 version = "0.1.0"
 source = "git+https://github.com/cowprotocol/services.git?tag=v2.258.0#d8b01fcc7848a994d6e4a35af5f0b08da43b4f7e"
+dependencies = [
+ "hex-literal",
+ "tiny-keccak",
+]
+
+[[package]]
+name = "app-data-hash"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.258.1-temp-solvers-dto#06429202b85b5406f7ad11a2d9f3be5769644d9b"
 dependencies = [
  "hex-literal",
  "tiny-keccak",
@@ -709,6 +733,17 @@ checksum = "a2bd12c1caf447e69cd4528f47f94d203fd2582878ecb9e9465484c4148a8223"
 name = "bytes-hex"
 version = "0.1.0"
 source = "git+https://github.com/cowprotocol/services.git?tag=v2.258.0#d8b01fcc7848a994d6e4a35af5f0b08da43b4f7e"
+dependencies = [
+ "hex",
+ "serde",
+ "serde_json",
+ "serde_with",
+]
+
+[[package]]
+name = "bytes-hex"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.258.1-temp-solvers-dto#06429202b85b5406f7ad11a2d9f3be5769644d9b"
 dependencies = [
  "hex",
  "serde",
@@ -2147,10 +2182,10 @@ version = "0.1.0"
 source = "git+https://github.com/cowprotocol/services.git?tag=v2.258.0#d8b01fcc7848a994d6e4a35af5f0b08da43b4f7e"
 dependencies = [
  "anyhow",
- "app-data",
- "app-data-hash",
+ "app-data 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.258.0)",
+ "app-data-hash 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.258.0)",
  "bigdecimal",
- "bytes-hex",
+ "bytes-hex 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.258.0)",
  "chrono",
  "derivative",
  "hex",
@@ -2321,7 +2356,7 @@ dependencies = [
 [[package]]
 name = "number"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.255.0#9cae92c9e6750a5994c0e6bd24ac626588f2258d"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.258.0#d8b01fcc7848a994d6e4a35af5f0b08da43b4f7e"
 dependencies = [
  "anyhow",
  "bigdecimal",
@@ -2334,7 +2369,7 @@ dependencies = [
 [[package]]
 name = "number"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.258.0#d8b01fcc7848a994d6e4a35af5f0b08da43b4f7e"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.258.1-temp-solvers-dto#06429202b85b5406f7ad11a2d9f3be5769644d9b"
 dependencies = [
  "anyhow",
  "bigdecimal",
@@ -3234,11 +3269,11 @@ version = "0.1.0"
 source = "git+https://github.com/cowprotocol/services.git?tag=v2.258.0#d8b01fcc7848a994d6e4a35af5f0b08da43b4f7e"
 dependencies = [
  "anyhow",
- "app-data",
- "app-data-hash",
+ "app-data 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.258.0)",
+ "app-data-hash 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.258.0)",
  "async-trait",
  "bigdecimal",
- "bytes-hex",
+ "bytes-hex 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.258.0)",
  "cached",
  "chrono",
  "clap",
@@ -3359,6 +3394,7 @@ name = "solvers"
 version = "0.0.1"
 dependencies = [
  "anyhow",
+ "async-trait",
  "axum",
  "bigdecimal",
  "chrono",
@@ -3397,12 +3433,14 @@ dependencies = [
 [[package]]
 name = "solvers-dto"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.255.0#9cae92c9e6750a5994c0e6bd24ac626588f2258d"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.258.1-temp-solvers-dto#06429202b85b5406f7ad11a2d9f3be5769644d9b"
 dependencies = [
+ "app-data 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.258.1-temp-solvers-dto)",
  "bigdecimal",
+ "bytes-hex 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.258.1-temp-solvers-dto)",
  "chrono",
  "hex",
- "number 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.255.0)",
+ "number 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.258.1-temp-solvers-dto)",
  "serde",
  "serde_with",
  "web3",

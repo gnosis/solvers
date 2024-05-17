@@ -180,9 +180,20 @@ endpoint = 'http://{}/sor'
                 "buyToken": "0xba100000625a3754423978a60c9317c58a424e3D",
                 "sellAmount": "16000000000000000000",
                 "buyAmount": "3630944624685908136768",
+                "fullSellAmount": "16000000000000000000",
+                "fullBuyAmount": "3630944624685908136768",
                 "kind": "sell",
                 "partiallyFillable": true,
                 "class": "limit",
+                "sellTokenSource": "erc20",
+                "buyTokenDestination": "erc20",
+                "preInteractions": [],
+                "postInteractions": [],
+                "owner": "0x5b1e2c2762667331bc91648052f646d1b0d35984",
+                "validTo": 0,
+                "appData": "0x0000000000000000000000000000000000000000000000000000000000000000",
+                "signingScheme": "presign",
+                "signature": "0x",
             }
         ],
         "liquidity": [],
@@ -195,11 +206,11 @@ endpoint = 'http://{}/sor'
     });
 
     for _ in 0..4 {
-        let solution = engine.solve(auction.clone()).await;
+        let solution = engine.solve(auction.clone()).await.unwrap();
         assert_eq!(solution, empty_solution);
     }
 
-    let solution = engine.solve(auction.clone()).await;
+    let solution = engine.solve(auction.clone()).await.unwrap();
 
     // Solver finally found a solution after 5 tries.
     assert_eq!(
@@ -207,6 +218,8 @@ endpoint = 'http://{}/sor'
         json!({
             "solutions": [{
                 "id": 0,
+                "preInteractions": [],
+                "postInteractions": [],
                 "interactions": [
                     {
                         "allowances": [
@@ -277,7 +290,7 @@ endpoint = 'http://{}/sor'
     );
 
     // Solver tried a bigger fill after the last success but that failed again.
-    let solution = engine.solve(auction.clone()).await;
+    let solution = engine.solve(auction.clone()).await.unwrap();
     assert_eq!(solution, empty_solution);
 }
 
@@ -372,9 +385,20 @@ async fn tested_amounts_wrap_around() {
                 "buyToken": "0xba100000625a3754423978a60c9317c58a424e3D",
                 "sellAmount": "60000000000000000",
                 "buyAmount": "16000000000000000000",
+                "fullSellAmount": "60000000000000000",
+                "fullBuyAmount": "16000000000000000000",
                 "kind": "buy",
                 "partiallyFillable": true,
                 "class": "limit",
+                "sellTokenSource": "erc20",
+                "buyTokenDestination": "erc20",
+                "preInteractions": [],
+                "postInteractions": [],
+                "owner": "0x5b1e2c2762667331bc91648052f646d1b0d35984",
+                "validTo": 0,
+                "appData": "0x0000000000000000000000000000000000000000000000000000000000000000",
+                "signingScheme": "presign",
+                "signature": "0x",
             }
         ],
         "liquidity": [],
@@ -383,7 +407,7 @@ async fn tested_amounts_wrap_around() {
     });
 
     for _ in 0..4 {
-        let solution = engine.solve(auction.clone()).await;
+        let solution = engine.solve(auction.clone()).await.unwrap();
         assert_eq!(
             solution,
             json!({
@@ -524,9 +548,20 @@ endpoint = 'http://{}/sor'
                 "buyToken": "0xba100000625a3754423978a60c9317c58a424e3D",
                 "sellAmount": "2000000000000000000",
                 "buyAmount": "1",
+                "fullSellAmount": "2000000000000000000",
+                "fullBuyAmount": "1",
                 "kind": "sell",
                 "partiallyFillable": true,
                 "class": "limit",
+                "sellTokenSource": "erc20",
+                "buyTokenDestination": "erc20",
+                "preInteractions": [],
+                "postInteractions": [],
+                "owner": "0x5b1e2c2762667331bc91648052f646d1b0d35984",
+                "validTo": 0,
+                "appData": "0x0000000000000000000000000000000000000000000000000000000000000000",
+                "signingScheme": "presign",
+                "signature": "0x",
             }
         ],
         "liquidity": [],
@@ -535,7 +570,7 @@ endpoint = 'http://{}/sor'
     });
 
     // The first try doesn't match.
-    let solution = engine.solve(auction.clone()).await;
+    let solution = engine.solve(auction.clone()).await.unwrap();
     assert_eq!(
         solution,
         json!({
@@ -543,12 +578,14 @@ endpoint = 'http://{}/sor'
         })
     );
 
-    let solution = engine.solve(auction.clone()).await;
+    let solution = engine.solve(auction.clone()).await.unwrap();
     assert_eq!(
         solution,
         json!({
             "solutions": [{
                 "id": 0,
+                "preInteractions": [],
+                "postInteractions": [],
                 "interactions": [
                     {
                         "allowances": [
@@ -697,16 +734,28 @@ async fn insufficient_room_for_surplus_fee() {
                     "buyToken": "0xba100000625a3754423978a60c9317c58a424e3D",
                     "sellAmount": "1000000000000000000",
                     "buyAmount": "227598784442065388110",
+                    "fullSellAmount": "1000000000000000000",
+                    "fullBuyAmount": "227598784442065388110",
                     "kind": "sell",
                     "partiallyFillable": true,
                     "class": "limit",
+                    "sellTokenSource": "erc20",
+                    "buyTokenDestination": "erc20",
+                    "preInteractions": [],
+                    "postInteractions": [],
+                    "owner": "0x5b1e2c2762667331bc91648052f646d1b0d35984",
+                    "validTo": 0,
+                    "appData": "0x0000000000000000000000000000000000000000000000000000000000000000",
+                    "signingScheme": "presign",
+                    "signature": "0x",
                 }
             ],
             "liquidity": [],
             "effectiveGasPrice": "15000000000",
             "deadline": "2106-01-01T00:00:00.000Z"
         }))
-        .await;
+        .await
+        .unwrap();
 
     assert_eq!(
         solution,
@@ -797,22 +846,36 @@ async fn market() {
                     "buyToken": "0xba100000625a3754423978a60c9317c58a424e3D",
                     "sellAmount": "1000000000000000000",
                     "buyAmount": "227598784442065388110",
+                    "fullSellAmount": "1000000000000000000",
+                    "fullBuyAmount": "227598784442065388110",
                     "kind": "sell",
                     "partiallyFillable": true,
                     "class": "market",
+                    "sellTokenSource": "erc20",
+                    "buyTokenDestination": "erc20",
+                    "preInteractions": [],
+                    "postInteractions": [],
+                    "owner": "0x5b1e2c2762667331bc91648052f646d1b0d35984",
+                    "validTo": 0,
+                    "appData": "0x0000000000000000000000000000000000000000000000000000000000000000",
+                    "signingScheme": "presign",
+                    "signature": "0x",
                 }
             ],
             "liquidity": [],
             "effectiveGasPrice": "15000000000",
             "deadline": "2106-01-01T00:00:00.000Z"
         }))
-        .await;
+        .await
+        .unwrap();
 
     assert_eq!(
         solution,
         json!({
             "solutions": [{
                 "id": 0,
+                "preInteractions": [],
+                "postInteractions": [],
                 "interactions": [
                     {
                         "allowances": [

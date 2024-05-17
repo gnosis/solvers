@@ -49,6 +49,9 @@ pub struct PriceQuery {
 
     /// The partner name
     pub partner: String,
+
+    /// The maximum price impact accepted (in percentage, 0-100)
+    pub max_impact: u8,
 }
 
 impl PriceQuery {
@@ -72,8 +75,9 @@ impl PriceQuery {
             },
             amount: order.amount.get(),
             exclude_dexs: config.exclude_dexs.clone(),
-            network: "1".to_owned(),
+            network: config.chain_id.network_id().to_string(),
             partner: config.partner.clone(),
+            max_impact: 100,
         })
     }
 }
