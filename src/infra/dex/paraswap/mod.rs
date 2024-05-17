@@ -4,6 +4,7 @@ use {
         util,
     },
     ethereum_types::Address,
+    ethrpc::current_block::CurrentBlockStream,
 };
 
 mod dto;
@@ -12,7 +13,7 @@ pub const DEFAULT_URL: &str = "https://apiv5.paraswap.io";
 
 /// Bindings to the ParaSwap API.
 pub struct ParaSwap {
-    client: reqwest::Client,
+    client: super::Client,
     config: Config,
 }
 
@@ -32,12 +33,15 @@ pub struct Config {
 
     /// For which chain the solver is configured.
     pub chain_id: eth::ChainId,
+
+    /// A stream that yields every new block.
+    pub block_stream: Option<CurrentBlockStream>,
 }
 
 impl ParaSwap {
     pub fn new(config: Config) -> Self {
         Self {
-            client: reqwest::Client::new(),
+            client: super::Client::new(Default::default(), config.block_stream.clone()),
             config,
         }
     }
@@ -79,8 +83,7 @@ impl ParaSwap {
     ) -> Result<dto::Price, Error> {
         let price = util::http::roundtrip!(
             <dto::Price, dto::Error>;
-            self.client
-                .get(util::url::join(&self.config.endpoint, "prices"))
+            self.client.request(reqwest::Method::GET, util::url::join(&self.config.endpoint, "prices"))
                 .query(&dto::PriceQuery::new(&self.config, order, tokens)?)
         )
         .await?;
@@ -99,7 +102,7 @@ impl ParaSwap {
         let transaction = util::http::roundtrip!(
             <dto::Transaction, dto::Error>;
             self.client
-                .post(util::url::join(
+                .request(reqwest::Method::POST, util::url::join(
                     &self.config.endpoint,
                     &format!("transactions/{}?ignoreChecks=true", self.config.chain_id.network_id())
                 ))

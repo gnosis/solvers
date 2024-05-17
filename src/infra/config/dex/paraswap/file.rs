@@ -47,6 +47,7 @@ pub async fn load(path: &Path) -> super::Config {
             address: config.address,
             partner: config.partner,
             chain_id: ChainId::new(config.chain_id.into()).unwrap(),
+            block_stream: base.block_stream.clone(),
         },
         base,
     }
