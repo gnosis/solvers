@@ -14,6 +14,7 @@ endpoint = 'http://{solver_addr}'
 exclude-dexs = ['UniswapV2']
 address = '0xE0B3700e0aadcb18ed8d4BFF648Bc99896a18ad1'
 partner = 'cow'
+chain-id = 1
         ",
     ))
 }

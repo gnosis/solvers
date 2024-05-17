@@ -41,6 +41,7 @@ pub async fn load(path: &Path) -> super::Config {
                 .map(eth::ContractAddress)
                 .unwrap_or(contracts.balancer_vault),
             settlement: base.contracts.settlement,
+            block_stream: base.block_stream.clone(),
         },
         base,
     }

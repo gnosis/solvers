@@ -6,6 +6,7 @@ pub mod zeroex;
 
 use {
     crate::domain::{dex::slippage, eth},
+    ethrpc::current_block::CurrentBlockStream,
     std::num::NonZeroUsize,
 };
 
@@ -24,4 +25,5 @@ pub struct Config {
     pub smallest_partial_fill: eth::Ether,
     pub rate_limiting_strategy: rate_limit::Strategy,
     pub gas_offset: eth::Gas,
+    pub block_stream: Option<CurrentBlockStream>,
 }

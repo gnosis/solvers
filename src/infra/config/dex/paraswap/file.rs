@@ -1,6 +1,6 @@
 use {
     crate::{
-        domain::eth,
+        domain::eth::{self, ChainId},
         infra::{config::dex::file, dex::paraswap},
     },
     serde::Deserialize,
@@ -25,6 +25,9 @@ struct Config {
 
     /// Which partner to identify as to the paraswap API.
     pub partner: String,
+
+    /// Which chain the solver is serving.
+    pub chain_id: u64,
 }
 
 /// Load the ParaSwap solver configuration from a TOML file.
@@ -43,6 +46,8 @@ pub async fn load(path: &Path) -> super::Config {
             exclude_dexs: config.exclude_dexs,
             address: config.address,
             partner: config.partner,
+            chain_id: ChainId::new(config.chain_id.into()).unwrap(),
+            block_stream: base.block_stream.clone(),
         },
         base,
     }
