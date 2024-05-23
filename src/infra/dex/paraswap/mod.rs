@@ -140,7 +140,7 @@ impl From<util::http::RoundtripError<dto::Error>> for Error {
                 "ESTIMATED_LOSS_GREATER_THAN_MAX_IMPACT"
                 | "No routes found with enough liquidity"
                 | "Too much slippage on quote, please try again" => Self::NotFound,
-                "Rate limited" | "Rate limit pricing" => Self::RateLimited,
+                "Rate limited" | "Rate limit pricing" | "Rate limit reached" => Self::RateLimited,
                 _ => Self::Api(err.error),
             },
         }
