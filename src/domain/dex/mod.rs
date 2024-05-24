@@ -146,7 +146,8 @@ impl Swap {
     }
 
     pub fn satisfies(&self, order: &domain::order::Order) -> bool {
-        self.output.amount * order.sell.amount >= self.input.amount * order.buy.amount
+        self.output.amount.full_mul(order.sell.amount)
+            >= self.input.amount.full_mul(order.buy.amount)
     }
 }
 
