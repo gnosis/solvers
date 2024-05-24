@@ -146,16 +146,8 @@ impl Swap {
     }
 
     pub fn satisfies(&self, order: &domain::order::Order) -> bool {
-        let output = self.output.amount.checked_mul(order.sell.amount);
-        let input = self.input.amount.checked_mul(order.buy.amount);
-
-        match (output, input) {
-            (Some(output), Some(input)) => output >= input,
-            _ => {
-                tracing::debug!("swap amount overflow");
-                false
-            }
-        }
+        self.output.amount.full_mul(order.sell.amount)
+            >= self.input.amount.full_mul(order.buy.amount)
     }
 }
 
