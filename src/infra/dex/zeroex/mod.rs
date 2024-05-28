@@ -157,6 +157,8 @@ pub enum Error {
     MissingSpender,
     #[error("rate limited")]
     RateLimited,
+    #[error("sell token or buy token are banned from trading")]
+    UnavailableForLegalReasons,
     #[error("api error code {code}: {reason}")]
     Api { code: i64, reason: String },
     #[error(transparent)]
@@ -174,6 +176,7 @@ impl From<util::http::RoundtripError<dto::Error>> for Error {
                 match err.code {
                     100 => Self::NotFound,
                     429 => Self::RateLimited,
+                    451 => Self::UnavailableForLegalReasons,
                     _ => Self::Api {
                         code: err.code,
                         reason: err.reason,

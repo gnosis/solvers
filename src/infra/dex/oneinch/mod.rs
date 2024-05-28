@@ -167,6 +167,8 @@ impl OneInch {
 pub enum Error {
     #[error("order type is not supported")]
     OrderNotSupported,
+    #[error("sell token or buy tokens are banned from trading")]
+    BannedTokens,
     #[error("no valid swap could be found")]
     NotFound,
     #[error("rate limited")]

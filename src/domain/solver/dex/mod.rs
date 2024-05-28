@@ -137,6 +137,9 @@ impl Dex {
                 err @ infra::dex::Error::RateLimited => {
                     tracing::debug!(?err, "encountered rate limit")
                 }
+                err @ infra::dex::Error::UnavailableForLegalReasons => {
+                    tracing::debug!(?err, "unavailable for legal reasons")
+                }
                 infra::dex::Error::Other(err) => {
                     tracing::warn!(?err, "failed to get swap")
                 }
