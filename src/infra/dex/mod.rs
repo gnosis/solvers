@@ -102,6 +102,7 @@ impl From<balancer::Error> for Error {
     fn from(err: balancer::Error) -> Self {
         match err {
             balancer::Error::NotFound => Self::NotFound,
+            balancer::Error::RateLimited => Self::RateLimited,
             _ => Self::Other(Box::new(err)),
         }
     }
