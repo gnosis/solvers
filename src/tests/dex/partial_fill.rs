@@ -198,7 +198,8 @@ endpoint = 'http://{}/sor'
         ],
         "liquidity": [],
         "effectiveGasPrice": "15000000000",
-        "deadline": "2106-01-01T00:00:00.000Z"
+        "deadline": "2106-01-01T00:00:00.000Z",
+        "surplusCapturingJitOrderOwners": []
     });
 
     let empty_solution = json!({
@@ -403,7 +404,8 @@ async fn tested_amounts_wrap_around() {
         ],
         "liquidity": [],
         "effectiveGasPrice": "15000000000",
-        "deadline": "2106-01-01T00:00:00.000Z"
+        "deadline": "2106-01-01T00:00:00.000Z",
+        "surplusCapturingJitOrderOwners": []
     });
 
     for _ in 0..4 {
@@ -566,7 +568,8 @@ endpoint = 'http://{}/sor'
         ],
         "liquidity": [],
         "effectiveGasPrice": "6000000000000",
-        "deadline": "2106-01-01T00:00:00.000Z"
+        "deadline": "2106-01-01T00:00:00.000Z",
+        "surplusCapturingJitOrderOwners": []
     });
 
     // The first try doesn't match.
@@ -752,7 +755,8 @@ async fn insufficient_room_for_surplus_fee() {
             ],
             "liquidity": [],
             "effectiveGasPrice": "15000000000",
-            "deadline": "2106-01-01T00:00:00.000Z"
+            "deadline": "2106-01-01T00:00:00.000Z",
+            "surplusCapturingJitOrderOwners": []
         }))
         .await
         .unwrap();
@@ -864,7 +868,8 @@ async fn market() {
             ],
             "liquidity": [],
             "effectiveGasPrice": "15000000000",
-            "deadline": "2106-01-01T00:00:00.000Z"
+            "deadline": "2106-01-01T00:00:00.000Z",
+            "surplusCapturingJitOrderOwners": []
         }))
         .await
         .unwrap();

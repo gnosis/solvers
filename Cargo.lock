@@ -143,11 +143,11 @@ dependencies = [
 [[package]]
 name = "app-data"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.258.1-temp-solvers-dto#06429202b85b5406f7ad11a2d9f3be5769644d9b"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.260.0-jit-order-owners#9f25c0e2c9622183c824943eb71661e3b8a229be"
 dependencies = [
  "anyhow",
- "app-data-hash 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.258.1-temp-solvers-dto)",
- "bytes-hex 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.258.1-temp-solvers-dto)",
+ "app-data-hash 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.260.0-jit-order-owners)",
+ "bytes-hex 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.260.0-jit-order-owners)",
  "hex",
  "primitive-types",
  "serde",
@@ -167,7 +167,7 @@ dependencies = [
 [[package]]
 name = "app-data-hash"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.258.1-temp-solvers-dto#06429202b85b5406f7ad11a2d9f3be5769644d9b"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.260.0-jit-order-owners#9f25c0e2c9622183c824943eb71661e3b8a229be"
 dependencies = [
  "hex-literal",
  "tiny-keccak",
@@ -743,7 +743,7 @@ dependencies = [
 [[package]]
 name = "bytes-hex"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.258.1-temp-solvers-dto#06429202b85b5406f7ad11a2d9f3be5769644d9b"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.260.0-jit-order-owners#9f25c0e2c9622183c824943eb71661e3b8a229be"
 dependencies = [
  "hex",
  "serde",
@@ -2369,7 +2369,7 @@ dependencies = [
 [[package]]
 name = "number"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.258.1-temp-solvers-dto#06429202b85b5406f7ad11a2d9f3be5769644d9b"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.260.0-jit-order-owners#9f25c0e2c9622183c824943eb71661e3b8a229be"
 dependencies = [
  "anyhow",
  "bigdecimal",
@@ -3433,14 +3433,14 @@ dependencies = [
 [[package]]
 name = "solvers-dto"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.258.1-temp-solvers-dto#06429202b85b5406f7ad11a2d9f3be5769644d9b"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.260.0-jit-order-owners#9f25c0e2c9622183c824943eb71661e3b8a229be"
 dependencies = [
- "app-data 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.258.1-temp-solvers-dto)",
+ "app-data 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.260.0-jit-order-owners)",
  "bigdecimal",
- "bytes-hex 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.258.1-temp-solvers-dto)",
+ "bytes-hex 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.260.0-jit-order-owners)",
  "chrono",
  "hex",
- "number 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.258.1-temp-solvers-dto)",
+ "number 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.260.0-jit-order-owners)",
  "serde",
  "serde_with",
  "web3",

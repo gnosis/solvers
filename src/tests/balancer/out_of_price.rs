@@ -96,7 +96,8 @@ async fn sell() {
             ],
             "liquidity": [],
             "effectiveGasPrice": "15000000000",
-            "deadline": "2106-01-01T00:00:00.000Z"
+            "deadline": "2106-01-01T00:00:00.000Z",
+            "surplusCapturingJitOrderOwners": []
         }))
         .await
         .unwrap();
@@ -196,7 +197,8 @@ async fn buy() {
             ],
             "liquidity": [],
             "effectiveGasPrice": "15000000000",
-            "deadline": "2106-01-01T00:00:00.000Z"
+            "deadline": "2106-01-01T00:00:00.000Z",
+            "surplusCapturingJitOrderOwners": []
         }))
         .await
         .unwrap();
