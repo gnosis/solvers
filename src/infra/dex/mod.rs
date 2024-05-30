@@ -52,6 +52,8 @@ pub enum Error {
     NotFound,
     #[error("rate limited")]
     RateLimited,
+    #[error("unavailable for legal reasons, banned tokens or similar")]
+    UnavailableForLegalReasons,
     #[error(transparent)]
     Other(Box<dyn std::error::Error + Send + Sync>),
 }
@@ -93,6 +95,7 @@ impl Error {
             Self::OrderNotSupported => "OrderNotSupported",
             Self::NotFound => "NotFound",
             Self::RateLimited => "RateLimited",
+            Self::UnavailableForLegalReasons => "UnavailableForLegalReasons",
             Self::Other(_) => "Other",
         }
     }
@@ -123,6 +126,7 @@ impl From<zeroex::Error> for Error {
         match err {
             zeroex::Error::NotFound => Self::NotFound,
             zeroex::Error::RateLimited => Self::RateLimited,
+            zeroex::Error::UnavailableForLegalReasons => Self::UnavailableForLegalReasons,
             _ => Self::Other(Box::new(err)),
         }
     }
