@@ -23,6 +23,10 @@ struct Config {
     /// The solver address.
     pub address: eth::H160,
 
+    /// This is needed when configuring ParaSwap to use
+    /// the gated API for partners.
+    pub api_key: String,
+
     /// Which partner to identify as to the paraswap API.
     pub partner: String,
 
@@ -45,6 +49,7 @@ pub async fn load(path: &Path) -> super::Config {
                 .unwrap_or_else(|| paraswap::DEFAULT_URL.parse().unwrap()),
             exclude_dexs: config.exclude_dexs,
             address: config.address,
+            api_key: config.api_key,
             partner: config.partner,
             chain_id: ChainId::new(config.chain_id.into()).unwrap(),
             block_stream: base.block_stream.clone(),

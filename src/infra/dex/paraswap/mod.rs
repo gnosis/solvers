@@ -28,6 +28,10 @@ pub struct Config {
     /// The solver address.
     pub address: Address,
 
+    /// ParaSwap provides a gated API for partners that requires authentication
+    /// by specifying this as header in the HTTP request.
+    pub api_key: String,
+
     /// Our partner name.
     pub partner: String,
 
@@ -84,6 +88,7 @@ impl ParaSwap {
         let price = util::http::roundtrip!(
             <dto::Price, dto::Error>;
             self.client.request(reqwest::Method::GET, util::url::join(&self.config.endpoint, "prices"))
+                .header("X-API-KEY", &self.config.api_key)
                 .query(&dto::PriceQuery::new(&self.config, order, tokens)?)
         )
         .await?;
