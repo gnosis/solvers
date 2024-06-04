@@ -111,6 +111,7 @@ impl ParaSwap {
                     &self.config.endpoint,
                     &format!("transactions/{}?ignoreChecks=true", self.config.chain_id.network_id())
                 ))
+                .header("X-API-KEY", &self.config.api_key)
                 .json(&body)
         )
         .await?;
