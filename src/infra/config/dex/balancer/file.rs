@@ -2,6 +2,7 @@ use {
     crate::{
         domain::eth,
         infra::{config::dex::file, contracts, dex},
+        util::serialize,
     },
     ethereum_types::H160,
     serde::Deserialize,
@@ -17,6 +18,11 @@ struct Config {
     #[serde_as(as = "serde_with::DisplayFromStr")]
     endpoint: reqwest::Url,
 
+    /// Chain ID used to automatically determine the address of the vault
+    /// contract and to build a proper endpoint URL.
+    #[serde_as(as = "serialize::ChainId")]
+    chain_id: eth::ChainId,
+
     /// Optional Balancer V2 Vault contract address. If not specified, the
     /// default Vault contract address will be used.
     vault: Option<H160>,
@@ -30,12 +36,12 @@ struct Config {
 pub async fn load(path: &Path) -> super::Config {
     let (base, config) = file::load::<Config>(path).await;
 
-    // Balancer SOR solver only supports mainnet.
-    let contracts = contracts::Contracts::for_chain(eth::ChainId::Mainnet);
+    let contracts = contracts::Contracts::for_chain(config.chain_id);
 
     super::Config {
         sor: dex::balancer::Config {
             endpoint: config.endpoint,
+            chain_id: config.chain_id,
             vault: config
                 .vault
                 .map(eth::ContractAddress)

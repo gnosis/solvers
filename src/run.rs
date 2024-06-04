@@ -41,7 +41,9 @@ async fn run_with(args: cli::Args, bind: Option<oneshot::Sender<SocketAddr>>) {
         cli::Command::Balancer { config } => {
             let config = config::dex::balancer::file::load(&config).await;
             Solver::Dex(solver::Dex::new(
-                dex::Dex::Balancer(dex::balancer::Sor::new(config.sor)),
+                dex::Dex::Balancer(
+                    dex::balancer::Sor::new(config.sor).expect("invalid balancer configuration"),
+                ),
                 config.base.clone(),
             ))
         }

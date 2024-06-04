@@ -140,6 +140,7 @@ async fn tested_amounts_adjust_depending_on_response() {
 node-url = 'http://{}'
 [dex]
 endpoint = 'http://{}/sor'
+chain-id = '1'
         ",
         simulation_node.address, api.address,
     ));
@@ -510,6 +511,7 @@ async fn moves_surplus_fee_to_buy_token() {
 node-url = 'http://{}'
 [dex]
 endpoint = 'http://{}/sor'
+chain-id = '1'
         ",
         simulation_node.address, api.address,
     ));

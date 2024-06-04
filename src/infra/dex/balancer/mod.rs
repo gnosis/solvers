@@ -28,6 +28,9 @@ pub struct Config {
     /// The URL for the Balancer SOR API.
     pub endpoint: reqwest::Url,
 
+    /// The chain ID used to build a proper endpoint URL.
+    pub chain_id: eth::ChainId,
+
     /// The address of the Balancer Vault contract.
     pub vault: eth::ContractAddress,
 
@@ -42,13 +45,21 @@ impl Sor {
     /// lost to time... See <https://github.com/cowprotocol/services/pull/171>.
     const GAS_PER_SWAP: u64 = 88_892;
 
-    pub fn new(config: Config) -> Self {
-        Self {
-            client: super::Client::new(Default::default(), config.block_stream),
+    pub fn new(config: Config) -> anyhow::Result<Self> {
+        let key = reqwest::header::HeaderValue::from_str(&config.chain_id.value().to_string())?;
+
+        let mut headers = reqwest::header::HeaderMap::new();
+        headers.insert("x-chain-id", key);
+
+        let client = reqwest::Client::builder()
+            .default_headers(headers)
+            .build()?;
+        Ok(Self {
+            client: super::Client::new(client, config.block_stream),
             endpoint: config.endpoint,
             vault: vault::Vault::new(config.vault),
             settlement: config.settlement,
-        }
+        })
     }
 
     pub async fn swap(
