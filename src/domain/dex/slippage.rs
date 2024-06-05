@@ -5,7 +5,7 @@ use {
         domain::{auction, eth},
         util::conv,
     },
-    bigdecimal::BigDecimal,
+    bigdecimal::{BigDecimal, ToPrimitive},
     ethereum_types::U256,
     num::{BigUint, Integer, One, Zero},
     std::cmp,
@@ -88,6 +88,12 @@ impl Slippage {
     /// Returns the relative slippage as a `BigDecimal` factor.
     pub fn as_factor(&self) -> &BigDecimal {
         &self.0
+    }
+
+    /// Converts the relative slippage factor into basis points.
+    pub fn as_bps(&self) -> Option<u16> {
+        let basis_points = self.as_factor() * BigDecimal::from(10000);
+        basis_points.to_u16()
     }
 
     /// Rounds a relative slippage value to the specified decimal precision.

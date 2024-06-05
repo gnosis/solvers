@@ -149,7 +149,7 @@ impl Dex {
         let swap = async {
             let slippage = self.slippage.relative(&dex_order.amount(), tokens);
             self.dex
-                .swap(dex_order, &slippage, tokens, gas_price)
+                .swap(dex_order, slippage, tokens, gas_price)
                 .await
                 .map_err(dex_err_handler)
         };

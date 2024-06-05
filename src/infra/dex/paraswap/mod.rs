@@ -50,72 +50,40 @@ impl ParaSwap {
         }
     }
 
+    /// Make a request to the `/swap` endpoint.
     pub async fn swap(
         &self,
         order: &dex::Order,
-        slippage: &dex::Slippage,
+        slippage: dex::Slippage,
         tokens: &auction::Tokens,
     ) -> Result<dex::Swap, Error> {
-        let price = self.price(order, tokens).await?;
-        let transaction = self.transaction(&price, order, tokens, slippage).await?;
+        let query = dto::SwapQuery::new(&self.config, order, tokens, slippage)?;
+        let swap = util::http::roundtrip!(
+            <dto::Swap, dto::Error>;
+            self.client.request(reqwest::Method::GET, util::url::join(&self.config.endpoint, "swap"))
+                .header("X-API-KEY", &self.config.api_key)
+                .query(&query)
+        )
+        .await?;
         Ok(dex::Swap {
             call: dex::Call {
-                to: eth::ContractAddress(transaction.to),
-                calldata: transaction.data,
+                to: eth::ContractAddress(swap.tx_params.to),
+                calldata: swap.tx_params.data,
             },
             input: eth::Asset {
                 token: order.sell,
-                amount: price.src_amount,
+                amount: swap.price_route.src_amount,
             },
             output: eth::Asset {
                 token: order.buy,
-                amount: price.dest_amount,
+                amount: swap.price_route.dest_amount,
             },
             allowance: dex::Allowance {
-                spender: eth::ContractAddress(price.token_transfer_proxy),
-                amount: dex::Amount::new(price.src_amount),
+                spender: eth::ContractAddress(swap.price_route.token_transfer_proxy),
+                amount: dex::Amount::new(swap.price_route.src_amount),
             },
-            gas: eth::Gas(price.gas_cost),
+            gas: eth::Gas(swap.price_route.gas_cost),
         })
-    }
-
-    /// Make a request to the `/prices` endpoint.
-    async fn price(
-        &self,
-        order: &dex::Order,
-        tokens: &auction::Tokens,
-    ) -> Result<dto::Price, Error> {
-        let price = util::http::roundtrip!(
-            <dto::Price, dto::Error>;
-            self.client.request(reqwest::Method::GET, util::url::join(&self.config.endpoint, "prices"))
-                .header("X-API-KEY", &self.config.api_key)
-                .query(&dto::PriceQuery::new(&self.config, order, tokens)?)
-        )
-        .await?;
-        Ok(price)
-    }
-
-    /// Make a request to the `/transactions` endpoint.
-    async fn transaction(
-        &self,
-        price: &dto::Price,
-        order: &dex::Order,
-        tokens: &auction::Tokens,
-        slippage: &dex::Slippage,
-    ) -> Result<dto::Transaction, Error> {
-        let body = dto::TransactionBody::new(price, &self.config, order, tokens, slippage)?;
-        let transaction = util::http::roundtrip!(
-            <dto::Transaction, dto::Error>;
-            self.client
-                .request(reqwest::Method::POST, util::url::join(
-                    &self.config.endpoint,
-                    &format!("transactions/{}?ignoreChecks=true", self.config.chain_id.network_id())
-                ))
-                .header("X-API-KEY", &self.config.api_key)
-                .json(&body)
-        )
-        .await?;
-        Ok(transaction)
     }
 }
 
@@ -131,6 +99,8 @@ pub enum Error {
     Api(String),
     #[error(transparent)]
     Http(util::http::Error),
+    #[error("unable to convert slippage to bps: {0:?}")]
+    InvalidSlippage(dex::Slippage),
 }
 
 impl From<util::http::RoundtripError<dto::Error>> for Error {
