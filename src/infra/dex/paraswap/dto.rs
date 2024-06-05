@@ -55,7 +55,7 @@ pub struct SwapQuery {
     /// The address of the signer.
     pub user_address: H160,
 
-    /// A relative slippage tolerance.
+    /// A relative slippage tolerance denominated in bps.
     pub slippage: u16,
 }
 
