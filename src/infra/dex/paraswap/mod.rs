@@ -43,8 +43,9 @@ pub struct Config {
 }
 
 impl ParaSwap {
-    pub fn new(config: Config) -> anyhow::Result<Self> {
-        let mut key = reqwest::header::HeaderValue::from_str(&config.api_key)?;
+    /// Tries to initialize a new solver instance. Panics if it fails.
+    pub fn new(config: Config) -> Self {
+        let mut key = reqwest::header::HeaderValue::from_str(&config.api_key).unwrap();
         key.set_sensitive(true);
 
         let mut headers = reqwest::header::HeaderMap::new();
@@ -52,12 +53,13 @@ impl ParaSwap {
 
         let client = reqwest::Client::builder()
             .default_headers(headers)
-            .build()?;
+            .build()
+            .unwrap();
 
-        Ok(Self {
+        Self {
             client: super::Client::new(client, config.block_stream.clone()),
             config,
-        })
+        }
     }
 
     pub async fn swap(
