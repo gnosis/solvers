@@ -63,7 +63,9 @@ impl OneInch {
     /// short period of time.
     pub async fn new(config: Config) -> Self {
         /// How long we try to initialize the solver before panicking.
-        const INIT_TIME: Duration = Duration::from_secs(10);
+        const INIT_TIMEOUT: Duration = Duration::from_secs(10);
+        /// How long to wait before trying to initialize the solver again.
+        const RETRY_DELAY: Duration = Duration::from_millis(100);
 
         let start = Instant::now();
         loop {
@@ -72,11 +74,11 @@ impl OneInch {
                 Err(err) => err,
             };
 
-            if start.elapsed() > INIT_TIME {
+            if start.elapsed() > INIT_TIMEOUT {
                 panic!("could not initialize oneinch solver in time");
             } else {
                 tracing::warn!(?error, "failed to initialize oneinch solver; trying again");
-                tokio::time::sleep(Duration::from_millis(100)).await;
+                tokio::time::sleep(RETRY_DELAY).await;
             }
         }
     }
