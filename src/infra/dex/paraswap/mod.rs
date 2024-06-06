@@ -43,11 +43,21 @@ pub struct Config {
 }
 
 impl ParaSwap {
-    pub fn new(config: Config) -> Self {
-        Self {
-            client: super::Client::new(Default::default(), config.block_stream.clone()),
+    pub fn new(config: Config) -> anyhow::Result<Self> {
+        let mut key = reqwest::header::HeaderValue::from_str(&config.api_key)?;
+        key.set_sensitive(true);
+
+        let mut headers = reqwest::header::HeaderMap::new();
+        headers.insert("x-api-key", key);
+
+        let client = reqwest::Client::builder()
+            .default_headers(headers)
+            .build()?;
+
+        Ok(Self {
+            client: super::Client::new(client, config.block_stream.clone()),
             config,
-        }
+        })
     }
 
     pub async fn swap(
@@ -88,7 +98,6 @@ impl ParaSwap {
         let price = util::http::roundtrip!(
             <dto::Price, dto::Error>;
             self.client.request(reqwest::Method::GET, util::url::join(&self.config.endpoint, "prices"))
-                .header("X-API-KEY", &self.config.api_key)
                 .query(&dto::PriceQuery::new(&self.config, order, tokens)?)
         )
         .await?;
@@ -111,7 +120,6 @@ impl ParaSwap {
                     &self.config.endpoint,
                     &format!("transactions/{}?ignoreChecks=true", self.config.chain_id.network_id())
                 ))
-                .header("X-API-KEY", &self.config.api_key)
                 .json(&body)
         )
         .await?;
