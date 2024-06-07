@@ -65,7 +65,7 @@ impl OneInch {
         /// How long we try to initialize the solver before panicking.
         const INIT_TIMEOUT: Duration = Duration::from_secs(10);
         /// How long to wait before trying to initialize the solver again.
-        const RETRY_DELAY: Duration = Duration::from_millis(100);
+        const RETRY_DELAY: Duration = Duration::from_secs(1);
 
         let start = Instant::now();
         loop {
