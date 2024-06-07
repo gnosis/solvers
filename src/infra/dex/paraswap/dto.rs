@@ -7,18 +7,17 @@ use {
         util::serialize,
     },
     ethereum_types::{H160, U256},
-    serde::{de, Deserialize, Deserializer, Serialize},
+    serde::{Deserialize, Serialize},
     serde_with::serde_as,
 };
 
-/// ParaSwap query parameters for the `/prices` endpoint.
+/// ParaSwap query parameters for the `/swap` endpoint.
 ///
-/// See [API](https://developers.paraswap.network/api/get-rate-for-a-token-pair)
-/// documentation for more detailed information on each parameter.
+/// This API is not public, so no docs are available.
 #[serde_as]
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct PriceQuery {
+pub struct SwapQuery {
     /// Source token address.
     pub src_token: H160,
 
@@ -52,13 +51,20 @@ pub struct PriceQuery {
 
     /// The maximum price impact accepted (in percentage, 0-100)
     pub max_impact: u8,
+
+    /// The address of the signer.
+    pub user_address: H160,
+
+    /// A relative slippage tolerance denominated in bps.
+    pub slippage: u16,
 }
 
-impl PriceQuery {
+impl SwapQuery {
     pub fn new(
         config: &super::Config,
         order: &dex::Order,
         tokens: &auction::Tokens,
+        slippage: &dex::Slippage,
     ) -> Result<Self, super::Error> {
         Ok(Self {
             src_token: order.sell.0,
@@ -78,74 +84,10 @@ impl PriceQuery {
             network: config.chain_id.network_id().to_string(),
             partner: config.partner.clone(),
             max_impact: 100,
-        })
-    }
-}
-
-/// ParaSwap API body parameters for the `/transactions` endpoint.
-///
-/// See [API](https://developers.paraswap.network/api/build-parameters-for-transaction)
-/// documentation for more detailed information on each parameter.
-#[serde_as]
-#[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct TransactionBody {
-    /// Source token address.
-    pub src_token: H160,
-
-    /// Destination token address.
-    pub dest_token: H160,
-
-    // Source amount.
-    #[serde_as(as = "serialize::U256")]
-    pub src_amount: U256,
-
-    // Destination amount.
-    #[serde_as(as = "serialize::U256")]
-    pub dest_amount: U256,
-
-    /// The decimals of the source token.
-    pub src_decimals: u8,
-
-    /// The decimals of the destination token.
-    pub dest_decimals: u8,
-
-    /// Price route from `/prices` endpoint response (without any change).
-    pub price_route: serde_json::Value,
-
-    /// The address of the signer.
-    pub user_address: H160,
-
-    /// The partner name.
-    pub partner: String,
-}
-
-impl TransactionBody {
-    pub fn new(
-        price: &Price,
-        config: &super::Config,
-        order: &dex::Order,
-        tokens: &auction::Tokens,
-        slippage: &dex::Slippage,
-    ) -> Result<Self, super::Error> {
-        let (src_amount, dest_amount) = match order.side {
-            order::Side::Sell => (price.src_amount, slippage.sub(price.dest_amount)),
-            order::Side::Buy => (slippage.add(price.src_amount), price.dest_amount),
-        };
-        Ok(Self {
-            src_token: order.sell.0,
-            dest_token: order.buy.0,
-            src_decimals: tokens
-                .decimals(&order.sell)
-                .ok_or(super::Error::MissingDecimals)?,
-            dest_decimals: tokens
-                .decimals(&order.buy)
-                .ok_or(super::Error::MissingDecimals)?,
-            src_amount,
-            dest_amount,
-            price_route: price.price_route.clone(),
             user_address: config.address,
-            partner: config.partner.clone(),
+            slippage: slippage
+                .as_bps()
+                .ok_or(super::Error::InvalidSlippage(slippage.clone()))?,
         })
     }
 }
@@ -157,64 +99,36 @@ pub enum Side {
     Buy,
 }
 
-/// A ParaSwap API price response.
-pub struct Price {
-    /// The price route. This should be passed on to the `/transactions`
-    /// endpoint.
-    pub price_route: serde_json::Value,
+/// A ParaSwap swap API response.
+#[serde_as]
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Swap {
+    pub price_route: PriceRoute,
+    pub tx_params: TxParams,
+}
 
+#[serde_as]
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PriceRoute {
     /// The source token amount in atoms.
+    #[serde_as(as = "serialize::U256")]
     pub src_amount: U256,
     /// The destination token amount in atoms.
+    #[serde_as(as = "serialize::U256")]
     pub dest_amount: U256,
     /// The (very) approximate gas cost for the swap.
+    #[serde_as(as = "serialize::U256")]
     pub gas_cost: U256,
     /// The token transfer proxy that requires an allowance.
     pub token_transfer_proxy: H160,
 }
 
-impl<'de> Deserialize<'de> for Price {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        #[derive(Deserialize)]
-        #[serde(rename_all = "camelCase")]
-        struct Raw {
-            price_route: serde_json::Value,
-        }
-
-        #[serde_as]
-        #[derive(Deserialize)]
-        #[serde(rename_all = "camelCase")]
-        struct Parsed {
-            #[serde_as(as = "serialize::U256")]
-            src_amount: U256,
-            #[serde_as(as = "serialize::U256")]
-            dest_amount: U256,
-            #[serde_as(as = "serialize::U256")]
-            gas_cost: U256,
-            token_transfer_proxy: H160,
-        }
-
-        let Raw { price_route } = Raw::deserialize(deserializer)?;
-        let parsed =
-            serde_json::from_value::<Parsed>(price_route.clone()).map_err(de::Error::custom)?;
-
-        Ok(Self {
-            price_route,
-            src_amount: parsed.src_amount,
-            dest_amount: parsed.dest_amount,
-            gas_cost: parsed.gas_cost,
-            token_transfer_proxy: parsed.token_transfer_proxy,
-        })
-    }
-}
-
 #[serde_as]
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Transaction {
+pub struct TxParams {
     pub from: H160,
     pub to: H160,
 
