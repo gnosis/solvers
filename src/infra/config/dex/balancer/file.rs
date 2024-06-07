@@ -30,7 +30,8 @@ struct Config {
 pub async fn load(path: &Path) -> super::Config {
     let (base, config) = file::load::<Config>(path).await;
 
-    // Balancer SOR solver only supports mainnet.
+    // Take advantage of the fact that deterministic deployment means that all
+    // CoW Protocol and Balancer Vault contracts have the same address.
     let contracts = contracts::Contracts::for_chain(eth::ChainId::Mainnet);
 
     super::Config {

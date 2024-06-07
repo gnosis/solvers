@@ -43,9 +43,21 @@ pub struct Config {
 }
 
 impl ParaSwap {
+    /// Tries to initialize a new solver instance. Panics if it fails.
     pub fn new(config: Config) -> Self {
+        let mut key = reqwest::header::HeaderValue::from_str(&config.api_key).unwrap();
+        key.set_sensitive(true);
+
+        let mut headers = reqwest::header::HeaderMap::new();
+        headers.insert("x-api-key", key);
+
+        let client = reqwest::Client::builder()
+            .default_headers(headers)
+            .build()
+            .unwrap();
+
         Self {
-            client: super::Client::new(Default::default(), config.block_stream.clone()),
+            client: super::Client::new(client, config.block_stream.clone()),
             config,
         }
     }
@@ -61,7 +73,6 @@ impl ParaSwap {
         let swap = util::http::roundtrip!(
             <dto::Swap, dto::Error>;
             self.client.request(reqwest::Method::GET, util::url::join(&self.config.endpoint, "swap"))
-                .header("X-API-KEY", &self.config.api_key)
                 .query(&query)
         )
         .await?;
