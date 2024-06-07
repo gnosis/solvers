@@ -28,14 +28,14 @@ impl Dex {
     pub async fn swap(
         &self,
         order: &dex::Order,
-        slippage: dex::Slippage,
+        slippage: &dex::Slippage,
         tokens: &auction::Tokens,
         gas_price: auction::GasPrice,
     ) -> Result<dex::Swap, Error> {
         let swap = match self {
-            Dex::Balancer(balancer) => balancer.swap(order, &slippage, gas_price).await?,
-            Dex::OneInch(oneinch) => oneinch.swap(order, &slippage, gas_price).await?,
-            Dex::ZeroEx(zeroex) => zeroex.swap(order, &slippage, gas_price).await?,
+            Dex::Balancer(balancer) => balancer.swap(order, slippage, gas_price).await?,
+            Dex::OneInch(oneinch) => oneinch.swap(order, slippage, gas_price).await?,
+            Dex::ZeroEx(zeroex) => zeroex.swap(order, slippage, gas_price).await?,
             Dex::ParaSwap(paraswap) => paraswap.swap(order, slippage, tokens).await?,
         };
         Ok(swap)

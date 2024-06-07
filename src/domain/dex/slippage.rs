@@ -53,7 +53,7 @@ impl Limits {
 /// Relative slippage has saturating semantics. I.e. if adding slippage to a
 /// token amount would overflow a `U256`, then `U256::max_value()` is returned
 /// instead.
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Slippage(BigDecimal);
 
 impl Slippage {

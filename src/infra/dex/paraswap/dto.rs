@@ -64,7 +64,7 @@ impl SwapQuery {
         config: &super::Config,
         order: &dex::Order,
         tokens: &auction::Tokens,
-        slippage: dex::Slippage,
+        slippage: &dex::Slippage,
     ) -> Result<Self, super::Error> {
         Ok(Self {
             src_token: order.sell.0,
@@ -87,7 +87,7 @@ impl SwapQuery {
             user_address: config.address,
             slippage: slippage
                 .as_bps()
-                .ok_or(super::Error::InvalidSlippage(slippage))?,
+                .ok_or(super::Error::InvalidSlippage(slippage.clone()))?,
         })
     }
 }

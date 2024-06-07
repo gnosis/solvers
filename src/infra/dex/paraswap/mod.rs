@@ -66,7 +66,7 @@ impl ParaSwap {
     pub async fn swap(
         &self,
         order: &dex::Order,
-        slippage: dex::Slippage,
+        slippage: &dex::Slippage,
         tokens: &auction::Tokens,
     ) -> Result<dex::Swap, Error> {
         let query = dto::SwapQuery::new(&self.config, order, tokens, slippage)?;
