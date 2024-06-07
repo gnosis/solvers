@@ -48,14 +48,14 @@ async fn run_with(args: cli::Args, bind: Option<oneshot::Sender<SocketAddr>>) {
         cli::Command::OneInch { config } => {
             let config = config::dex::oneinch::file::load(&config).await;
             Solver::Dex(solver::Dex::new(
-                dex::Dex::OneInch(dex::oneinch::OneInch::new(config.oneinch).await.unwrap()),
+                dex::Dex::OneInch(dex::oneinch::OneInch::new(config.oneinch).await),
                 config.base.clone(),
             ))
         }
         cli::Command::ParaSwap { config } => {
             let config = config::dex::paraswap::file::load(&config).await;
             Solver::Dex(solver::Dex::new(
-                dex::Dex::ParaSwap(dex::paraswap::ParaSwap::new(config.paraswap).unwrap()),
+                dex::Dex::ParaSwap(dex::paraswap::ParaSwap::new(config.paraswap)),
                 config.base.clone(),
             ))
         }

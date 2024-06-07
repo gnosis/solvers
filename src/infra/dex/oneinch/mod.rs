@@ -5,7 +5,10 @@ use {
     },
     ethereum_types::H160,
     ethrpc::current_block::CurrentBlockStream,
-    std::sync::atomic::{self, AtomicU64},
+    std::{
+        sync::atomic::{self, AtomicU64},
+        time::{Duration, Instant},
+    },
     tracing::Instrument,
 };
 
@@ -19,6 +22,7 @@ pub struct OneInch {
     spender: eth::ContractAddress,
 }
 
+#[derive(Debug, Clone)]
 pub struct Config {
     /// The base URL for the 1Inch swap API.
     pub endpoint: Option<reqwest::Url>,
@@ -45,6 +49,7 @@ pub struct Config {
     pub block_stream: Option<CurrentBlockStream>,
 }
 
+#[derive(Debug, Clone)]
 pub enum Liquidity {
     Any,
     Only(Vec<String>),
@@ -54,7 +59,31 @@ pub enum Liquidity {
 pub const DEFAULT_URL: &str = "https://api.1inch.io/v5.0/1/";
 
 impl OneInch {
-    pub async fn new(config: Config) -> Result<Self, Error> {
+    /// Initializes a new solver instance. Panics if it doesn't succeed after a
+    /// short period of time.
+    pub async fn new(config: Config) -> Self {
+        /// How long we try to initialize the solver before panicking.
+        const INIT_TIMEOUT: Duration = Duration::from_secs(10);
+        /// How long to wait before trying to initialize the solver again.
+        const RETRY_DELAY: Duration = Duration::from_secs(1);
+
+        let start = Instant::now();
+        loop {
+            let error = match Self::try_new(config.clone()).await {
+                Ok(solver) => return solver,
+                Err(err) => err,
+            };
+
+            if start.elapsed() > INIT_TIMEOUT {
+                panic!("could not initialize oneinch solver in time");
+            } else {
+                tracing::warn!(?error, "failed to initialize oneinch solver; trying again");
+                tokio::time::sleep(RETRY_DELAY).await;
+            }
+        }
+    }
+
+    async fn try_new(config: Config) -> Result<Self, Error> {
         let client = super::Client::new(Default::default(), config.block_stream);
         let endpoint = config
             .endpoint
