@@ -2,6 +2,7 @@ use {
     crate::{
         domain::eth,
         infra::{config::dex::file, contracts, dex},
+        util::serialize,
     },
     ethereum_types::H160,
     serde::Deserialize,
@@ -20,6 +21,10 @@ struct Config {
     /// Optional Balancer V2 Vault contract address. If not specified, the
     /// default Vault contract address will be used.
     vault: Option<H160>,
+
+    /// Chain ID used to automatically determine contract addresses and send to the SOR API.
+    #[serde_as(as = "serialize::ChainId")]
+    chain_id: eth::ChainId,
 }
 
 /// Load the driver configuration from a TOML file.
@@ -43,6 +48,7 @@ pub async fn load(path: &Path) -> super::Config {
                 .unwrap_or(contracts.balancer_vault),
             settlement: base.contracts.settlement,
             block_stream: base.block_stream.clone(),
+            chain_id: config.chain_id,
         },
         base,
     }

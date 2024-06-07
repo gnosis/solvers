@@ -19,6 +19,7 @@ pub struct Sor {
     endpoint: reqwest::Url,
     vault: vault::Vault,
     settlement: eth::ContractAddress,
+    chain_id: eth::ChainId,
 }
 
 pub struct Config {
@@ -33,6 +34,9 @@ pub struct Config {
 
     /// The address of the Settlement contract.
     pub settlement: eth::ContractAddress,
+
+    /// For which chain the solver is configured.
+    pub chain_id: eth::ChainId,
 }
 
 impl Sor {
@@ -48,6 +52,7 @@ impl Sor {
             endpoint: config.endpoint,
             vault: vault::Vault::new(config.vault),
             settlement: config.settlement,
+            chain_id: config.chain_id,
         }
     }
 
@@ -55,9 +60,9 @@ impl Sor {
         &self,
         order: &dex::Order,
         slippage: &dex::Slippage,
-        gas_price: auction::GasPrice,
+        _gas_price: auction::GasPrice,
     ) -> Result<dex::Swap, Error> {
-        let query = dto::Query::from_domain(order, gas_price);
+        let query = dto::Query::from_domain(order, slippage, self.chain_id, self.settlement);
         let quote = {
             // Set up a tracing span to make debugging of API requests easier.
             // Historically, debugging API requests to external DEXs was a bit
@@ -151,7 +156,7 @@ impl Sor {
         })
     }
 
-    async fn quote(&self, query: &dto::Query) -> Result<dto::Quote, Error> {
+    async fn quote(&self, query: &dto::Query<'_>) -> Result<dto::Quote, Error> {
         let quote = util::http::roundtrip!(
             <dto::Quote, util::serialize::Never>;
             self.client

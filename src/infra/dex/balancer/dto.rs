@@ -1,6 +1,8 @@
+use bigdecimal::BigDecimal;
+
 use {
     crate::{
-        domain::{auction, dex, order},
+        domain::{dex, order},
         util::serialize,
     },
     ethereum_types::{H160, H256, U256},
@@ -8,49 +10,129 @@ use {
     serde_with::serde_as,
 };
 
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub enum OrderKind {
-    Sell,
-    Buy,
+use crate::domain::eth;
+
+mod pools_query {
+    pub const QUERY: &str = r#"
+        query sorGetSwapPaths($callDataInput: GqlSwapCallDataInput!, $chain: GqlChain!, $queryBatchSwap: Boolean!, $swapAmount: AmountHumanReadable!, $swapType: GqlSorSwapType!, $tokenIn: String!, $tokenOut: String!, $useVaultVersion: Int) {
+            sorGetSwapPaths(
+                callDataInput: $callDataInput,
+                chain: $chain,
+                queryBatchSwap: $queryBatchSwap,
+                swapAmount: $swapAmount,
+                swapType: $swapType,
+                tokenIn: $tokenIn,
+                tokenOut: $tokenOut,
+                useVaultVersion: $useVaultVersion
+            ) {
+                tokenAddresses
+                swaps {
+                    poolId
+                    assetInIndex
+                    assetOutIndex
+                    amount
+                    userData
+                }
+                swapAmount
+                returnAmount
+                tokenIn
+                tokenOut
+            }
+        }
+    "#;
 }
 
-/// An SOR query.
-#[serde_as]
-#[derive(Debug, Serialize)]
+#[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Query {
-    /// The sell token to quote.
-    pub sell_token: H160,
-    /// The buy token to quote.
-    pub buy_token: H160,
-    /// The order kind to use.
-    pub order_kind: OrderKind,
-    /// The amount to quote
-    ///
-    /// For sell orders this is the exact amount of sell token to trade, for buy
-    /// orders, this is the amount of buy tokens to buy.
-    #[serde_as(as = "serialize::U256")]
-    pub amount: U256,
-    /// The current gas price estimate used for determining how the trading
-    /// route should be split.
-    #[serde_as(as = "serialize::U256")]
-    pub gas_price: U256,
+pub struct Query<'a> {
+    query: &'a str,
+    variables: Variables,
 }
 
-impl Query {
-    pub fn from_domain(order: &dex::Order, gas_price: auction::GasPrice) -> Self {
-        Self {
-            sell_token: order.sell.0,
-            buy_token: order.buy.0,
-            order_kind: match order.side {
-                order::Side::Buy => OrderKind::Buy,
-                order::Side::Sell => OrderKind::Sell,
+impl Query<'_> {
+    pub fn from_domain(order: &dex::Order, slippage: &dex::Slippage, chain_id: eth::ChainId, contract_address: eth::ContractAddress) -> Self {
+        let swap_type = match order.side {
+            order::Side::Buy => SwapType::ExactOut,
+            order::Side::Sell => SwapType::ExactIn,
+        };
+        let chain = match chain_id {
+            eth::ChainId::Mainnet => Chain::Mainnet,
+            eth::ChainId::Gnosis => Chain::Gnosis,
+            eth::ChainId::ArbitrumOne => Chain::Arbitrum,
+            _ => panic!("Unsupported chain"),
+        };
+        let variables = Variables {
+            call_data_input: CalDataInput {
+                deadline: 999999999999999999,
+                receiver: contract_address.0,
+                sender: contract_address.0,
+                slippage_percentage: slippage.as_factor().clone(),
             },
-            amount: order.amount().amount,
-            gas_price: gas_price.0 .0,
+            chain,
+            query_batch_swap: false,
+            swap_amount: order.amount().amount,
+            swap_type,
+            token_in: order.sell.0,
+            token_out: order.buy.0,
+            use_vault_version: VaultVersion::V2 as u8,
+        };
+        Self {
+            query: pools_query::QUERY,
+            variables,
         }
     }
+}
+
+#[serde_as]
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct Variables {
+    call_data_input: CalDataInput,
+    chain: Chain,
+    query_batch_swap: bool,
+    #[serde_as(as = "serialize::U256")]
+    swap_amount: U256,
+    swap_type: SwapType,
+    token_in: H160,
+    token_out: H160,
+    use_vault_version: u8,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct CalDataInput {
+    deadline: u64,
+    receiver: H160,
+    sender: H160,
+    slippage_percentage: BigDecimal,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+enum Chain {
+    Arbitrum,
+    Avalanche,
+    Base,
+    Fantom,
+    Fraxtal,
+    Gnosis,
+    Mainnet,
+    Mode,
+    Optimism,
+    Polygon,
+    Sepolia,
+    ZkEvm,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+enum SwapType {
+    ExactIn,
+    ExactOut,
+}
+
+enum VaultVersion {
+    V2 = 2,
 }
 
 /// The swap route found by the Balancer SOR service.
@@ -120,8 +202,8 @@ mod address_default_when_empty {
     };
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<H160, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         let value = Cow::<str>::deserialize(deserializer)?;
         if value == "" {
@@ -141,10 +223,10 @@ mod value_or_string {
     };
 
     pub fn deserialize<'de, D, T>(deserializer: D) -> Result<T, D::Error>
-    where
-        D: Deserializer<'de>,
-        T: Deserialize<'de> + std::str::FromStr,
-        <T as std::str::FromStr>::Err: std::fmt::Display,
+        where
+            D: Deserializer<'de>,
+            T: Deserialize<'de> + std::str::FromStr,
+            <T as std::str::FromStr>::Err: std::fmt::Display,
     {
         #[derive(Debug, Deserialize)]
         #[serde(untagged)]
@@ -158,5 +240,50 @@ mod value_or_string {
             Ok(Content::String(s)) => s.parse().map_err(de::Error::custom),
             Err(err) => Err(err),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::str::FromStr;
+    use serde_json::json;
+
+    use super::*;
+
+    #[test]
+    fn test_query_serialization() {
+        let order = dex::Order {
+            sell: H160::from_str("0x2170ed0880ac9a755fd29b2688956bd959f933f8").unwrap().into(),
+            buy: H160::from_str("0xdac17f958d2ee523a2206206994597c13d831ec7").unwrap().into(),
+            side: order::Side::Buy,
+            amount: dex::Amount::new(U256::from(1000)),
+        };
+        let slippage = dex::Slippage::one_percent();
+        let chain_id = eth::ChainId::Mainnet;
+        let contract_address = eth::ContractAddress(H160::from_str("0x9008d19f58aabd9ed0d60971565aa8510560ab41").unwrap());
+        let query = Query::from_domain(&order, &slippage, chain_id, contract_address);
+
+        let actual = serde_json::to_value(&query).unwrap();
+        let deadline: u64 = 999999999999999999;
+        let expected = json!({
+            "query": pools_query::QUERY,
+            "variables": {
+                "callDataInput": {
+                    "deadline": deadline,
+                    "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                    "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                    "slippagePercentage": "0.01"
+                },
+                "chain": "MAINNET",
+                "queryBatchSwap": false,
+                "swapAmount": "1000",
+                "swapType": "EXACT_OUT",
+                "tokenIn": "0x2170ed0880ac9a755fd29b2688956bd959f933f8",
+                "tokenOut": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+                "useVaultVersion": 2
+            }
+        });
+
+        assert_eq!(actual, expected);
     }
 }
