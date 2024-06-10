@@ -11,6 +11,7 @@ pub fn config(solver_addr: &SocketAddr) -> tests::Config {
 node-url = 'http://localhost:8545'
 [dex]
 endpoint = 'http://{solver_addr}/sor'
+chain-id = '1'
         ",
     ))
 }

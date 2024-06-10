@@ -22,7 +22,8 @@ struct Config {
     /// default Vault contract address will be used.
     vault: Option<H160>,
 
-    /// Chain ID used to automatically determine contract addresses and send to the SOR API.
+    /// Chain ID used to automatically determine contract addresses and send to
+    /// the SOR API.
     #[serde_as(as = "serialize::ChainId")]
     chain_id: eth::ChainId,
 }

@@ -2,7 +2,10 @@
 //! market orders, turning Balancer SOR responses into CoW Protocol solutions.
 
 use {
-    crate::tests::{self, balancer, mock},
+    crate::{
+        infra::dex::balancer::dto,
+        tests::{self, balancer, mock},
+    },
     serde_json::json,
 };
 
@@ -11,11 +14,21 @@ async fn sell() {
     let api = mock::http::setup(vec![mock::http::Expectation::Post {
         path: mock::http::Path::exact("sor"),
         req: mock::http::RequestBody::Exact(json!({
-            "sellToken": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-            "buyToken": "0xba100000625a3754423978a60c9317c58a424e3d",
-            "orderKind": "sell",
-            "amount": "1000000000000000000",
-            "gasPrice": "15000000000",
+            "query": serde_json::to_value(dto::get_swap_paths_query::QUERY).unwrap(),
+            "variables": {
+                "callDataInput": {
+                  "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                  "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                  "slippagePercentage": "0.01"
+                },
+                "chain": "MAINNET",
+                "queryBatchSwap": false,
+                "swapAmount": "1",
+                "swapType": "EXACT_IN",
+                "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                "useVaultVersion": 2
+            }
         })),
         res: json!({
             "tokenAddresses": [
@@ -32,11 +45,11 @@ async fn sell() {
                     "returnAmount": "227598784442065388110"
                 }
             ],
-            "swapAmount": "1000000000000000000",
-            "swapAmountForSwaps": "1000000000000000000",
-            "returnAmount": "227598784442065388110",
-            "returnAmountFromSwaps": "227598784442065388110",
-            "returnAmountConsideringFees": "227307710853355710706",
+            "swapAmount": "1",
+            "swapAmountForSwaps": "1",
+            "returnAmount": "227.598784442065388110",
+            "returnAmountFromSwaps": "227.598784442065388110",
+            "returnAmountConsideringFees": "227.307710853355710706",
             "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
             "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
             "marketSp": "0.004393607339632106",
@@ -180,11 +193,21 @@ async fn buy() {
     let api = mock::http::setup(vec![mock::http::Expectation::Post {
         path: mock::http::Path::exact("sor"),
         req: mock::http::RequestBody::Exact(json!({
-            "sellToken": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-            "buyToken": "0xba100000625a3754423978a60c9317c58a424e3d",
-            "orderKind": "buy",
-            "amount": "100000000000000000000",
-            "gasPrice": "15000000000",
+            "query": serde_json::to_value(dto::get_swap_paths_query::QUERY).unwrap(),
+            "variables": {
+                "callDataInput": {
+                  "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                  "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                  "slippagePercentage": "0.01"
+                },
+                "chain": "MAINNET",
+                "queryBatchSwap": false,
+                "swapAmount": "100",
+                "swapType": "EXACT_OUT",
+                "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                "useVaultVersion": 2
+              }
         })),
         res: json!({
             "tokenAddresses": [
@@ -201,11 +224,11 @@ async fn buy() {
                     "returnAmount": "439470293178110675"
                 }
             ],
-            "swapAmount": "100000000000000000000",
-            "swapAmountForSwaps": "100000000000000000000",
-            "returnAmount": "439470293178110675",
-            "returnAmountFromSwaps": "439470293178110675",
-            "returnAmountConsideringFees": "440745919677086983",
+            "swapAmount": "100",
+            "swapAmountForSwaps": "100",
+            "returnAmount": "0.439470293178110675",
+            "returnAmountFromSwaps": "0.439470293178110675",
+            "returnAmountConsideringFees": "0.440745919677086983",
             "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
             "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
             "marketSp": "0.004394663712203829"

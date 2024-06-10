@@ -2,7 +2,10 @@
 //! swap was found for the specified quoted order.
 
 use {
-    crate::tests::{self, balancer, mock},
+    crate::{
+        infra::dex::balancer::dto,
+        tests::{self, balancer, mock},
+    },
     serde_json::json,
 };
 
@@ -12,11 +15,21 @@ async fn test() {
     let api = mock::http::setup(vec![mock::http::Expectation::Post {
         path: mock::http::Path::Any,
         req: mock::http::RequestBody::Exact(json!({
-            "sellToken": "0x1111111111111111111111111111111111111111",
-            "buyToken": "0x2222222222222222222222222222222222222222",
-            "orderKind": "sell",
-            "amount": "1000000000000000000",
-            "gasPrice": "15000000000",
+            "query": serde_json::to_value(dto::get_swap_paths_query::QUERY).unwrap(),
+            "variables": {
+                "callDataInput": {
+                    "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                    "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                    "slippagePercentage": "0.01"
+                },
+                "chain": "MAINNET",
+                "queryBatchSwap": false,
+                "swapAmount": "1",
+                "swapType": "EXACT_IN",
+                "tokenIn": "0x1111111111111111111111111111111111111111",
+                "tokenOut": "0x2222222222222222222222222222222222222222",
+                "useVaultVersion": 2
+            }
         })),
         res: json!({
             "tokenAddresses": [],

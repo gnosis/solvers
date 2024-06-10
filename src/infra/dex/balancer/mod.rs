@@ -10,7 +10,7 @@ use {
     tracing::Instrument,
 };
 
-mod dto;
+pub mod dto;
 mod vault;
 
 /// Bindings to the Balancer Smart Order Router (SOR) API.
@@ -62,7 +62,7 @@ impl Sor {
         slippage: &dex::Slippage,
         _gas_price: auction::GasPrice,
     ) -> Result<dex::Swap, Error> {
-        let query = dto::Query::from_domain(order, slippage, self.chain_id, self.settlement);
+        let query = dto::Query::from_domain(order, slippage, self.chain_id, self.settlement)?;
         let quote = {
             // Set up a tracing span to make debugging of API requests easier.
             // Historically, debugging API requests to external DEXs was a bit
@@ -79,8 +79,20 @@ impl Sor {
         }
 
         let (input, output) = match order.side {
-            order::Side::Buy => (quote.return_amount, quote.swap_amount),
-            order::Side::Sell => (quote.swap_amount, quote.return_amount),
+            order::Side::Buy => (
+                quote
+                    .return_amount
+                    .to_wei()
+                    .ok_or(Error::InvalidSwapAmount)?,
+                quote.swap_amount.to_wei().ok_or(Error::InvalidSwapAmount)?,
+            ),
+            order::Side::Sell => (
+                quote.swap_amount.to_wei().ok_or(Error::InvalidSwapAmount)?,
+                quote
+                    .return_amount
+                    .to_wei()
+                    .ok_or(Error::InvalidSwapAmount)?,
+            ),
         };
 
         let (max_input, min_output) = match order.side {
@@ -163,8 +175,8 @@ impl Sor {
                 .request(reqwest::Method::POST, self.endpoint.clone())
                 .json(query)
         )
-        .await?;
-        Ok(quote)
+        .await;
+        Ok(quote?)
     }
 }
 
@@ -176,6 +188,10 @@ pub enum Error {
     RateLimited,
     #[error(transparent)]
     Http(util::http::Error),
+    #[error("unsupported chain: {0:?}")]
+    UnsupportedChainId(eth::ChainId),
+    #[error("invalid swap amount")]
+    InvalidSwapAmount,
 }
 
 impl From<util::http::RoundtripError<util::serialize::Never>> for Error {
