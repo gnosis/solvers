@@ -1,14 +1,15 @@
 use {
     crate::{
-        infra::dex::balancer::dto,
+        domain::eth,
+        infra::dex::balancer::{dto, dto::EtherAmount},
         tests::{self, balancer, mock},
     },
     serde_json::json,
 };
 
 struct Case {
-    input_amount: (&'static str, &'static str),
-    output_amount: (&'static str, &'static str),
+    input_amount: EtherAmount,
+    output_amount: EtherAmount,
     side: &'static str,
 }
 
@@ -18,28 +19,44 @@ struct Case {
 #[tokio::test]
 async fn test() {
     for Case {
-        input_amount: (input_amount_wei, input_amount_ether),
-        output_amount: (output_amount_wei, output_amount_ether),
+        input_amount,
+        output_amount,
         side,
     } in [
         Case {
-            input_amount: ("1000000000000000001", "1.000000000000000001"),
-            output_amount: ("227598784442065388110", "227.598784442065388110"),
+            input_amount: EtherAmount::from_wei(
+                &eth::U256::from_dec_str("1000000000000000001").unwrap(),
+            ),
+            output_amount: EtherAmount::from_wei(
+                &eth::U256::from_dec_str("227598784442065388110").unwrap(),
+            ),
             side: "sell",
         },
         Case {
-            input_amount: ("999999999999999999", "0.999999999999999999"),
-            output_amount: ("227598784442065388110", "227.598784442065388110"),
+            input_amount: EtherAmount::from_wei(
+                &eth::U256::from_dec_str("999999999999999999").unwrap(),
+            ),
+            output_amount: EtherAmount::from_wei(
+                &eth::U256::from_dec_str("227598784442065388110").unwrap(),
+            ),
             side: "sell",
         },
         Case {
-            input_amount: ("1000000000000000000", "1"),
-            output_amount: ("227598784442065388110", "227.598784442065388110"),
+            input_amount: EtherAmount::from_wei(
+                &eth::U256::from_dec_str("1000000000000000000").unwrap(),
+            ),
+            output_amount: EtherAmount::from_wei(
+                &eth::U256::from_dec_str("227598784442065388110").unwrap(),
+            ),
             side: "buy",
         },
         Case {
-            input_amount: ("1000000000000000000", "1"),
-            output_amount: ("227598784442065388110", "227.598784442065388110"),
+            input_amount: EtherAmount::from_wei(
+                &eth::U256::from_dec_str("1000000000000000000").unwrap(),
+            ),
+            output_amount: EtherAmount::from_wei(
+                &eth::U256::from_dec_str("227598784442065388110").unwrap(),
+            ),
             side: "buy",
         },
     ] {
@@ -81,16 +98,16 @@ async fn test() {
                             db8f56000200000000000000000014",
                         "assetInIndex": 0,
                         "assetOutIndex": 1,
-                        "amount": input_amount_wei,
+                        "amount": input_amount.to_wei().unwrap().to_string(),
                         "userData": "0x",
-                        "returnAmount": output_amount_wei,
+                        "returnAmount": output_amount.to_wei().unwrap().to_string(),
                     }
                 ],
-                "swapAmount": input_amount_ether,
-                "swapAmountForSwaps": input_amount_ether,
-                "returnAmount": output_amount_ether,
-                "returnAmountFromSwaps": output_amount_ether,
-                "returnAmountConsideringFees": output_amount_ether,
+                "swapAmount": input_amount.value(),
+                "swapAmountForSwaps": input_amount.value(),
+                "returnAmount": output_amount.value(),
+                "returnAmountFromSwaps": output_amount.value(),
+                "returnAmountConsideringFees": output_amount.value(),
                 "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
                 "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
                 "marketSp": "0.004393607339632106",

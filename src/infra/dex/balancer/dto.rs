@@ -88,6 +88,10 @@ impl EtherAmount {
         Self(u256_to_big_decimal(wei) / BigDecimal::from(10_u64.pow(18)))
     }
 
+    pub fn value(&self) -> BigDecimal {
+        self.0.clone()
+    }
+
     pub fn to_wei(&self) -> Option<U256> {
         big_decimal_to_u256(&(&self.0 * BigDecimal::from(10_u64.pow(18))))
     }
