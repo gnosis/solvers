@@ -169,14 +169,14 @@ impl Sor {
     }
 
     async fn quote(&self, query: &dto::Query<'_>) -> Result<dto::Quote, Error> {
-        let quote = util::http::roundtrip!(
-            <dto::Quote, util::serialize::Never>;
+        let response = util::http::roundtrip!(
+            <dto::GetSwapPathsResponse, util::serialize::Never>;
             self.client
                 .request(reqwest::Method::POST, self.endpoint.clone())
                 .json(query)
         )
-        .await;
-        Ok(quote?)
+        .await?;
+        Ok(response.data.sor_get_swap_paths)
     }
 }
 

@@ -182,6 +182,22 @@ enum VaultVersion {
     V2 = 2,
 }
 
+/// The response from the Balancer SOR service.
+#[serde_as]
+#[derive(Debug, Default, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GetSwapPathsResponse {
+    pub data: Data,
+}
+
+/// The data field in the Balancer SOR response.
+#[serde_as]
+#[derive(Debug, Default, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Data {
+    pub sor_get_swap_paths: Quote,
+}
+
 /// The swap route found by the Balancer SOR service.
 #[serde_as]
 #[derive(Debug, Default, PartialEq, Deserialize)]

@@ -36,43 +36,51 @@ async fn tested_amounts_adjust_depending_on_response() {
     };
 
     let no_swap_found_response = json!({
-        "tokenAddresses": [],
-        "swaps": [],
-        "swapAmount": "0",
-        "swapAmountForSwaps": "0",
-        "returnAmount": "0",
-        "returnAmountFromSwaps": "0",
-        "returnAmountConsideringFees": "0",
-        "tokenIn": "0x0000000000000000000000000000000000000000",
-        "tokenOut": "0x0000000000000000000000000000000000000000",
-        "marketSp": "0",
+        "data": {
+            "sorGetSwapPaths": {
+                "tokenAddresses": [],
+                "swaps": [],
+                "swapAmount": "0",
+                "swapAmountForSwaps": "0",
+                "returnAmount": "0",
+                "returnAmountFromSwaps": "0",
+                "returnAmountConsideringFees": "0",
+                "tokenIn": "0x0000000000000000000000000000000000000000",
+                "tokenOut": "0x0000000000000000000000000000000000000000",
+                "marketSp": "0",
+            }
+        }
     });
 
     let limit_price_violation_response = |(in_amount_wei, in_amount_ether)| {
         json!({
-            "tokenAddresses": [
-                "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                "0xba100000625a3754423978a60c9317c58a424e3d"
-            ],
-            "swaps": [
-                {
-                    "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820\
-                        db8f56000200000000000000000014",
-                    "assetInIndex": 0,
-                    "assetOutIndex": 1,
-                    "amount": in_amount_wei,
-                    "userData": "0x",
-                    "returnAmount": "1"
+            "data": {
+                "sorGetSwapPaths": {
+                    "tokenAddresses": [
+                        "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                        "0xba100000625a3754423978a60c9317c58a424e3d"
+                    ],
+                    "swaps": [
+                        {
+                            "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820\
+                                db8f56000200000000000000000014",
+                            "assetInIndex": 0,
+                            "assetOutIndex": 1,
+                            "amount": in_amount_wei,
+                            "userData": "0x",
+                            "returnAmount": "1"
+                        }
+                    ],
+                    "swapAmount": in_amount_ether,
+                    "swapAmountForSwaps": in_amount_ether,
+                    "returnAmount": "0.000000000000000001",
+                    "returnAmountFromSwaps": "0.000000000000000001",
+                    "returnAmountConsideringFees": "0.000000000000000001",
+                    "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                    "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                    "marketSp": "0.004393607339632106",
                 }
-            ],
-            "swapAmount": in_amount_ether,
-            "swapAmountForSwaps": in_amount_ether,
-            "returnAmount": "0.000000000000000001",
-            "returnAmountFromSwaps": "0.000000000000000001",
-            "returnAmountConsideringFees": "0.000000000000000001",
-            "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-            "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-            "marketSp": "0.004393607339632106",
+            }
         })
     };
 
@@ -101,29 +109,33 @@ async fn tested_amounts_adjust_depending_on_response() {
             path: mock::http::Path::Any,
             req: inner_request("1"),
             res: json!({
-                "tokenAddresses": [
-                    "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                    "0xba100000625a3754423978a60c9317c58a424e3d"
-                ],
-                "swaps": [
-                    {
-                        "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820\
-                            db8f56000200000000000000000014",
-                        "assetInIndex": 0,
-                        "assetOutIndex": 1,
-                        "amount": "1000000000000000000",
-                        "userData": "0x",
-                        "returnAmount": "227598784442065388110"
+                "data": {
+                    "sorGetSwapPaths": {
+                        "tokenAddresses": [
+                            "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                            "0xba100000625a3754423978a60c9317c58a424e3d"
+                        ],
+                        "swaps": [
+                            {
+                                "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820\
+                                    db8f56000200000000000000000014",
+                                "assetInIndex": 0,
+                                "assetOutIndex": 1,
+                                "amount": "1000000000000000000",
+                                "userData": "0x",
+                                "returnAmount": "227598784442065388110"
+                            }
+                        ],
+                        "swapAmount": "1.0",
+                        "swapAmountForSwaps": "1.0",
+                        "returnAmount": "227.598784442065388110",
+                        "returnAmountFromSwaps": "227.598784442065388110",
+                        "returnAmountConsideringFees": "227.307710853355710706",
+                        "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                        "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                        "marketSp": "0.004393607339632106",
                     }
-                ],
-                "swapAmount": "1.0",
-                "swapAmountForSwaps": "1.0",
-                "returnAmount": "227.598784442065388110",
-                "returnAmountFromSwaps": "227.598784442065388110",
-                "returnAmountConsideringFees": "227.307710853355710706",
-                "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-                "marketSp": "0.004393607339632106",
+                }
             }),
         },
         // After a successful response we try the next time with a bigger amount.
@@ -345,30 +357,34 @@ async fn tested_amounts_wrap_around() {
                 }
             })),
             res: json!({
-                "tokenAddresses": [
-                    "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                    "0xba100000625a3754423978a60c9317c58a424e3d"
-                ],
-                "swaps": [
-                    {
-                        "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820\
-                            db8f56000200000000000000000014",
-                        "assetInIndex": 0,
-                        "assetOutIndex": 1,
-                        "amount": amount_in_wei,
-                        "userData": "0x",
-                        "returnAmount": "70000000000000000"
+                "data": {
+                    "sorGetSwapPaths": {
+                        "tokenAddresses": [
+                            "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                            "0xba100000625a3754423978a60c9317c58a424e3d"
+                        ],
+                        "swaps": [
+                            {
+                                "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820\
+                                    db8f56000200000000000000000014",
+                                "assetInIndex": 0,
+                                "assetOutIndex": 1,
+                                "amount": amount_in_wei,
+                                "userData": "0x",
+                                "returnAmount": "70000000000000000"
+                            }
+                        ],
+                        "swapAmount": amount_in_ether,
+                        "swapAmountForSwaps": amount_in_ether,
+                        // Does not satisfy limit price of any chunk...
+                        "returnAmount": "0.70000000000000000",
+                        "returnAmountFromSwaps": "0.70000000000000000",
+                        "returnAmountConsideringFees": "1",
+                        "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                        "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                        "marketSp": "0.004393607339632106",
                     }
-                ],
-                "swapAmount": amount_in_ether,
-                "swapAmountForSwaps": amount_in_ether,
-                // Does not satisfy limit price of any chunk...
-                "returnAmount": "0.70000000000000000",
-                "returnAmountFromSwaps": "0.70000000000000000",
-                "returnAmountConsideringFees": "1",
-                "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-                "marketSp": "0.004393607339632106",
+                }
             }),
         },
     )
@@ -473,16 +489,20 @@ async fn moves_surplus_fee_to_buy_token() {
                 }
             })),
             res: json!({
-                "tokenAddresses": [],
-                "swaps": [],
-                "swapAmount": "0",
-                "swapAmountForSwaps": "0",
-                "returnAmount": "0",
-                "returnAmountFromSwaps": "0",
-                "returnAmountConsideringFees": "0",
-                "tokenIn": "0x0000000000000000000000000000000000000000",
-                "tokenOut": "0x0000000000000000000000000000000000000000",
-                "marketSp": "0",
+                "data": {
+                    "sorGetSwapPaths": {
+                        "tokenAddresses": [],
+                        "swaps": [],
+                        "swapAmount": "0",
+                        "swapAmountForSwaps": "0",
+                        "returnAmount": "0",
+                        "returnAmountFromSwaps": "0",
+                        "returnAmountConsideringFees": "0",
+                        "tokenIn": "0x0000000000000000000000000000000000000000",
+                        "tokenOut": "0x0000000000000000000000000000000000000000",
+                        "marketSp": "0",
+                    }
+                }
             }),
         },
         mock::http::Expectation::Post {
@@ -505,29 +525,33 @@ async fn moves_surplus_fee_to_buy_token() {
                 }
             })),
             res: json!({
-                "tokenAddresses": [
-                    "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                    "0xba100000625a3754423978a60c9317c58a424e3d"
-                ],
-                "swaps": [
-                    {
-                        "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820\
-                            db8f56000200000000000000000014",
-                        "assetInIndex": 0,
-                        "assetOutIndex": 1,
-                        "amount": "1000000000000000000",
-                        "userData": "0x",
-                        "returnAmount": "227598784442065388110"
+                "data": {
+                    "sorGetSwapPaths": {
+                        "tokenAddresses": [
+                            "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                            "0xba100000625a3754423978a60c9317c58a424e3d"
+                        ],
+                        "swaps": [
+                            {
+                                "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820\
+                                    db8f56000200000000000000000014",
+                                "assetInIndex": 0,
+                                "assetOutIndex": 1,
+                                "amount": "1000000000000000000",
+                                "userData": "0x",
+                                "returnAmount": "227598784442065388110"
+                            }
+                        ],
+                        "swapAmount": "1",
+                        "swapAmountForSwaps": "1",
+                        "returnAmount": "227.598784442065388110",
+                        "returnAmountFromSwaps": "227.598784442065388110",
+                        "returnAmountConsideringFees": "227.307710853355710706",
+                        "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                        "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                        "marketSp": "0.004393607339632106",
                     }
-                ],
-                "swapAmount": "1",
-                "swapAmountForSwaps": "1",
-                "returnAmount": "227.598784442065388110",
-                "returnAmountFromSwaps": "227.598784442065388110",
-                "returnAmountConsideringFees": "227.307710853355710706",
-                "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-                "marketSp": "0.004393607339632106",
+                }
             }),
         },
     ])
@@ -730,29 +754,33 @@ async fn insufficient_room_for_surplus_fee() {
             }
         })),
         res: json!({
-            "tokenAddresses": [
-                "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                "0xba100000625a3754423978a60c9317c58a424e3d"
-            ],
-            "swaps": [
-                {
-                    "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820\
-                        db8f56000200000000000000000014",
-                    "assetInIndex": 0,
-                    "assetOutIndex": 1,
-                    "amount": "1000000000000000000",
-                    "userData": "0x",
-                    "returnAmount": "227598784442065388110"
+            "data": {
+                "sorGetSwapPaths": {
+                    "tokenAddresses": [
+                        "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                        "0xba100000625a3754423978a60c9317c58a424e3d"
+                    ],
+                    "swaps": [
+                        {
+                            "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820\
+                                db8f56000200000000000000000014",
+                            "assetInIndex": 0,
+                            "assetOutIndex": 1,
+                            "amount": "1000000000000000000",
+                            "userData": "0x",
+                            "returnAmount": "227598784442065388110"
+                        }
+                    ],
+                    "swapAmount": "1",
+                    "swapAmountForSwaps": "1",
+                    "returnAmount": "227.598784442065388110",
+                    "returnAmountFromSwaps": "227.598784442065388110",
+                    "returnAmountConsideringFees": "227.307710853355710706",
+                    "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                    "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                    "marketSp": "0.004393607339632106",
                 }
-            ],
-            "swapAmount": "1",
-            "swapAmountForSwaps": "1",
-            "returnAmount": "227.598784442065388110",
-            "returnAmountFromSwaps": "227.598784442065388110",
-            "returnAmountConsideringFees": "227.307710853355710706",
-            "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-            "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-            "marketSp": "0.004393607339632106",
+            }
         }),
     }])
     .await;
@@ -853,29 +881,33 @@ async fn market() {
             }
         })),
         res: json!({
-            "tokenAddresses": [
-                "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                "0xba100000625a3754423978a60c9317c58a424e3d"
-            ],
-            "swaps": [
-                {
-                    "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820\
-                        db8f56000200000000000000000014",
-                    "assetInIndex": 0,
-                    "assetOutIndex": 1,
-                    "amount": "1000000000000000000",
-                    "userData": "0x",
-                    "returnAmount": "227598784442065388110"
+            "data": {
+                "sorGetSwapPaths": {
+                    "tokenAddresses": [
+                        "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                        "0xba100000625a3754423978a60c9317c58a424e3d"
+                    ],
+                    "swaps": [
+                        {
+                            "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820\
+                                db8f56000200000000000000000014",
+                            "assetInIndex": 0,
+                            "assetOutIndex": 1,
+                            "amount": "1000000000000000000",
+                            "userData": "0x",
+                            "returnAmount": "227598784442065388110"
+                        }
+                    ],
+                    "swapAmount": "1",
+                    "swapAmountForSwaps": "1",
+                    "returnAmount": "227.598784442065388110",
+                    "returnAmountFromSwaps": "227.598784442065388110",
+                    "returnAmountConsideringFees": "227.307710853355710706",
+                    "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                    "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                    "marketSp": "0.004393607339632106",
                 }
-            ],
-            "swapAmount": "1",
-            "swapAmountForSwaps": "1",
-            "returnAmount": "227.598784442065388110",
-            "returnAmountFromSwaps": "227.598784442065388110",
-            "returnAmountConsideringFees": "227.307710853355710706",
-            "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-            "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-            "marketSp": "0.004393607339632106",
+            }
         }),
     }])
     .await;
