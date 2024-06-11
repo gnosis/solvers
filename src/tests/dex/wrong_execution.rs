@@ -34,12 +34,12 @@ async fn test() {
         },
         Case {
             input_amount: "1000000000000000000",
-            output_amount: "227598784442065388110",
+            output_amount: "227598784442065388111",
             side: "buy",
         },
         Case {
             input_amount: "1000000000000000000",
-            output_amount: "227598784442065388110",
+            output_amount: "227598784442065388109",
             side: "buy",
         },
     ] {
