@@ -1,6 +1,6 @@
 use {
     crate::{
-        domain::{auction, dex, eth, order},
+        domain::{dex, eth, order},
         util,
     },
     contracts::ethcontract::I256,
@@ -20,6 +20,7 @@ pub struct Sor {
     vault: vault::Vault,
     settlement: eth::ContractAddress,
     chain_id: eth::ChainId,
+    query_batch_swap: bool,
 }
 
 pub struct Config {
@@ -37,6 +38,10 @@ pub struct Config {
 
     /// For which chain the solver is configured.
     pub chain_id: eth::ChainId,
+
+    /// Whether to run `queryBatchSwap` to update the return amount with most
+    /// up-to-date on-chain values.
+    pub query_batch_swap: bool,
 }
 
 impl Sor {
@@ -53,6 +58,7 @@ impl Sor {
             vault: vault::Vault::new(config.vault),
             settlement: config.settlement,
             chain_id: config.chain_id,
+            query_batch_swap: config.query_batch_swap,
         }
     }
 
@@ -60,9 +66,14 @@ impl Sor {
         &self,
         order: &dex::Order,
         slippage: &dex::Slippage,
-        _gas_price: auction::GasPrice,
     ) -> Result<dex::Swap, Error> {
-        let query = dto::Query::from_domain(order, slippage, self.chain_id, self.settlement)?;
+        let query = dto::Query::from_domain(
+            order,
+            slippage,
+            self.chain_id,
+            self.settlement,
+            self.query_batch_swap,
+        )?;
         let quote = {
             // Set up a tracing span to make debugging of API requests easier.
             // Historically, debugging API requests to external DEXs was a bit

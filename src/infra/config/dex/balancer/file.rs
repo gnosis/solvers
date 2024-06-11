@@ -26,6 +26,10 @@ struct Config {
     /// the SOR API.
     #[serde_as(as = "serialize::ChainId")]
     chain_id: eth::ChainId,
+
+    /// Whether to run `queryBatchSwap` to update the return amount with most
+    /// up-to-date on-chain values.
+    query_batch_swap: Option<bool>,
 }
 
 /// Load the driver configuration from a TOML file.
@@ -50,6 +54,7 @@ pub async fn load(path: &Path) -> super::Config {
             settlement: base.contracts.settlement,
             block_stream: base.block_stream.clone(),
             chain_id: config.chain_id,
+            query_batch_swap: config.query_batch_swap.unwrap_or(false),
         },
         base,
     }

@@ -55,6 +55,7 @@ impl Query<'_> {
         slippage: &dex::Slippage,
         chain_id: eth::ChainId,
         contract_address: eth::ContractAddress,
+        query_batch_swap: bool,
     ) -> Result<Self, Error> {
         let variables = Variables {
             call_data_input: CalDataInput {
@@ -64,7 +65,7 @@ impl Query<'_> {
                 slippage_percentage: slippage.as_factor().clone(),
             },
             chain: Chain::from_domain(chain_id)?,
-            query_batch_swap: false,
+            query_batch_swap,
             swap_amount: EtherAmount::from_wei(&order.amount.get()),
             swap_type: SwapType::from_domain(order.side),
             token_in: order.sell.0,
@@ -350,7 +351,8 @@ mod tests {
         let contract_address = eth::ContractAddress(
             H160::from_str("0x9008d19f58aabd9ed0d60971565aa8510560ab41").unwrap(),
         );
-        let query = Query::from_domain(&order, &slippage, chain_id, contract_address).unwrap();
+        let query =
+            Query::from_domain(&order, &slippage, chain_id, contract_address, false).unwrap();
 
         let actual = serde_json::to_value(query).unwrap();
         let expected = json!({
