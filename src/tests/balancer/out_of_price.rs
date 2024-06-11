@@ -47,17 +47,12 @@ async fn sell() {
                             "assetOutIndex": 1,
                             "amount": "1000000000000000000",
                             "userData": "0x",
-                            "returnAmount": "227598784442065388110"
                         }
                     ],
-                    "swapAmount": "1",
-                    "swapAmountForSwaps": "1",
-                    "returnAmount": "227.598784442065388110",
-                    "returnAmountFromSwaps": "227.598784442065388110",
-                    "returnAmountConsideringFees": "227.307710853355710706",
+                    "swapAmountRaw": "1000000000000000000",
+                    "returnAmount": "227598784442065388110",
                     "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
                     "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-                    "marketSp": "0.004393607339632106",
                 }
             }
         }),
@@ -162,17 +157,12 @@ async fn buy() {
                             "assetOutIndex": 1,
                             "amount": "100000000000000000000",
                             "userData": "0x",
-                            "returnAmount": "439470293178110675"
                         }
                     ],
-                    "swapAmount": "100",
-                    "swapAmountForSwaps": "100",
-                    "returnAmount": "0.439470293178110675",
-                    "returnAmountFromSwaps": "0.439470293178110675",
-                    "returnAmountConsideringFees": "0.440745919677086983",
+                    "swapAmountRaw": "100000000000000000000",
+                    "returnAmountRaw": "439470293178110675",
                     "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
                     "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-                    "marketSp": "0.004394663712203829"
                 }
             }
         }),

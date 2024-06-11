@@ -79,20 +79,8 @@ impl Sor {
         }
 
         let (input, output) = match order.side {
-            order::Side::Buy => (
-                quote
-                    .return_amount
-                    .to_wei()
-                    .ok_or(Error::InvalidSwapAmount)?,
-                quote.swap_amount.to_wei().ok_or(Error::InvalidSwapAmount)?,
-            ),
-            order::Side::Sell => (
-                quote.swap_amount.to_wei().ok_or(Error::InvalidSwapAmount)?,
-                quote
-                    .return_amount
-                    .to_wei()
-                    .ok_or(Error::InvalidSwapAmount)?,
-            ),
+            order::Side::Buy => (quote.return_amount_raw, quote.swap_amount_raw),
+            order::Side::Sell => (quote.swap_amount_raw, quote.return_amount_raw),
         };
 
         let (max_input, min_output) = match order.side {
@@ -190,8 +178,6 @@ pub enum Error {
     Http(util::http::Error),
     #[error("unsupported chain: {0:?}")]
     UnsupportedChainId(eth::ChainId),
-    #[error("invalid swap amount")]
-    InvalidSwapAmount,
 }
 
 impl From<util::http::RoundtripError<util::serialize::Never>> for Error {

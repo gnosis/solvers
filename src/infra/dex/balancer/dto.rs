@@ -33,8 +33,8 @@ query sorGetSwapPaths($callDataInput: GqlSwapCallDataInput!, $chain: GqlChain!, 
             amount
             userData
         }
-        swapAmount
-        returnAmount
+        swapAmountRaw
+        returnAmountRaw
         tokenIn
         tokenOut
     }
@@ -214,11 +214,13 @@ pub struct Quote {
     /// The swapped token amount.
     ///
     /// In sell token for sell orders or buy token for buy orders.
-    pub swap_amount: EtherAmount,
+    #[serde_as(as = "serialize::U256")]
+    pub swap_amount_raw: U256,
     /// The returned token amount.
     ///
     /// In buy token for sell orders or sell token for buy orders.
-    pub return_amount: EtherAmount,
+    #[serde_as(as = "serialize::U256")]
+    pub return_amount_raw: U256,
     /// The input (sell) token.
     #[serde(with = "address_default_when_empty")]
     pub token_in: H160,

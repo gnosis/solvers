@@ -1,15 +1,14 @@
 use {
     crate::{
-        domain::eth,
-        infra::dex::balancer::{dto, dto::EtherAmount},
+        infra::dex::balancer::dto,
         tests::{self, balancer, mock},
     },
     serde_json::json,
 };
 
 struct Case {
-    input_amount: EtherAmount,
-    output_amount: EtherAmount,
+    input_amount: &'static str,
+    output_amount: &'static str,
     side: &'static str,
 }
 
@@ -24,39 +23,23 @@ async fn test() {
         side,
     } in [
         Case {
-            input_amount: EtherAmount::from_wei(
-                &eth::U256::from_dec_str("1000000000000000001").unwrap(),
-            ),
-            output_amount: EtherAmount::from_wei(
-                &eth::U256::from_dec_str("227598784442065388110").unwrap(),
-            ),
+            input_amount: "1000000000000000001",
+            output_amount: "227598784442065388110",
             side: "sell",
         },
         Case {
-            input_amount: EtherAmount::from_wei(
-                &eth::U256::from_dec_str("999999999999999999").unwrap(),
-            ),
-            output_amount: EtherAmount::from_wei(
-                &eth::U256::from_dec_str("227598784442065388110").unwrap(),
-            ),
+            input_amount: "999999999999999999",
+            output_amount: "227598784442065388110",
             side: "sell",
         },
         Case {
-            input_amount: EtherAmount::from_wei(
-                &eth::U256::from_dec_str("1000000000000000000").unwrap(),
-            ),
-            output_amount: EtherAmount::from_wei(
-                &eth::U256::from_dec_str("227598784442065388110").unwrap(),
-            ),
+            input_amount: "1000000000000000000",
+            output_amount: "227598784442065388110",
             side: "buy",
         },
         Case {
-            input_amount: EtherAmount::from_wei(
-                &eth::U256::from_dec_str("1000000000000000000").unwrap(),
-            ),
-            output_amount: EtherAmount::from_wei(
-                &eth::U256::from_dec_str("227598784442065388110").unwrap(),
-            ),
+            input_amount: "1000000000000000000",
+            output_amount: "227598784442065388110",
             side: "buy",
         },
     ] {
@@ -98,19 +81,14 @@ async fn test() {
                             db8f56000200000000000000000014",
                         "assetInIndex": 0,
                         "assetOutIndex": 1,
-                        "amount": input_amount.to_wei().unwrap().to_string(),
+                        "amount": input_amount,
                         "userData": "0x",
-                        "returnAmount": output_amount.to_wei().unwrap().to_string(),
                     }
                 ],
-                "swapAmount": input_amount.value(),
-                "swapAmountForSwaps": input_amount.value(),
-                "returnAmount": output_amount.value(),
-                "returnAmountFromSwaps": output_amount.value(),
-                "returnAmountConsideringFees": output_amount.value(),
+                "swapAmountRaw": input_amount,
+                "returnAmountRaw": output_amount,
                 "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
                 "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-                "marketSp": "0.004393607339632106",
             }),
         }])
         .await;

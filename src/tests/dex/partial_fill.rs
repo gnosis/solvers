@@ -16,7 +16,7 @@ use {
 #[tokio::test]
 async fn tested_amounts_adjust_depending_on_response() {
     // observe::tracing::initialize_reentrant("solvers=trace");
-    let inner_request = |amount| {
+    let inner_request = |ether_amount| {
         mock::http::RequestBody::Exact(json!({
             "query": serde_json::to_value(dto::get_swap_paths_query::QUERY).unwrap(),
             "variables": {
@@ -27,7 +27,7 @@ async fn tested_amounts_adjust_depending_on_response() {
                 },
                 "chain": "MAINNET",
                 "queryBatchSwap": false,
-                "swapAmount": amount,
+                "swapAmount": ether_amount,
                 "swapType": "EXACT_IN",
                 "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
                 "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
@@ -41,19 +41,15 @@ async fn tested_amounts_adjust_depending_on_response() {
             "sorGetSwapPaths": {
                 "tokenAddresses": [],
                 "swaps": [],
-                "swapAmount": "0",
-                "swapAmountForSwaps": "0",
-                "returnAmount": "0",
-                "returnAmountFromSwaps": "0",
-                "returnAmountConsideringFees": "0",
+                "swapAmountRaw": "0",
+                "returnAmountRaw": "0",
                 "tokenIn": "0x0000000000000000000000000000000000000000",
                 "tokenOut": "0x0000000000000000000000000000000000000000",
-                "marketSp": "0",
             }
         }
     });
 
-    let limit_price_violation_response = |in_amount: EtherAmount| {
+    let limit_price_violation_response = |in_wei_amount| {
         json!({
             "data": {
                 "sorGetSwapPaths": {
@@ -67,19 +63,14 @@ async fn tested_amounts_adjust_depending_on_response() {
                                 db8f56000200000000000000000014",
                             "assetInIndex": 0,
                             "assetOutIndex": 1,
-                            "amount": in_amount.to_wei().unwrap().to_string(),
+                            "amount": in_wei_amount,
                             "userData": "0x",
-                            "returnAmount": "1"
                         }
                     ],
-                    "swapAmount": in_amount.value(),
-                    "swapAmountForSwaps": in_amount.value(),
-                    "returnAmount": "0.000000000000000001",
-                    "returnAmountFromSwaps": "0.000000000000000001",
-                    "returnAmountConsideringFees": "0.000000000000000001",
+                    "swapAmountRaw": in_wei_amount,
+                    "returnAmountRaw": "1",
                     "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
                     "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-                    "marketSp": "0.004393607339632106",
                 }
             }
         })
@@ -99,18 +90,12 @@ async fn tested_amounts_adjust_depending_on_response() {
         mock::http::Expectation::Post {
             path: mock::http::Path::Any,
             req: inner_request("4"),
-            res: limit_price_violation_response(EtherAmount::from_wei(
-                &eth::U256::from_dec_str("4000000000000000000").unwrap(),
-            ))
-            .clone(),
+            res: limit_price_violation_response("4000000000000000000").clone(),
         },
         mock::http::Expectation::Post {
             path: mock::http::Path::Any,
             req: inner_request("2"),
-            res: limit_price_violation_response(EtherAmount::from_wei(
-                &eth::U256::from_dec_str("2000000000000000000").unwrap(),
-            ))
-            .clone(),
+            res: limit_price_violation_response("2000000000000000000").clone(),
         },
         mock::http::Expectation::Post {
             path: mock::http::Path::Any,
@@ -130,17 +115,12 @@ async fn tested_amounts_adjust_depending_on_response() {
                                 "assetOutIndex": 1,
                                 "amount": "1000000000000000000",
                                 "userData": "0x",
-                                "returnAmount": "227598784442065388110"
                             }
                         ],
-                        "swapAmount": "1.0",
-                        "swapAmountForSwaps": "1.0",
-                        "returnAmount": "227.598784442065388110",
-                        "returnAmountFromSwaps": "227.598784442065388110",
-                        "returnAmountConsideringFees": "227.307710853355710706",
+                        "swapAmountRaw": "1000000000000000000",
+                        "returnAmountRaw": "227598784442065388110",
                         "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
                         "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-                        "marketSp": "0.004393607339632106",
                     }
                 }
             }),
@@ -380,18 +360,14 @@ async fn tested_amounts_wrap_around() {
                                 "assetOutIndex": 1,
                                 "amount": amount_in.to_wei().unwrap().to_string(),
                                 "userData": "0x",
-                                "returnAmount": "70000000000000000"
                             }
                         ],
-                        "swapAmount": amount_in.value(),
-                        "swapAmountForSwaps": amount_in.value(),
+                        "swapAmountRaw": amount_in.to_wei().unwrap().to_string(),
                         // Does not satisfy limit price of any chunk...
-                        "returnAmount": "0.70000000000000000",
-                        "returnAmountFromSwaps": "0.70000000000000000",
+                        "returnAmountRaw": "700000000000000000",
                         "returnAmountConsideringFees": "1",
                         "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
                         "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-                        "marketSp": "0.004393607339632106",
                     }
                 }
             }),
@@ -502,14 +478,10 @@ async fn moves_surplus_fee_to_buy_token() {
                     "sorGetSwapPaths": {
                         "tokenAddresses": [],
                         "swaps": [],
-                        "swapAmount": "0",
-                        "swapAmountForSwaps": "0",
-                        "returnAmount": "0",
-                        "returnAmountFromSwaps": "0",
-                        "returnAmountConsideringFees": "0",
+                        "swapAmountRaw": "0",
+                        "returnAmountRaw": "0",
                         "tokenIn": "0x0000000000000000000000000000000000000000",
                         "tokenOut": "0x0000000000000000000000000000000000000000",
-                        "marketSp": "0",
                     }
                 }
             }),
@@ -548,17 +520,12 @@ async fn moves_surplus_fee_to_buy_token() {
                                 "assetOutIndex": 1,
                                 "amount": "1000000000000000000",
                                 "userData": "0x",
-                                "returnAmount": "227598784442065388110"
                             }
                         ],
-                        "swapAmount": "1",
-                        "swapAmountForSwaps": "1",
-                        "returnAmount": "227.598784442065388110",
-                        "returnAmountFromSwaps": "227.598784442065388110",
-                        "returnAmountConsideringFees": "227.307710853355710706",
+                        "swapAmountRaw": "1000000000000000000",
+                        "returnAmountRaw": "227598784442065388110",
                         "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
                         "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-                        "marketSp": "0.004393607339632106",
                     }
                 }
             }),
@@ -777,17 +744,12 @@ async fn insufficient_room_for_surplus_fee() {
                             "assetOutIndex": 1,
                             "amount": "1000000000000000000",
                             "userData": "0x",
-                            "returnAmount": "227598784442065388110"
                         }
                     ],
-                    "swapAmount": "1",
-                    "swapAmountForSwaps": "1",
-                    "returnAmount": "227.598784442065388110",
-                    "returnAmountFromSwaps": "227.598784442065388110",
-                    "returnAmountConsideringFees": "227.307710853355710706",
+                    "swapAmountRaw": "1000000000000000000",
+                    "returnAmountRaw": "227598784442065388110",
                     "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
                     "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-                    "marketSp": "0.004393607339632106",
                 }
             }
         }),
@@ -907,14 +869,10 @@ async fn market() {
                             "returnAmount": "227598784442065388110"
                         }
                     ],
-                    "swapAmount": "1",
-                    "swapAmountForSwaps": "1",
-                    "returnAmount": "227.598784442065388110",
-                    "returnAmountFromSwaps": "227.598784442065388110",
-                    "returnAmountConsideringFees": "227.307710853355710706",
+                    "swapAmountRaw": "1000000000000000000",
+                    "returnAmountRaw": "227598784442065388110",
                     "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
                     "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-                    "marketSp": "0.004393607339632106",
                 }
             }
         }),

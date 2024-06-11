@@ -36,14 +36,10 @@ async fn test() {
                 "sorGetSwapPaths": {
                     "tokenAddresses": [],
                     "swaps": [],
-                    "swapAmount": "0",
-                    "swapAmountForSwaps": "0",
-                    "returnAmount": "0",
-                    "returnAmountFromSwaps": "0",
-                    "returnAmountConsideringFees": "0",
+                    "swapAmountRaw": "0",
+                    "returnAmountRaw": "0",
                     "tokenIn": "",
                     "tokenOut": "",
-                    "marketSp": "0",
                 }
             }
         }),
