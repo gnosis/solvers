@@ -39,10 +39,7 @@ struct Config {
 /// This method panics if the config is invalid or on I/O errors.
 pub async fn load(path: &Path) -> super::Config {
     let (base, config) = file::load::<Config>(path).await;
-
-    // Take advantage of the fact that deterministic deployment means that all
-    // CoW Protocol and Balancer Vault contracts have the same address.
-    let contracts = contracts::Contracts::for_chain(eth::ChainId::Mainnet);
+    let contracts = contracts::Contracts::for_chain(config.chain_id);
 
     super::Config {
         sor: dex::balancer::Config {
