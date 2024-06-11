@@ -58,7 +58,7 @@ impl Query<'_> {
         query_batch_swap: bool,
     ) -> Result<Self, Error> {
         let variables = Variables {
-            call_data_input: CalDataInput {
+            call_data_input: CallDataInput {
                 deadline: None,
                 receiver: contract_address.0,
                 sender: contract_address.0,
@@ -102,7 +102,7 @@ impl EtherAmount {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct Variables {
-    call_data_input: CalDataInput,
+    call_data_input: CallDataInput,
     /// The Chain to query.
     chain: Chain,
     /// Whether to run `queryBatchSwap` to update the return amount with most
@@ -125,7 +125,7 @@ struct Variables {
 /// given, call data is added to the response.
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-struct CalDataInput {
+struct CallDataInput {
     /// How long the swap should be valid, provide a timestamp. `999999999` for
     /// infinite. Default: infinite.
     #[serde(skip_serializing_if = "Option::is_none")]
