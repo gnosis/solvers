@@ -281,25 +281,6 @@ mod address_default_when_empty {
     }
 }
 
-mod wei_from_human_form {
-    use {
-        crate::domain::eth,
-        bigdecimal::BigDecimal,
-        number::conversions::big_decimal_to_u256,
-        serde::{de::Error, Deserialize as _, Deserializer},
-    };
-
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<eth::U256, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let value = BigDecimal::deserialize(deserializer)?;
-        big_decimal_to_u256(&value)
-            .and_then(|eth| eth.checked_mul(eth::U256::exp10(18)))
-            .ok_or_else(|| D::Error::custom("Invalid value for U256: out of range or format error"))
-    }
-}
-
 /// Tries to either parse the `T` directly or tries to convert the value in case
 /// it's a string. This is intended for deserializing number/string but is
 /// generic enough to be used for any value that can be converted from a string.
