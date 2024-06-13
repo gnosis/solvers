@@ -70,7 +70,7 @@ impl Query<'_> {
             swap_type: SwapType::from_domain(order.side),
             token_in: order.sell.0,
             token_out: order.buy.0,
-            use_vault_version: VaultVersion::V2 as u8,
+            use_vault_version: VaultVersion::V2.into(),
         };
         Ok(Self {
             query: get_swap_paths_query::QUERY,
@@ -183,8 +183,15 @@ impl SwapType {
     }
 }
 
+#[repr(u8)]
 enum VaultVersion {
     V2 = 2,
+}
+
+impl From<VaultVersion> for u8 {
+    fn from(value: VaultVersion) -> Self {
+        value as u8
+    }
 }
 
 /// The response from the Balancer SOR service.
