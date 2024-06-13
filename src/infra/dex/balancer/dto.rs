@@ -68,7 +68,7 @@ impl Query<'_> {
             swap_type: SwapType::from_domain(order.side),
             token_in: order.sell.0,
             token_out: order.buy.0,
-            use_vault_version: VaultVersion::V2.into(),
+            use_vault_version: Some(VaultVersion::V2.into()),
         };
         Ok(Self {
             query: QUERY,
@@ -116,7 +116,7 @@ struct Variables {
     token_out: H160,
     /// Which vault version to use. If none provided, will chose the better
     /// return from either version.
-    use_vault_version: u8,
+    use_vault_version: Option<u8>,
 }
 
 /// Inputs for the call data to create the swap transaction. If this input is
