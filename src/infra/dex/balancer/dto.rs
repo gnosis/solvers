@@ -64,7 +64,7 @@ impl Query<'_> {
             },
             chain: Chain::from_domain(chain_id)?,
             query_batch_swap,
-            swap_amount: EtherAmount::from_wei(&order.amount.get()),
+            swap_amount: HumanReadableAmount::from_decimal_units(&order.amount.get()),
             swap_type: SwapType::from_domain(order.side),
             token_in: order.sell.0,
             token_out: order.buy.0,
@@ -77,21 +77,24 @@ impl Query<'_> {
     }
 }
 
-/// Ether amount refers to the SOR API V3's `AmountHumanReadable` type.
+/// Refers to the SOR API V3's `AmountHumanReadable` type and represents a token
+/// amount without decimals.
 #[serde_as]
 #[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct EtherAmount(BigDecimal);
+pub struct HumanReadableAmount(BigDecimal);
 
-impl EtherAmount {
-    pub fn from_wei(wei: &U256) -> EtherAmount {
-        Self(u256_to_big_decimal(wei) / BigDecimal::from(10_u64.pow(18)))
+impl HumanReadableAmount {
+    /// Convert a `U256` amount to a human form.
+    pub fn from_decimal_units(units: &U256) -> HumanReadableAmount {
+        Self(u256_to_big_decimal(units) / BigDecimal::from(10_u64.pow(18)))
     }
 
-    pub fn value(&self) -> BigDecimal {
-        self.0.clone()
+    pub fn value(&self) -> &BigDecimal {
+        &self.0
     }
 
-    pub fn to_wei(&self) -> Option<U256> {
+    /// Convert the human readable amount to a `U256` with 18 decimals.
+    pub fn to_decimal_units(&self) -> Option<U256> {
         big_decimal_to_u256(&(&self.0 * BigDecimal::from(10_u64.pow(18))))
     }
 }
@@ -107,7 +110,7 @@ struct Variables {
     /// up-to-date on-chain values.
     query_batch_swap: bool,
     /// The amount to swap in human form.
-    swap_amount: EtherAmount,
+    swap_amount: HumanReadableAmount,
     /// SwapType either exact_in or exact_out (also givenIn or givenOut).
     swap_type: SwapType,
     /// Token address of the tokenIn.

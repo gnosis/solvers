@@ -1,7 +1,7 @@
 use {
     crate::{
         domain::eth,
-        infra::dex::balancer::{dto, dto::EtherAmount},
+        infra::dex::balancer::{dto, dto::HumanReadableAmount},
         tests::{self, balancer, mock},
     },
     serde_json::json,
@@ -315,64 +315,70 @@ async fn tested_amounts_wrap_around() {
     // Test is set up such that 2.5 BAL or exactly 0.01 ETH.
     // And the lowest amount we are willing to fill is 0.01 ETH.
     let fill_attempts = [
-        EtherAmount::from_wei(&eth::U256::from_dec_str("16000000000000000000").unwrap()), // 16 BAL == 0.064 ETH
+        HumanReadableAmount::from_decimal_units(
+            &eth::U256::from_dec_str("16000000000000000000").unwrap(),
+        ), // 16 BAL == 0.064 ETH
         // ("8000000000000000000", "8"),   // 8  BAL == 0.032 ETH
-        EtherAmount::from_wei(&eth::U256::from_dec_str("8000000000000000000").unwrap()), // 8  BAL == 0.032 ETH
+        HumanReadableAmount::from_decimal_units(
+            &eth::U256::from_dec_str("8000000000000000000").unwrap(),
+        ), // 8  BAL == 0.032 ETH
         // ("4000000000000000000", "4"),   // 4  BAL == 0.016 ETH
-        EtherAmount::from_wei(&eth::U256::from_dec_str("4000000000000000000").unwrap()), // 4  BAL == 0.016 ETH
+        HumanReadableAmount::from_decimal_units(
+            &eth::U256::from_dec_str("4000000000000000000").unwrap(),
+        ), // 4  BAL == 0.016 ETH
         // Next would be 2 BAL == 0.008 ETH which is below
         // the minimum fill of 0.01 ETH so instead we start over.
-        EtherAmount::from_wei(&eth::U256::from_dec_str("16000000000000000000").unwrap()), // 16 BAL == 0.06 ETH
+        HumanReadableAmount::from_decimal_units(
+            &eth::U256::from_dec_str("16000000000000000000").unwrap(),
+        ), // 16 BAL == 0.06 ETH
     ]
     .into_iter()
-    .map(
-        |amount_in| mock::http::Expectation::Post {
-            path: mock::http::Path::Any,
-            req: mock::http::RequestBody::Exact(json!({
-                "query": serde_json::to_value(dto::QUERY).unwrap(),
-                "variables": {
-                    "callDataInput": {
-                        "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                        "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                        "slippagePercentage": "0.01"
-                    },
-                    "chain": "MAINNET",
-                    "queryBatchSwap": false,
-                    "swapAmount": amount_in.value(),
-                    "swapType": "EXACT_OUT",
+    .map(|amount_in| mock::http::Expectation::Post {
+        path: mock::http::Path::Any,
+        req: mock::http::RequestBody::Exact(json!({
+            "query": serde_json::to_value(dto::QUERY).unwrap(),
+            "variables": {
+                "callDataInput": {
+                    "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                    "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                    "slippagePercentage": "0.01"
+                },
+                "chain": "MAINNET",
+                "queryBatchSwap": false,
+                "swapAmount": amount_in.value(),
+                "swapType": "EXACT_OUT",
+                "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                "useVaultVersion": 2
+            }
+        })),
+        res: json!({
+            "data": {
+                "sorGetSwapPaths": {
+                    "tokenAddresses": [
+                        "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                        "0xba100000625a3754423978a60c9317c58a424e3d"
+                    ],
+                    "swaps": [
+                        {
+                            "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820\
+                                db8f56000200000000000000000014",
+                            "assetInIndex": 0,
+                            "assetOutIndex": 1,
+                            "amount": amount_in.to_decimal_units().unwrap().to_string(),
+                            "userData": "0x",
+                        }
+                    ],
+                    "swapAmountRaw": amount_in.to_decimal_units().unwrap().to_string(),
+                    // Does not satisfy limit price of any chunk...
+                    "returnAmountRaw": "700000000000000000",
+                    "returnAmountConsideringFees": "1",
                     "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
                     "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-                    "useVaultVersion": 2
                 }
-            })),
-            res: json!({
-                "data": {
-                    "sorGetSwapPaths": {
-                        "tokenAddresses": [
-                            "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                            "0xba100000625a3754423978a60c9317c58a424e3d"
-                        ],
-                        "swaps": [
-                            {
-                                "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820\
-                                    db8f56000200000000000000000014",
-                                "assetInIndex": 0,
-                                "assetOutIndex": 1,
-                                "amount": amount_in.to_wei().unwrap().to_string(),
-                                "userData": "0x",
-                            }
-                        ],
-                        "swapAmountRaw": amount_in.to_wei().unwrap().to_string(),
-                        // Does not satisfy limit price of any chunk...
-                        "returnAmountRaw": "700000000000000000",
-                        "returnAmountConsideringFees": "1",
-                        "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                        "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-                    }
-                }
-            }),
-        },
-    )
+            }
+        }),
+    })
     .collect();
 
     let api = mock::http::setup(fill_attempts).await;
