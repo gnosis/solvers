@@ -46,7 +46,7 @@ async fn test() {
         let api = mock::http::setup(vec![mock::http::Expectation::Post {
             path: mock::http::Path::Any,
             req: mock::http::RequestBody::Exact(json!({
-                "query": serde_json::to_value(dto::get_swap_paths_query::QUERY).unwrap(),
+                "query": serde_json::to_value(dto::QUERY).unwrap(),
                 "variables": {
                     "callDataInput": {
                         "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",

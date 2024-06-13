@@ -11,9 +11,8 @@ use {
     serde_with::serde_as,
 };
 
-pub mod get_swap_paths_query {
-    /// Get swap quote from the SOR v2 for the V2 vault.
-    pub const QUERY: &str = r#"
+/// Get swap quote from the SOR v2 for the V2 vault.
+pub const QUERY: &str = r#"
 query sorGetSwapPaths($callDataInput: GqlSwapCallDataInput!, $chain: GqlChain!, $queryBatchSwap: Boolean!, $swapAmount: AmountHumanReadable!, $swapType: GqlSorSwapType!, $tokenIn: String!, $tokenOut: String!, $useVaultVersion: Int) {
     sorGetSwapPaths(
         callDataInput: $callDataInput,
@@ -39,8 +38,7 @@ query sorGetSwapPaths($callDataInput: GqlSwapCallDataInput!, $chain: GqlChain!, 
         tokenOut
     }
 }
-    "#;
-}
+"#;
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -73,7 +71,7 @@ impl Query<'_> {
             use_vault_version: VaultVersion::V2.into(),
         };
         Ok(Self {
-            query: get_swap_paths_query::QUERY,
+            query: QUERY,
             variables,
         })
     }
@@ -344,7 +342,7 @@ mod tests {
 
         let actual = serde_json::to_value(query).unwrap();
         let expected = json!({
-            "query": get_swap_paths_query::QUERY,
+            "query": QUERY,
             "variables": {
                 "callDataInput": {
                     "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",

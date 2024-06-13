@@ -18,7 +18,7 @@ async fn tested_amounts_adjust_depending_on_response() {
     // observe::tracing::initialize_reentrant("solvers=trace");
     let inner_request = |ether_amount| {
         mock::http::RequestBody::Exact(json!({
-            "query": serde_json::to_value(dto::get_swap_paths_query::QUERY).unwrap(),
+            "query": serde_json::to_value(dto::QUERY).unwrap(),
             "variables": {
                 "callDataInput": {
                     "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
@@ -329,7 +329,7 @@ async fn tested_amounts_wrap_around() {
         |amount_in| mock::http::Expectation::Post {
             path: mock::http::Path::Any,
             req: mock::http::RequestBody::Exact(json!({
-                "query": serde_json::to_value(dto::get_swap_paths_query::QUERY).unwrap(),
+                "query": serde_json::to_value(dto::QUERY).unwrap(),
                 "variables": {
                     "callDataInput": {
                         "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
@@ -457,7 +457,7 @@ async fn moves_surplus_fee_to_buy_token() {
         mock::http::Expectation::Post {
             path: mock::http::Path::Any,
             req: mock::http::RequestBody::Exact(json!({
-                "query": serde_json::to_value(dto::get_swap_paths_query::QUERY).unwrap(),
+                "query": serde_json::to_value(dto::QUERY).unwrap(),
                 "variables": {
                     "callDataInput": {
                         "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
@@ -489,7 +489,7 @@ async fn moves_surplus_fee_to_buy_token() {
         mock::http::Expectation::Post {
             path: mock::http::Path::Any,
             req: mock::http::RequestBody::Exact(json!({
-                "query": serde_json::to_value(dto::get_swap_paths_query::QUERY).unwrap(),
+                "query": serde_json::to_value(dto::QUERY).unwrap(),
                 "variables": {
                     "callDataInput": {
                         "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
@@ -713,7 +713,7 @@ async fn insufficient_room_for_surplus_fee() {
     let api = mock::http::setup(vec![mock::http::Expectation::Post {
         path: mock::http::Path::Any,
         req: mock::http::RequestBody::Exact(json!({
-            "query": serde_json::to_value(dto::get_swap_paths_query::QUERY).unwrap(),
+            "query": serde_json::to_value(dto::QUERY).unwrap(),
             "variables": {
                 "callDataInput": {
                     "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
@@ -835,7 +835,7 @@ async fn market() {
     let api = mock::http::setup(vec![mock::http::Expectation::Post {
         path: mock::http::Path::Any,
         req: mock::http::RequestBody::Exact(json!({
-            "query": serde_json::to_value(dto::get_swap_paths_query::QUERY).unwrap(),
+            "query": serde_json::to_value(dto::QUERY).unwrap(),
             "variables": {
                 "callDataInput": {
                     "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
