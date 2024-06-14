@@ -3474,7 +3474,7 @@ dependencies = [
  "hyper",
  "itertools 0.11.0",
  "num",
- "number 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.258.0)",
+ "number",
  "observe",
  "prometheus",
  "prometheus-metric-storage",
