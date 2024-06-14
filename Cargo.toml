@@ -52,4 +52,5 @@ number =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.262.0
 
 [dev-dependencies]
 glob = "0.3"
+maplit = "1"
 tempfile = "3"

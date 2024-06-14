@@ -1,6 +1,11 @@
 use {
     crate::{
-        domain::{dex, eth, order},
+        domain::{
+            auction,
+            dex,
+            eth::{self, TokenAddress},
+            order,
+        },
         util,
     },
     contracts::ethcontract::I256,
@@ -66,9 +71,11 @@ impl Sor {
         &self,
         order: &dex::Order,
         slippage: &dex::Slippage,
+        tokens: &auction::Tokens,
     ) -> Result<dex::Swap, Error> {
         let query = dto::Query::from_domain(
             order,
+            tokens,
             slippage,
             self.chain_id,
             self.settlement,
@@ -189,6 +196,8 @@ pub enum Error {
     Http(util::http::Error),
     #[error("unsupported chain: {0:?}")]
     UnsupportedChainId(eth::ChainId),
+    #[error("decimals are missing for the swapped token: {0:?}")]
+    MissingDecimals(TokenAddress),
 }
 
 impl From<util::http::RoundtripError<util::serialize::Never>> for Error {

@@ -3473,6 +3473,7 @@ dependencies = [
  "humantime-serde",
  "hyper",
  "itertools 0.11.0",
+ "maplit",
  "num",
  "number",
  "observe",
