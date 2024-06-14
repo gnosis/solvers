@@ -2,54 +2,16 @@
 //! swap was found for the specified quoted order.
 
 use {
-    crate::{
-        infra::dex::balancer::dto,
-        tests::{self, balancer, mock},
-    },
+    crate::tests::{self, balancer},
     serde_json::json,
+    std::{net::SocketAddr, str::FromStr},
 };
 
 /// Tests that orders get marked as "mandatory" in `/quote` requests.
 #[tokio::test]
 async fn test() {
-    let api = mock::http::setup(vec![mock::http::Expectation::Post {
-        path: mock::http::Path::Any,
-        req: mock::http::RequestBody::Partial(
-            json!({
-                "query": serde_json::to_value(dto::QUERY).unwrap(),
-                "variables": {
-                    "callDataInput": {
-                        "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                        "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                        "slippagePercentage": "0.01"
-                    },
-                    "chain": "MAINNET",
-                    "queryBatchSwap": false,
-                    "swapAmount": "1",
-                    "swapType": "EXACT_IN",
-                    "tokenIn": "0x1111111111111111111111111111111111111111",
-                    "tokenOut": "0x2222222222222222222222222222222222222222",
-                    "useVaultVersion": 2
-                }
-            }),
-            vec!["variables.callDataInput.deadline".to_string()],
-        ),
-        res: json!({
-            "data": {
-                "sorGetSwapPaths": {
-                    "tokenAddresses": [],
-                    "swaps": [],
-                    "swapAmountRaw": "0",
-                    "returnAmountRaw": "0",
-                    "tokenIn": "",
-                    "tokenOut": "",
-                }
-            }
-        }),
-    }])
-    .await;
-
-    let engine = tests::SolverEngine::new("balancer", balancer::config(&api.address)).await;
+    let api_address = SocketAddr::from_str("127.0.0.1:8080").unwrap();
+    let engine = tests::SolverEngine::new("balancer", balancer::config(&api_address)).await;
 
     let solution = engine
         .solve(json!({
