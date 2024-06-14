@@ -260,7 +260,7 @@ macro_rules! assert_json_matches {
         let exclude_paths = parse_field_paths(&$exclude_paths);
         let mut path = vec![];
         json_matches_excluding(&$actual, &$expected, &exclude_paths, &mut path)
-            .expect("JSON did not match with the exclusion of specified paths.");
+            .expect("JSON did not match with the exclusion of specified paths");
     }};
 }
 
@@ -432,7 +432,7 @@ mod tests {
 
     #[test]
     #[should_panic(
-        expected = "JSON did not match with the exclusion of specified paths.: Mismatch at \
+        expected = "JSON did not match with the exclusion of specified paths: Mismatch at \
                     user.profile.name: String(\"Alice\") != String(\"Bob\")"
     )]
     fn test_json_matches_excluding_failure() {
