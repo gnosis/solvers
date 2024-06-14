@@ -320,19 +320,23 @@ async fn tested_amounts_wrap_around() {
     let fill_attempts = [
         HumanReadableAmount::from_decimal_units(
             &eth::U256::from_dec_str("16000000000000000000").unwrap(),
+            18,
         ), // 16 BAL == 0.064 ETH
         // ("8000000000000000000", "8"),   // 8  BAL == 0.032 ETH
         HumanReadableAmount::from_decimal_units(
             &eth::U256::from_dec_str("8000000000000000000").unwrap(),
+            18,
         ), // 8  BAL == 0.032 ETH
         // ("4000000000000000000", "4"),   // 4  BAL == 0.016 ETH
         HumanReadableAmount::from_decimal_units(
             &eth::U256::from_dec_str("4000000000000000000").unwrap(),
+            18,
         ), // 4  BAL == 0.016 ETH
         // Next would be 2 BAL == 0.008 ETH which is below
         // the minimum fill of 0.01 ETH so instead we start over.
         HumanReadableAmount::from_decimal_units(
             &eth::U256::from_dec_str("16000000000000000000").unwrap(),
+            18,
         ), // 16 BAL == 0.06 ETH
     ]
     .into_iter()
@@ -371,11 +375,11 @@ async fn tested_amounts_wrap_around() {
                                 db8f56000200000000000000000014",
                             "assetInIndex": 0,
                             "assetOutIndex": 1,
-                            "amount": amount_in.to_decimal_units().unwrap().to_string(),
+                            "amount": amount_in.to_decimal_units(18).unwrap().to_string(),
                             "userData": "0x",
                         }
                     ],
-                    "swapAmountRaw": amount_in.to_decimal_units().unwrap().to_string(),
+                    "swapAmountRaw": amount_in.to_decimal_units(18).unwrap().to_string(),
                     // Does not satisfy limit price of any chunk...
                     "returnAmountRaw": "700000000000000000",
                     "returnAmountConsideringFees": "1",

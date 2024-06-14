@@ -1,10 +1,10 @@
 use {
     crate::{
-        domain::{dex, eth, order},
+        domain::{auction, dex, eth, order},
         infra::dex::balancer::Error,
         util::serialize,
     },
-    bigdecimal::BigDecimal,
+    bigdecimal::{num_bigint::BigInt, BigDecimal},
     ethereum_types::{H160, H256, U256},
     number::conversions::{big_decimal_to_u256, u256_to_big_decimal},
     serde::{Deserialize, Serialize},
@@ -50,12 +50,21 @@ pub struct Query<'a> {
 impl Query<'_> {
     pub fn from_domain(
         order: &dex::Order,
+        tokens: &auction::Tokens,
         slippage: &dex::Slippage,
         chain_id: eth::ChainId,
         contract_address: eth::ContractAddress,
         query_batch_swap: bool,
         swap_deadline: Option<u64>,
     ) -> Result<Self, Error> {
+        let token_decimals = match order.side {
+            order::Side::Buy => tokens
+                .decimals(&order.buy)
+                .ok_or(Error::MissingDecimals(order.buy)),
+            order::Side::Sell => tokens
+                .decimals(&order.sell)
+                .ok_or(Error::MissingDecimals(order.sell)),
+        }?;
         let variables = Variables {
             call_data_input: CallDataInput {
                 deadline: swap_deadline,
@@ -65,7 +74,10 @@ impl Query<'_> {
             },
             chain: Chain::from_domain(chain_id)?,
             query_batch_swap,
-            swap_amount: HumanReadableAmount::from_decimal_units(&order.amount.get()),
+            swap_amount: HumanReadableAmount::from_decimal_units(
+                &order.amount.get(),
+                token_decimals,
+            ),
             swap_type: SwapType::from_domain(order.side),
             token_in: order.sell.0,
             token_out: order.buy.0,
@@ -86,8 +98,9 @@ pub struct HumanReadableAmount(BigDecimal);
 
 impl HumanReadableAmount {
     /// Convert a `U256` amount to a human form.
-    pub fn from_decimal_units(units: &U256) -> HumanReadableAmount {
-        Self(u256_to_big_decimal(units) / BigDecimal::from(10_u64.pow(18)))
+    pub fn from_decimal_units(units: &U256, decimals: u8) -> HumanReadableAmount {
+        let decimals: BigDecimal = BigInt::from(10).pow(decimals as u32).into();
+        Self(u256_to_big_decimal(units) / &decimals)
     }
 
     pub fn value(&self) -> &BigDecimal {
@@ -95,8 +108,9 @@ impl HumanReadableAmount {
     }
 
     /// Convert the human readable amount to a `U256` with 18 decimals.
-    pub fn to_decimal_units(&self) -> Option<U256> {
-        big_decimal_to_u256(&(&self.0 * BigDecimal::from(10_u64.pow(18))))
+    pub fn to_decimal_units(&self, decimals: u8) -> Option<U256> {
+        let decimals: BigDecimal = BigInt::from(10).pow(decimals as u32).into();
+        big_decimal_to_u256(&(&self.0 * decimals))
     }
 }
 
@@ -322,10 +336,26 @@ mod value_or_string {
 
 #[cfg(test)]
 mod tests {
-    use {super::*, serde_json::json, std::str::FromStr};
+    use {super::*, maplit::hashmap, serde_json::json, std::str::FromStr};
 
     #[test]
     fn test_query_serialization() {
+        let tokens = auction::Tokens(hashmap! {
+            eth::TokenAddress(H160::from_str("0x2170ed0880ac9a755fd29b2688956bd959f933f8").unwrap()) => auction::Token {
+                decimals: Some(18),
+                symbol: Some("ETH".to_string()),
+                reference_price: None,
+                available_balance: U256::from(1000),
+                trusted: true,
+            },
+            eth::TokenAddress(H160::from_str("0xdac17f958d2ee523a2206206994597c13d831ec7").unwrap()) => auction::Token {
+                decimals: Some(24),
+                symbol: Some("USDT".to_string()),
+                reference_price: None,
+                available_balance: U256::from(1000),
+                trusted: true,
+            },
+        });
         let order = dex::Order {
             sell: H160::from_str("0x2170ed0880ac9a755fd29b2688956bd959f933f8")
                 .unwrap()
@@ -343,6 +373,7 @@ mod tests {
         );
         let query = Query::from_domain(
             &order,
+            &tokens,
             &slippage,
             chain_id,
             contract_address,
@@ -363,7 +394,7 @@ mod tests {
                 },
                 "chain": "MAINNET",
                 "queryBatchSwap": false,
-                "swapAmount": "0.000000000000001",
+                "swapAmount": "0.000000000000000000001",
                 "swapType": "EXACT_OUT",
                 "tokenIn": "0x2170ed0880ac9a755fd29b2688956bd959f933f8",
                 "tokenOut": "0xdac17f958d2ee523a2206206994597c13d831ec7",
