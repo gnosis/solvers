@@ -147,14 +147,14 @@ pub async fn setup(mut expectations: Vec<Expectation>) -> ServerHandle {
                     axum::response::Json(get(state, Some(path), query))
                 },
             )
-                .post(
-                    |axum::extract::State(state),
-                     axum::extract::Path(path),
-                     axum::extract::RawQuery(query),
-                     axum::extract::Json(req)| async move {
-                        axum::response::Json(post(state, Some(path), query, req))
-                    },
-                ),
+            .post(
+                |axum::extract::State(state),
+                 axum::extract::Path(path),
+                 axum::extract::RawQuery(query),
+                 axum::extract::Json(req)| async move {
+                    axum::response::Json(post(state, Some(path), query, req))
+                },
+            ),
         )
         // Annoying, but `axum` doesn't seem to match `/` with the above route,
         // so explicitly mount `/`.
@@ -165,13 +165,13 @@ pub async fn setup(mut expectations: Vec<Expectation>) -> ServerHandle {
                     axum::response::Json(get(state, None, query))
                 },
             )
-                .post(
-                    |axum::extract::State(state),
-                     axum::extract::RawQuery(query),
-                     axum::extract::Json(req)| async move {
-                        axum::response::Json(post(state, None, query, req))
-                    },
-                ),
+            .post(
+                |axum::extract::State(state),
+                 axum::extract::RawQuery(query),
+                 axum::extract::Json(req)| async move {
+                    axum::response::Json(post(state, None, query, req))
+                },
+            ),
         )
         .with_state(State {
             expectations: expectations.clone(),
