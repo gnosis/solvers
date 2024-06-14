@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use {
     std::{
         fmt::{self, Debug, Formatter},
@@ -253,5 +254,40 @@ fn full_path(path: Option<String>, query: Option<String>) -> String {
     match query {
         Some(query) => format!("{path}?{query}"),
         None => path,
+    }
+}
+
+fn parse_field_paths(paths: &[&str]) -> HashSet<Vec<String>> {
+    paths.iter().map(|path| {
+        path.split('.').map(String::from).collect()
+    }).collect()
+}
+
+fn json_matches_excluding(actual: &serde_json::Value, expected: &serde_json::Value, exclude_paths: &HashSet<Vec<String>>, current_path: &mut Vec<String>) -> bool {
+    match (actual, expected) {
+        (serde_json::Value::Object(map_a), serde_json::Value::Object(map_b)) => {
+            for (key, value_a) in map_a {
+                current_path.push(key.clone());
+
+                if exclude_paths.contains(current_path) {
+                    current_path.pop();  // Cleanup after checking
+                    continue;  // Skip this field
+                }
+
+                if let Some(value_b) = map_b.get(key) {
+                    if !json_matches_excluding(value_a, value_b, exclude_paths, current_path) {
+                        current_path.pop();  // Cleanup before returning false
+                        return false;  // Recursively check nested objects
+                    }
+                } else {
+                    current_path.pop();  // Cleanup before returning false
+                    return false;  // Key exists in a but not in b
+                }
+
+                current_path.pop();  // Cleanup after processing this key
+            }
+            true
+        },
+        _ => actual == expected,  // For non-object types or if both are not objects, just compare directly
     }
 }
