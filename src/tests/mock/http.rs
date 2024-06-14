@@ -431,7 +431,10 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(
+        expected = "JSON did not match with the exclusion of specified paths.: Mismatch at \
+                    user.profile.name: String(\"Alice\") != String(\"Bob\")"
+    )]
     fn test_json_matches_excluding_failure() {
         let json_a = json!({
             "user": {
