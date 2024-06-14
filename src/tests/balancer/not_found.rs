@@ -14,23 +14,26 @@ use {
 async fn test() {
     let api = mock::http::setup(vec![mock::http::Expectation::Post {
         path: mock::http::Path::Any,
-        req: mock::http::RequestBody::Exact(json!({
-            "query": serde_json::to_value(dto::QUERY).unwrap(),
-            "variables": {
-                "callDataInput": {
-                    "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                    "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                    "slippagePercentage": "0.01"
-                },
-                "chain": "MAINNET",
-                "queryBatchSwap": false,
-                "swapAmount": "1",
-                "swapType": "EXACT_IN",
-                "tokenIn": "0x1111111111111111111111111111111111111111",
-                "tokenOut": "0x2222222222222222222222222222222222222222",
-                "useVaultVersion": 2
-            }
-        })),
+        req: mock::http::RequestBody::Partial(
+            json!({
+                "query": serde_json::to_value(dto::QUERY).unwrap(),
+                "variables": {
+                    "callDataInput": {
+                        "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                        "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                        "slippagePercentage": "0.01"
+                    },
+                    "chain": "MAINNET",
+                    "queryBatchSwap": false,
+                    "swapAmount": "1",
+                    "swapType": "EXACT_IN",
+                    "tokenIn": "0x1111111111111111111111111111111111111111",
+                    "tokenOut": "0x2222222222222222222222222222222222222222",
+                    "useVaultVersion": 2
+                }
+            }),
+            vec!["variables.callDataInput.deadline".to_string()],
+        ),
         res: json!({
             "data": {
                 "sorGetSwapPaths": {

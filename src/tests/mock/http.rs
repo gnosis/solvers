@@ -1,6 +1,7 @@
-use std::collections::HashSet;
 use {
+    anyhow::anyhow,
     std::{
+        collections::HashSet,
         fmt::{self, Debug, Formatter},
         net::SocketAddr,
         sync::{
@@ -81,6 +82,10 @@ pub enum Expectation {
 pub enum RequestBody {
     /// The received `[RequestBody]` has to match the provided value exactly.
     Exact(serde_json::Value),
+    /// The received `[RequestBody]` has to match the provided value partially
+    /// excluding the specified paths which are represented as dot-separated
+    /// strings.
+    Partial(serde_json::Value, Vec<String>),
     /// Any `[RequestBody]` will be accepted.
     Any,
 }
@@ -142,14 +147,14 @@ pub async fn setup(mut expectations: Vec<Expectation>) -> ServerHandle {
                     axum::response::Json(get(state, Some(path), query))
                 },
             )
-            .post(
-                |axum::extract::State(state),
-                 axum::extract::Path(path),
-                 axum::extract::RawQuery(query),
-                 axum::extract::Json(req)| async move {
-                    axum::response::Json(post(state, Some(path), query, req))
-                },
-            ),
+                .post(
+                    |axum::extract::State(state),
+                     axum::extract::Path(path),
+                     axum::extract::RawQuery(query),
+                     axum::extract::Json(req)| async move {
+                        axum::response::Json(post(state, Some(path), query, req))
+                    },
+                ),
         )
         // Annoying, but `axum` doesn't seem to match `/` with the above route,
         // so explicitly mount `/`.
@@ -160,13 +165,13 @@ pub async fn setup(mut expectations: Vec<Expectation>) -> ServerHandle {
                     axum::response::Json(get(state, None, query))
                 },
             )
-            .post(
-                |axum::extract::State(state),
-                 axum::extract::RawQuery(query),
-                 axum::extract::Json(req)| async move {
-                    axum::response::Json(post(state, None, query, req))
-                },
-            ),
+                .post(
+                    |axum::extract::State(state),
+                     axum::extract::RawQuery(query),
+                     axum::extract::Json(req)| async move {
+                        axum::response::Json(post(state, None, query, req))
+                    },
+                ),
         )
         .with_state(State {
             expectations: expectations.clone(),
@@ -222,6 +227,43 @@ fn get(state: State, path: Option<String>, query: Option<String>) -> serde_json:
     assert_and_propagate_panics(assertions, &state.failed_assert)
 }
 
+/// Asserts that two JSON values are equal, excluding specified paths.
+///
+/// This macro is used to compare two JSON values for equality while ignoring
+/// certain paths in the JSON structure. The paths to be ignored are specified
+/// as a list of dot-separated strings. If the two JSON values are not equal
+/// (excluding the ignored paths), the macro will panic with a detailed error
+/// message indicating the location of the discrepancy.
+///
+/// # Arguments
+///
+/// * `$actual` - The actual JSON value obtained in a test.
+/// * `$expected` - The expected JSON value for comparison.
+/// * `$exclude_paths` - An array of dot-separated strings specifying the paths
+///   to be ignored during comparison.
+///
+/// # Panics
+///
+/// The macro panics if the actual and expected JSON values are not equal,
+/// excluding the ignored paths.
+///
+/// # Examples
+///
+/// ```
+/// let actual = json!({"user": {"id": 1, "name": "Alice", "email": "alice@example.com"}});
+/// let expected = json!({"user": {"id": 1, "name": "Alice", "email": "bob@example.com"}});
+/// assert_json_matches!(actual, expected, ["user.email"]);
+/// ```
+macro_rules! assert_json_matches {
+    ($actual:expr, $expected:expr, $exclude_paths:expr) => {{
+        // Encapsulate all operations inside a block to scope variables properly
+        let exclude_paths = parse_field_paths(&$exclude_paths);
+        let mut path = vec![];
+        json_matches_excluding(&$actual, &$expected, &exclude_paths, &mut path)
+            .expect("JSON did not match with the exclusion of specified paths.");
+    }};
+}
+
 fn post(
     state: State,
     path: Option<String>,
@@ -241,6 +283,13 @@ fn post(
         assert_eq!(full_path, expected_path, "POST request has unexpected path");
         match expected_req {
             RequestBody::Exact(value) => assert_eq!(req, value, "POST request has unexpected body"),
+            RequestBody::Partial(value, exclude_paths) => {
+                let exclude_paths = exclude_paths
+                    .iter()
+                    .map(AsRef::as_ref)
+                    .collect::<Vec<&str>>();
+                assert_json_matches!(req, value, &exclude_paths)
+            }
             RequestBody::Any => (),
         }
         res
@@ -257,37 +306,162 @@ fn full_path(path: Option<String>, query: Option<String>) -> String {
     }
 }
 
+/// Parses dot-separated field paths into a set of paths.
 fn parse_field_paths(paths: &[&str]) -> HashSet<Vec<String>> {
-    paths.iter().map(|path| {
-        path.split('.').map(String::from).collect()
-    }).collect()
+    paths
+        .iter()
+        .map(|path| path.split('.').map(String::from).collect())
+        .collect()
 }
 
-fn json_matches_excluding(actual: &serde_json::Value, expected: &serde_json::Value, exclude_paths: &HashSet<Vec<String>>, current_path: &mut Vec<String>) -> bool {
+/// Recursively compares two JSON values, excluding specified paths, and returns
+/// detailed errors using anyhow.
+fn json_matches_excluding(
+    actual: &serde_json::Value,
+    expected: &serde_json::Value,
+    exclude_paths: &HashSet<Vec<String>>,
+    current_path: &mut Vec<String>,
+) -> anyhow::Result<()> {
     match (actual, expected) {
         (serde_json::Value::Object(map_a), serde_json::Value::Object(map_b)) => {
             for (key, value_a) in map_a {
                 current_path.push(key.clone());
 
                 if exclude_paths.contains(current_path) {
-                    current_path.pop();  // Cleanup after checking
-                    continue;  // Skip this field
+                    current_path.pop();
+                    continue;
                 }
 
-                if let Some(value_b) = map_b.get(key) {
-                    if !json_matches_excluding(value_a, value_b, exclude_paths, current_path) {
-                        current_path.pop();  // Cleanup before returning false
-                        return false;  // Recursively check nested objects
+                match map_b.get(key) {
+                    Some(value_b) => {
+                        if let Err(e) =
+                            json_matches_excluding(value_a, value_b, exclude_paths, current_path)
+                        {
+                            current_path.pop();
+                            return Err(e);
+                        }
                     }
-                } else {
-                    current_path.pop();  // Cleanup before returning false
-                    return false;  // Key exists in a but not in b
+                    None => {
+                        let error_msg = format!(
+                            "Key missing in expected JSON at {}: {:?}",
+                            current_path.join("."),
+                            key
+                        );
+                        current_path.pop();
+                        return Err(anyhow!(error_msg));
+                    }
                 }
 
-                current_path.pop();  // Cleanup after processing this key
+                current_path.pop();
             }
-            true
-        },
-        _ => actual == expected,  // For non-object types or if both are not objects, just compare directly
+            Ok(())
+        }
+        _ => {
+            if actual != expected {
+                Err(anyhow!(
+                    "Mismatch at {}: {:?} != {:?}",
+                    current_path.join("."),
+                    actual,
+                    expected
+                ))
+            } else {
+                Ok(())
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use {super::*, maplit::hashset, serde_json::json};
+
+    #[test]
+    fn test_parse_field_paths() {
+        let paths = ["user.profile.name", "user.settings"];
+        let parsed_paths = parse_field_paths(&paths);
+        let expected_paths: HashSet<Vec<String>> = hashset! {
+            vec!["user".to_string(), "profile".to_string(), "name".to_string()],
+            vec!["user".to_string(), "settings".to_string()],
+        };
+        assert_eq!(parsed_paths, expected_paths)
+    }
+
+    #[test]
+    fn test_json_matches_excluding_no_exclusions() {
+        let json_a = json!({
+            "user": {
+                "id": 123,
+                "name": "Alice"
+            }
+        });
+        let json_b = json!({
+            "user": {
+                "id": 123,
+                "name": "Alice"
+            }
+        });
+        assert_json_matches!(json_a, json_b, [])
+    }
+
+    #[test]
+    fn test_json_matches_excluding_with_exclusions() {
+        let json_a = json!({
+            "user": {
+                "id": 123,
+                "name": "Alice",
+                "timestamp": "2021-01-01T12:00:00Z"
+            }
+        });
+        let json_b = json!({
+            "user": {
+                "id": 123,
+                "name": "Alice",
+                "timestamp": "2022-02-02T12:00:00Z"
+            }
+        });
+        assert_json_matches!(json_a, json_b, ["user.timestamp"])
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_json_matches_excluding_failure() {
+        let json_a = json!({
+            "user": {
+                "id": 123,
+                "name": "Alice"
+            }
+        });
+        let json_b = json!({
+            "user": {
+                "id": 124,
+                "name": "Alice"
+            }
+        });
+        assert_json_matches!(json_a, json_b, [])
+    }
+
+    #[test]
+    fn test_assert_json_matches_macro() {
+        let actual_json = json!({
+            "user": {
+                "id": 123,
+                "profile": {
+                    "name": "Alice",
+                    "timestamp": "2024-06-10T12:00:00Z"
+                }
+            }
+        });
+
+        let expected_json = json!({
+            "user": {
+                "id": 123,
+                "profile": {
+                    "name": "Alice",
+                    "timestamp": "2024-06-11T15:00:00Z"
+                }
+            }
+        });
+
+        assert_json_matches!(actual_json, expected_json, ["user.profile.timestamp"])
     }
 }
