@@ -391,13 +391,17 @@ mod tests {
         let json_a = json!({
             "user": {
                 "id": 123,
-                "name": "Alice"
+                "profile": {
+                    "name": "Alice"
+                }
             }
         });
         let json_b = json!({
             "user": {
                 "id": 123,
-                "name": "Alice"
+                "profile": {
+                    "name": "Alice"
+                }
             }
         });
         assert_json_matches!(json_a, json_b, [])
@@ -408,18 +412,22 @@ mod tests {
         let json_a = json!({
             "user": {
                 "id": 123,
-                "name": "Alice",
-                "timestamp": "2021-01-01T12:00:00Z"
+                "profile": {
+                    "name": "Alice",
+                    "timestamp": "2021-01-01T12:00:00Z"
+                }
             }
         });
         let json_b = json!({
             "user": {
                 "id": 123,
-                "name": "Alice",
-                "timestamp": "2022-02-02T12:00:00Z"
+                "profile": {
+                    "name": "Alice",
+                    "timestamp": "2022-01-01T12:00:00Z"
+                }
             }
         });
-        assert_json_matches!(json_a, json_b, ["user.timestamp"])
+        assert_json_matches!(json_a, json_b, ["user.profile.timestamp"])
     }
 
     #[test]
@@ -428,40 +436,21 @@ mod tests {
         let json_a = json!({
             "user": {
                 "id": 123,
-                "name": "Alice"
+                "profile": {
+                    "name": "Alice",
+                    "timestamp": "2021-01-01T12:00:00Z"
+                }
             }
         });
         let json_b = json!({
             "user": {
-                "id": 124,
-                "name": "Alice"
+                "id": 123,
+                "profile": {
+                    "name": "Bob",
+                    "timestamp": "2021-01-01T12:00:00Z"
+                }
             }
         });
         assert_json_matches!(json_a, json_b, [])
-    }
-
-    #[test]
-    fn test_assert_json_matches_macro() {
-        let actual_json = json!({
-            "user": {
-                "id": 123,
-                "profile": {
-                    "name": "Alice",
-                    "timestamp": "2024-06-10T12:00:00Z"
-                }
-            }
-        });
-
-        let expected_json = json!({
-            "user": {
-                "id": 123,
-                "profile": {
-                    "name": "Alice",
-                    "timestamp": "2024-06-11T15:00:00Z"
-                }
-            }
-        });
-
-        assert_json_matches!(actual_json, expected_json, ["user.profile.timestamp"])
     }
 }
