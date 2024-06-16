@@ -168,7 +168,17 @@ pub enum Error {
 impl From<util::http::RoundtripError<dto::Error>> for Error {
     fn from(err: util::http::RoundtripError<dto::Error>) -> Self {
         match err {
-            util::http::RoundtripError::Http(err) => Self::Http(err),
+            util::http::RoundtripError::Http(err) => {
+                if let util::http::Error::Status(code, _) = err {
+                    match code.as_u16() {
+                        429 => Self::RateLimited,
+                        451 => Self::UnavailableForLegalReasons,
+                        _ => Self::Http(err),
+                    }
+                } else {
+                    Self::Http(err)
+                }
+            }
             util::http::RoundtripError::Api(err) => {
                 // Unfortunately, AFAIK these codes aren't documented anywhere. These
                 // based on empirical observations of what the API has returned in the
