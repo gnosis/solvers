@@ -136,7 +136,7 @@ impl From<zeroex::Error> for Error {
 impl From<paraswap::Error> for Error {
     fn from(err: paraswap::Error) -> Self {
         match err {
-            paraswap::Error::NotFound => Self::NotFound,
+            paraswap::Error::NotFound | paraswap::Error::MissingDecimals => Self::NotFound,
             paraswap::Error::RateLimited => Self::RateLimited,
             _ => Self::Other(Box::new(err)),
         }
