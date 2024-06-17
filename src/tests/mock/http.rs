@@ -256,7 +256,6 @@ fn get(state: State, path: Option<String>, query: Option<String>) -> serde_json:
 /// ```
 macro_rules! assert_json_matches {
     ($actual:expr, $expected:expr, $exclude_paths:expr) => {{
-        // Encapsulate all operations inside a block to scope variables properly
         let exclude_paths = parse_field_paths(&$exclude_paths);
         json_matches_excluding(&$actual, &$expected, &exclude_paths)
             .expect("JSON did not match with the exclusion of specified paths");
