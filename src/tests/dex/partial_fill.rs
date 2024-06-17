@@ -319,12 +319,10 @@ async fn tested_amounts_wrap_around() {
             &eth::U256::from_dec_str("16000000000000000000").unwrap(),
             18,
         ), // 16 BAL == 0.064 ETH
-        // ("8000000000000000000", "8"),   // 8  BAL == 0.032 ETH
         HumanReadableAmount::from_decimal_units(
             &eth::U256::from_dec_str("8000000000000000000").unwrap(),
             18,
         ), // 8  BAL == 0.032 ETH
-        // ("4000000000000000000", "4"),   // 4  BAL == 0.016 ETH
         HumanReadableAmount::from_decimal_units(
             &eth::U256::from_dec_str("4000000000000000000").unwrap(),
             18,
