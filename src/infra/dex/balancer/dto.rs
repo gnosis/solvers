@@ -7,7 +7,7 @@ use {
     bigdecimal::{num_bigint::BigInt, BigDecimal},
     ethereum_types::{H160, H256, U256},
     number::conversions::{big_decimal_to_u256, u256_to_big_decimal},
-    serde::{Deserialize, Serialize},
+    serde::{Deserialize, Serialize, Serializer},
     serde_with::serde_as,
 };
 
@@ -92,24 +92,38 @@ impl Query<'_> {
 /// Refers to the SOR API V3's `AmountHumanReadable` type and represents a token
 /// amount without decimals.
 #[serde_as]
-#[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct HumanReadableAmount(BigDecimal);
+#[derive(Debug, Default, PartialEq)]
+pub struct HumanReadableAmount {
+    value: BigDecimal,
+    decimals: BigDecimal,
+}
 
 impl HumanReadableAmount {
     /// Convert a `U256` amount to a human form.
     pub fn from_decimal_units(units: &U256, decimals: u8) -> HumanReadableAmount {
         let decimals: BigDecimal = BigInt::from(10).pow(decimals as u32).into();
-        Self(u256_to_big_decimal(units) / &decimals)
+        Self {
+            value: u256_to_big_decimal(units) / &decimals,
+            decimals,
+        }
     }
 
     pub fn value(&self) -> &BigDecimal {
-        &self.0
+        &self.value
     }
 
     /// Convert the human readable amount to a `U256` with 18 decimals.
-    pub fn to_decimal_units(&self, decimals: u8) -> Option<U256> {
-        let decimals: BigDecimal = BigInt::from(10).pow(decimals as u32).into();
-        big_decimal_to_u256(&(&self.0 * decimals))
+    pub fn to_decimal_units(&self) -> Option<U256> {
+        big_decimal_to_u256(&(&self.value * &self.decimals))
+    }
+}
+
+impl Serialize for HumanReadableAmount {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.value.serialize(serializer)
     }
 }
 

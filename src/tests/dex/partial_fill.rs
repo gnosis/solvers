@@ -367,11 +367,11 @@ async fn tested_amounts_wrap_around() {
                                 db8f56000200000000000000000014",
                             "assetInIndex": 0,
                             "assetOutIndex": 1,
-                            "amount": amount_in.to_decimal_units(18).unwrap().to_string(),
+                            "amount": amount_in.to_decimal_units().unwrap().to_string(),
                             "userData": "0x",
                         }
                     ],
-                    "swapAmountRaw": amount_in.to_decimal_units(18).unwrap().to_string(),
+                    "swapAmountRaw": amount_in.to_decimal_units().unwrap().to_string(),
                     // Does not satisfy limit price of any chunk...
                     "returnAmountRaw": "700000000000000000",
                     "returnAmountConsideringFees": "1",
