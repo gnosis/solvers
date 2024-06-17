@@ -469,4 +469,30 @@ mod tests {
         });
         assert_json_matches!(json_a, json_b, [])
     }
+
+    #[test]
+    #[should_panic(
+        expected = "JSON did not match with the exclusion of specified paths: Key missing in \
+                    expected JSON at user.profile.name: \"name\""
+    )]
+    fn test_json_matches_excluding_key_is_missing() {
+        let json_a = json!({
+            "user": {
+                "id": 123,
+                "profile": {
+                    "name": "Alice",
+                    "timestamp": "2021-01-01T12:00:00Z"
+                }
+            }
+        });
+        let json_b = json!({
+            "user": {
+                "id": 123,
+                "profile": {
+                    "timestamp": "2021-01-01T12:00:00Z"
+                }
+            }
+        });
+        assert_json_matches!(json_a, json_b, [])
+    }
 }
