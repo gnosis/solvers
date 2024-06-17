@@ -71,7 +71,7 @@ async fn test() {
                         "useVaultVersion": 2
                     }
                 }),
-                vec!["variables.callDataInput.deadline".to_string()],
+                vec!["variables.callDataInput.deadline"],
             ),
             res: json!({
                 "tokenAddresses": [

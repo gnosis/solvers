@@ -35,7 +35,7 @@ async fn tested_amounts_adjust_depending_on_response() {
                     "useVaultVersion": 2
                 }
             }),
-            vec!["variables.callDataInput.deadline".to_string()],
+            vec!["variables.callDataInput.deadline"],
         )
     };
 
@@ -360,7 +360,7 @@ async fn tested_amounts_wrap_around() {
                     "useVaultVersion": 2
                 }
             }),
-            vec!["variables.callDataInput.deadline".to_string()],
+            vec!["variables.callDataInput.deadline"],
         ),
         res: json!({
             "data": {
@@ -490,7 +490,7 @@ async fn moves_surplus_fee_to_buy_token() {
                         "useVaultVersion": 2
                     }
                 }),
-                vec!["variables.callDataInput.deadline".to_string()],
+                vec!["variables.callDataInput.deadline"],
             ),
             res: json!({
                 "data": {
@@ -525,7 +525,7 @@ async fn moves_surplus_fee_to_buy_token() {
                         "useVaultVersion": 2
                     }
                 }),
-                vec!["variables.callDataInput.deadline".to_string()],
+                vec!["variables.callDataInput.deadline"],
             ),
             res: json!({
                 "data": {
@@ -752,7 +752,7 @@ async fn insufficient_room_for_surplus_fee() {
                     "useVaultVersion": 2
                 }
             }),
-            vec!["variables.callDataInput.deadline".to_string()],
+            vec!["variables.callDataInput.deadline"],
         ),
         res: json!({
             "data": {
@@ -877,7 +877,7 @@ async fn market() {
                     "useVaultVersion": 2
                 }
             }),
-            vec!["variables.callDataInput.deadline".to_string()],
+            vec!["variables.callDataInput.deadline"],
         ),
         res: json!({
             "data": {

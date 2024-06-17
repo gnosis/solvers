@@ -32,7 +32,7 @@ async fn sell() {
                 "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
                 "useVaultVersion": 2
             }
-        }), vec!["variables.callDataInput.deadline".to_string()]),
+        }), vec!["variables.callDataInput.deadline"]),
         res: json!({
             "data": {
                 "sorGetSwapPaths": {
@@ -142,7 +142,7 @@ async fn buy() {
                 "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
                 "useVaultVersion": 2
             }
-        }), vec!["variables.callDataInput.deadline".to_string()]),
+        }), vec!["variables.callDataInput.deadline"]),
         res: json!({
             "data": {
                 "sorGetSwapPaths": {

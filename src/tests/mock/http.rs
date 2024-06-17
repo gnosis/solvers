@@ -85,7 +85,7 @@ pub enum RequestBody {
     /// The received `[RequestBody]` has to match the provided value partially
     /// excluding the specified paths which are represented as dot-separated
     /// strings.
-    Partial(serde_json::Value, Vec<String>),
+    Partial(serde_json::Value, Vec<&'static str>),
     /// Any `[RequestBody]` will be accepted.
     Any,
 }
