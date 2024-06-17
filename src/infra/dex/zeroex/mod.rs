@@ -5,6 +5,7 @@ use {
     },
     ethereum_types::H160,
     ethrpc::current_block::CurrentBlockStream,
+    hyper::StatusCode,
     std::sync::atomic::{self, AtomicU64},
     tracing::Instrument,
 };
@@ -170,9 +171,11 @@ impl From<util::http::RoundtripError<dto::Error>> for Error {
         match err {
             util::http::RoundtripError::Http(err) => {
                 if let util::http::Error::Status(code, _) = err {
-                    match code.as_u16() {
-                        429 => Self::RateLimited,
-                        451 => Self::UnavailableForLegalReasons,
+                    match code {
+                        StatusCode::TOO_MANY_REQUESTS => Self::RateLimited,
+                        StatusCode::UNAVAILABLE_FOR_LEGAL_REASONS => {
+                            Self::UnavailableForLegalReasons
+                        }
                         _ => Self::Http(err),
                     }
                 } else {
