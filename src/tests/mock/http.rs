@@ -147,14 +147,14 @@ pub async fn setup(mut expectations: Vec<Expectation>) -> ServerHandle {
                     axum::response::Json(get(state, Some(path), query))
                 },
             )
-            .post(
-                |axum::extract::State(state),
-                 axum::extract::Path(path),
-                 axum::extract::RawQuery(query),
-                 axum::extract::Json(req)| async move {
-                    axum::response::Json(post(state, Some(path), query, req))
-                },
-            ),
+                .post(
+                    |axum::extract::State(state),
+                     axum::extract::Path(path),
+                     axum::extract::RawQuery(query),
+                     axum::extract::Json(req)| async move {
+                        axum::response::Json(post(state, Some(path), query, req))
+                    },
+                ),
         )
         // Annoying, but `axum` doesn't seem to match `/` with the above route,
         // so explicitly mount `/`.
@@ -165,13 +165,13 @@ pub async fn setup(mut expectations: Vec<Expectation>) -> ServerHandle {
                     axum::response::Json(get(state, None, query))
                 },
             )
-            .post(
-                |axum::extract::State(state),
-                 axum::extract::RawQuery(query),
-                 axum::extract::Json(req)| async move {
-                    axum::response::Json(post(state, None, query, req))
-                },
-            ),
+                .post(
+                    |axum::extract::State(state),
+                     axum::extract::RawQuery(query),
+                     axum::extract::Json(req)| async move {
+                        axum::response::Json(post(state, None, query, req))
+                    },
+                ),
         )
         .with_state(State {
             expectations: expectations.clone(),
@@ -258,8 +258,7 @@ macro_rules! assert_json_matches {
     ($actual:expr, $expected:expr, $exclude_paths:expr) => {{
         // Encapsulate all operations inside a block to scope variables properly
         let exclude_paths = parse_field_paths(&$exclude_paths);
-        let mut path = vec![];
-        json_matches_excluding(&$actual, &$expected, &exclude_paths, &mut path)
+        json_matches_excluding(&$actual, &$expected, &exclude_paths)
             .expect("JSON did not match with the exclusion of specified paths");
     }};
 }
@@ -320,55 +319,70 @@ fn json_matches_excluding(
     actual: &serde_json::Value,
     expected: &serde_json::Value,
     exclude_paths: &HashSet<Vec<String>>,
-    current_path: &mut Vec<String>,
 ) -> anyhow::Result<()> {
-    match (actual, expected) {
-        (serde_json::Value::Object(map_a), serde_json::Value::Object(map_b)) => {
-            for (key, value_a) in map_a {
-                current_path.push(key.clone());
+    /// A helper function that recursively compares two JSON values using
+    /// Depth-First Search (DFS) traversal. It utilizes a `current_path`
+    /// accumulator to maintain the current path within the JSON structure,
+    /// which is then compared against the `exclude_paths` parameter.
+    /// During the backtracking process, the function updates the `current_path`
+    /// accumulator to reflect the current position in the JSON structure.
+    fn compare_jsons(
+        actual: &serde_json::Value,
+        expected: &serde_json::Value,
+        exclude_paths: &HashSet<Vec<String>>,
+        current_path: &mut Vec<String>,
+    ) -> anyhow::Result<()> {
+        match (actual, expected) {
+            (serde_json::Value::Object(map_a), serde_json::Value::Object(map_b)) => {
+                for (key, value_a) in map_a {
+                    current_path.push(key.clone());
 
-                if exclude_paths.contains(current_path) {
-                    current_path.pop();
-                    continue;
-                }
+                    if exclude_paths.contains(current_path) {
+                        current_path.pop();
+                        continue;
+                    }
 
-                match map_b.get(key) {
-                    Some(value_b) => {
-                        if let Err(e) =
-                            json_matches_excluding(value_a, value_b, exclude_paths, current_path)
-                        {
+                    match map_b.get(key) {
+                        Some(value_b) => {
+                            if let Err(e) =
+                                compare_jsons(value_a, value_b, exclude_paths, current_path)
+                            {
+                                current_path.pop();
+                                return Err(e);
+                            }
+                        }
+                        None => {
+                            let error_msg = format!(
+                                "Key missing in expected JSON at {}: {:?}",
+                                current_path.join("."),
+                                key
+                            );
                             current_path.pop();
-                            return Err(e);
+                            return Err(anyhow!(error_msg));
                         }
                     }
-                    None => {
-                        let error_msg = format!(
-                            "Key missing in expected JSON at {}: {:?}",
-                            current_path.join("."),
-                            key
-                        );
-                        current_path.pop();
-                        return Err(anyhow!(error_msg));
-                    }
-                }
 
-                current_path.pop();
-            }
-            Ok(())
-        }
-        _ => {
-            if actual != expected {
-                Err(anyhow!(
-                    "Mismatch at {}: {:?} != {:?}",
-                    current_path.join("."),
-                    actual,
-                    expected
-                ))
-            } else {
+                    current_path.pop();
+                }
                 Ok(())
+            }
+            _ => {
+                if actual != expected {
+                    Err(anyhow!(
+                        "Mismatch at {}: {:?} != {:?}",
+                        current_path.join("."),
+                        actual,
+                        expected
+                    ))
+                } else {
+                    Ok(())
+                }
             }
         }
     }
+
+    let mut current_path = vec![];
+    compare_jsons(actual, expected, exclude_paths, &mut current_path)
 }
 
 #[cfg(test)]
