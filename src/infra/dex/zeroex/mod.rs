@@ -5,6 +5,7 @@ use {
     },
     ethereum_types::H160,
     ethrpc::current_block::CurrentBlockStream,
+    hyper::StatusCode,
     std::sync::atomic::{self, AtomicU64},
     tracing::Instrument,
 };
@@ -168,7 +169,19 @@ pub enum Error {
 impl From<util::http::RoundtripError<dto::Error>> for Error {
     fn from(err: util::http::RoundtripError<dto::Error>) -> Self {
         match err {
-            util::http::RoundtripError::Http(err) => Self::Http(err),
+            util::http::RoundtripError::Http(err) => {
+                if let util::http::Error::Status(code, _) = err {
+                    match code {
+                        StatusCode::TOO_MANY_REQUESTS => Self::RateLimited,
+                        StatusCode::UNAVAILABLE_FOR_LEGAL_REASONS => {
+                            Self::UnavailableForLegalReasons
+                        }
+                        _ => Self::Http(err),
+                    }
+                } else {
+                    Self::Http(err)
+                }
+            }
             util::http::RoundtripError::Api(err) => {
                 // Unfortunately, AFAIK these codes aren't documented anywhere. These
                 // based on empirical observations of what the API has returned in the
