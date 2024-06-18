@@ -428,7 +428,8 @@ mod tests {
                 "profile": {
                     "name": "Alice",
                     "timestamp": "2021-01-01T12:00:00Z"
-                }
+                },
+                "enabled": true,
             }
         });
         let json_b = json!({
@@ -437,10 +438,11 @@ mod tests {
                 "profile": {
                     "name": "Alice",
                     "timestamp": "2022-01-01T12:00:00Z"
-                }
+                },
+                "enabled": false,
             }
         });
-        assert_json_matches!(json_a, json_b, ["user.profile.timestamp"])
+        assert_json_matches!(json_a, json_b, ["user.profile.timestamp", "user.enabled"])
     }
 
     #[test]
