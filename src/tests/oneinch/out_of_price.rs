@@ -56,6 +56,7 @@ async fn sell() {
                 &toTokenAddress=0xe41d2489571d322189246dafa5ebde1f4699f498\
                 &amount=1000000000000000000\
                 &fromAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41\
+                &origin=0x2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a\
                 &slippage=1\
                 &protocols=UNISWAP_V1%2CUNISWAP_V2%2CSUSHI\
                 &referrerAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41\
