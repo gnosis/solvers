@@ -147,14 +147,14 @@ pub async fn setup(mut expectations: Vec<Expectation>) -> ServerHandle {
                     axum::response::Json(get(state, Some(path), query))
                 },
             )
-            .post(
-                |axum::extract::State(state),
-                 axum::extract::Path(path),
-                 axum::extract::RawQuery(query),
-                 axum::extract::Json(req)| async move {
-                    axum::response::Json(post(state, Some(path), query, req))
-                },
-            ),
+                .post(
+                    |axum::extract::State(state),
+                     axum::extract::Path(path),
+                     axum::extract::RawQuery(query),
+                     axum::extract::Json(req)| async move {
+                        axum::response::Json(post(state, Some(path), query, req))
+                    },
+                ),
         )
         // Annoying, but `axum` doesn't seem to match `/` with the above route,
         // so explicitly mount `/`.
@@ -165,13 +165,13 @@ pub async fn setup(mut expectations: Vec<Expectation>) -> ServerHandle {
                     axum::response::Json(get(state, None, query))
                 },
             )
-            .post(
-                |axum::extract::State(state),
-                 axum::extract::RawQuery(query),
-                 axum::extract::Json(req)| async move {
-                    axum::response::Json(post(state, None, query, req))
-                },
-            ),
+                .post(
+                    |axum::extract::State(state),
+                     axum::extract::RawQuery(query),
+                     axum::extract::Json(req)| async move {
+                        axum::response::Json(post(state, None, query, req))
+                    },
+                ),
         )
         .with_state(State {
             expectations: expectations.clone(),
@@ -333,7 +333,8 @@ fn json_matches_excluding(
     ) -> anyhow::Result<()> {
         match (actual, expected) {
             (serde_json::Value::Object(map_a), serde_json::Value::Object(map_b)) => {
-                for (key, value_a) in map_a {
+                let keys: HashSet<_> = map_a.keys().chain(map_b.keys()).cloned().collect();
+                for key in keys {
                     current_path.push(key.clone());
 
                     if exclude_paths.contains(current_path) {
@@ -341,8 +342,8 @@ fn json_matches_excluding(
                         continue;
                     }
 
-                    match map_b.get(key) {
-                        Some(value_b) => {
+                    match (map_a.get(&key), map_b.get(&key)) {
+                        (Some(value_a), Some(value_b)) => {
                             if let Err(e) =
                                 compare_jsons(value_a, value_b, exclude_paths, current_path)
                             {
@@ -350,7 +351,15 @@ fn json_matches_excluding(
                                 return Err(e);
                             }
                         }
-                        None => {
+                        (None, Some(_)) => {
+                            let error_msg = format!(
+                                "Key missing in actual JSON at {}",
+                                current_path.join("."),
+                            );
+                            current_path.pop();
+                            return Err(anyhow!(error_msg));
+                        }
+                        (Some(_), None) => {
                             let error_msg = format!(
                                 "Key missing in expected JSON at {}",
                                 current_path.join("."),
@@ -358,25 +367,7 @@ fn json_matches_excluding(
                             current_path.pop();
                             return Err(anyhow!(error_msg));
                         }
-                    }
-
-                    current_path.pop();
-                }
-
-                // Check for keys in map_b not present in map_a
-                for key in map_b.keys() {
-                    current_path.push(key.clone());
-
-                    if exclude_paths.contains(current_path) {
-                        current_path.pop();
-                        continue;
-                    }
-
-                    if !map_a.contains_key(key) {
-                        let error_msg =
-                            format!("Key missing in actual JSON at {}", current_path.join("."),);
-                        current_path.pop();
-                        return Err(anyhow!(error_msg));
+                        (None, None) => unreachable!(),
                     }
 
                     current_path.pop();
