@@ -352,13 +352,31 @@ fn json_matches_excluding(
                         }
                         None => {
                             let error_msg = format!(
-                                "Key missing in expected JSON at {}: {:?}",
+                                "Key missing in expected JSON at {}",
                                 current_path.join("."),
-                                key
                             );
                             current_path.pop();
                             return Err(anyhow!(error_msg));
                         }
+                    }
+
+                    current_path.pop();
+                }
+
+                // Check for keys in map_b not present in map_a
+                for key in map_b.keys() {
+                    current_path.push(key.clone());
+
+                    if exclude_paths.contains(current_path) {
+                        current_path.pop();
+                        continue;
+                    }
+
+                    if !map_a.contains_key(key) {
+                        let error_msg =
+                            format!("Key missing in actual JSON at {}", current_path.join("."),);
+                        current_path.pop();
+                        return Err(anyhow!(error_msg));
                     }
 
                     current_path.pop();
@@ -475,7 +493,7 @@ mod tests {
     #[test]
     #[should_panic(
         expected = "JSON did not match with the exclusion of specified paths: Key missing in \
-                    expected JSON at user.profile.name: \"name\""
+                    expected JSON at user.profile.name"
     )]
     fn test_json_matches_excluding_key_is_missing() {
         let json_a = json!({
@@ -491,6 +509,32 @@ mod tests {
             "user": {
                 "id": 123,
                 "profile": {
+                    "timestamp": "2021-01-01T12:00:00Z"
+                }
+            }
+        });
+        assert_json_matches!(json_a, json_b, [])
+    }
+
+    #[test]
+    #[should_panic(
+        expected = "JSON did not match with the exclusion of specified paths: Key missing in \
+                    actual JSON at user.profile.name"
+    )]
+    fn test_json_matches_excluding_key_is_missing_reversed() {
+        let json_a = json!({
+            "user": {
+                "id": 123,
+                "profile": {
+                    "timestamp": "2021-01-01T12:00:00Z"
+                }
+            }
+        });
+        let json_b = json!({
+            "user": {
+                "id": 123,
+                "profile": {
+                    "name": "Alice",
                     "timestamp": "2021-01-01T12:00:00Z"
                 }
             }
