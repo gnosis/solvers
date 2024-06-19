@@ -43,6 +43,10 @@ jobs:
         run: |
           git diff --exit-code || echo "CHANGES_DETECTED=true" >> $GITHUB_ENV
 
+      - name: No changes detected
+        if: env.CHANGES_DETECTED != 'true'
+        run: echo "No updates necessary. Dependencies are already up-to-date."
+
       - name: Commit changes
         if: env.CHANGES_DETECTED == 'true'
         id: commit
