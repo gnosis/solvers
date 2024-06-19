@@ -40,7 +40,6 @@ jobs:
           done
 
       - name: Check for changes
-        id: check_changes
         run: |
           git diff --exit-code || echo "CHANGES_DETECTED=true" >> $GITHUB_ENV
 
