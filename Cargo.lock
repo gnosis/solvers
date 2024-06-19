@@ -128,7 +128,7 @@ checksum = "59d2a3357dde987206219e78ecfbbb6e8dad06cbb65292758d3270e6254f7355"
 [[package]]
 name = "app-data"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.262.0#dffae48782093de2ae4b396944d0662b1bd15c27"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.263.0#72a9df97638b33fe5588ab155e0fe6d125760440"
 dependencies = [
  "anyhow",
  "app-data-hash",
@@ -143,7 +143,7 @@ dependencies = [
 [[package]]
 name = "app-data-hash"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.262.0#dffae48782093de2ae4b396944d0662b1bd15c27"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.263.0#72a9df97638b33fe5588ab155e0fe6d125760440"
 dependencies = [
  "hex-literal",
  "tiny-keccak",
@@ -445,7 +445,7 @@ dependencies = [
  "pin-project-lite",
  "pin-utils",
  "tokio",
- "tokio-util 0.7.11",
+ "tokio-util",
  "tracing",
 ]
 
@@ -704,7 +704,7 @@ checksum = "514de17de45fdb8dc022b1a7975556c53c86f9f0aa5f534b98977b171857c2c9"
 [[package]]
 name = "bytes-hex"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.262.0#dffae48782093de2ae4b396944d0662b1bd15c27"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.263.0#72a9df97638b33fe5588ab155e0fe6d125760440"
 dependencies = [
  "hex",
  "serde",
@@ -834,7 +834,7 @@ dependencies = [
 [[package]]
 name = "contracts"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.262.0#dffae48782093de2ae4b396944d0662b1bd15c27"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.263.0#72a9df97638b33fe5588ab155e0fe6d125760440"
 dependencies = [
  "ethcontract",
  "ethcontract-generate",
@@ -993,7 +993,7 @@ dependencies = [
 [[package]]
 name = "database"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.262.0#dffae48782093de2ae4b396944d0662b1bd15c27"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.263.0#72a9df97638b33fe5588ab155e0fe6d125760440"
 dependencies = [
  "bigdecimal",
  "chrono",
@@ -1011,7 +1011,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e4355c25cbf99edcb6b4a0e906f6bdc6956eda149e84455bea49696429b2f8e8"
 dependencies = [
  "futures",
- "tokio-util 0.7.11",
+ "tokio-util",
 ]
 
 [[package]]
@@ -1252,7 +1252,7 @@ dependencies = [
 [[package]]
 name = "ethrpc"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.262.0#dffae48782093de2ae4b396944d0662b1bd15c27"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.263.0#72a9df97638b33fe5588ab155e0fe6d125760440"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1548,7 +1548,7 @@ dependencies = [
  "indexmap 2.2.6",
  "slab",
  "tokio",
- "tokio-util 0.7.11",
+ "tokio-util",
  "tracing",
 ]
 
@@ -2264,7 +2264,7 @@ dependencies = [
 [[package]]
 name = "model"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.262.0#dffae48782093de2ae4b396944d0662b1bd15c27"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.263.0#72a9df97638b33fe5588ab155e0fe6d125760440"
 dependencies = [
  "anyhow",
  "app-data",
@@ -2433,7 +2433,7 @@ dependencies = [
 [[package]]
 name = "number"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.262.0#dffae48782093de2ae4b396944d0662b1bd15c27"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.263.0#72a9df97638b33fe5588ab155e0fe6d125760440"
 dependencies = [
  "anyhow",
  "bigdecimal",
@@ -2455,7 +2455,7 @@ dependencies = [
 [[package]]
 name = "observe"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.262.0#dffae48782093de2ae4b396944d0662b1bd15c27"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.263.0#72a9df97638b33fe5588ab155e0fe6d125760440"
 dependencies = [
  "atty",
  "futures",
@@ -2528,7 +2528,7 @@ dependencies = [
 [[package]]
 name = "order-validation"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.262.0#dffae48782093de2ae4b396944d0662b1bd15c27"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.263.0#72a9df97638b33fe5588ab155e0fe6d125760440"
 dependencies = [
  "cached",
  "contracts",
@@ -2854,7 +2854,7 @@ dependencies = [
 [[package]]
 name = "rate-limit"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.262.0#dffae48782093de2ae4b396944d0662b1bd15c27"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.263.0#72a9df97638b33fe5588ab155e0fe6d125760440"
 dependencies = [
  "anyhow",
  "futures",
@@ -2965,7 +2965,7 @@ dependencies = [
  "system-configuration",
  "tokio",
  "tokio-native-tls",
- "tokio-util 0.7.11",
+ "tokio-util",
  "tower-service",
  "url",
  "wasm-bindgen",
@@ -3340,7 +3340,7 @@ dependencies = [
 [[package]]
 name = "shared"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.262.0#dffae48782093de2ae4b396944d0662b1bd15c27"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.263.0#72a9df97638b33fe5588ab155e0fe6d125760440"
 dependencies = [
  "anyhow",
  "app-data",
@@ -3497,7 +3497,7 @@ dependencies = [
 [[package]]
 name = "solvers-dto"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.262.0#dffae48782093de2ae4b396944d0662b1bd15c27"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.263.0#72a9df97638b33fe5588ab155e0fe6d125760440"
 dependencies = [
  "app-data",
  "bigdecimal",
@@ -4044,21 +4044,7 @@ dependencies = [
  "futures-core",
  "pin-project-lite",
  "tokio",
- "tokio-util 0.7.11",
-]
-
-[[package]]
-name = "tokio-util"
-version = "0.6.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "36943ee01a6d67977dd3f84a5a1d2efeb4ada3a1ae771cadfaa535d9d9fc6507"
-dependencies = [
- "bytes",
- "futures-core",
- "futures-sink",
- "log",
- "pin-project-lite",
- "tokio",
+ "tokio-util",
 ]
 
 [[package]]
@@ -4391,11 +4377,12 @@ dependencies = [
 
 [[package]]
 name = "warp"
-version = "0.3.1"
-source = "git+https://github.com/cowprotocol/warp.git?rev=87a91e2#87a91e24311b0ca6ed67408d2d302c569331dfec"
+version = "0.3.7"
+source = "git+https://github.com/cowprotocol/warp.git?rev=586244e#586244eabb564b9f9573436ee0e23edfc73f4861"
 dependencies = [
  "bytes",
- "futures",
+ "futures-channel",
+ "futures-util",
  "headers",
  "http",
  "hyper",
@@ -4409,8 +4396,7 @@ dependencies = [
  "serde_json",
  "serde_urlencoded",
  "tokio",
- "tokio-stream",
- "tokio-util 0.6.10",
+ "tokio-util",
  "tower-service",
  "tracing",
 ]
@@ -4534,7 +4520,7 @@ dependencies = [
  "tiny-keccak",
  "tokio",
  "tokio-stream",
- "tokio-util 0.7.11",
+ "tokio-util",
  "url",
  "web3-async-native-tls",
 ]
