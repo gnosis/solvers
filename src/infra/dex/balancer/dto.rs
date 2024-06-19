@@ -55,6 +55,7 @@ impl Query<'_> {
         chain_id: eth::ChainId,
         contract_address: eth::ContractAddress,
         query_batch_swap: bool,
+        swap_deadline: Option<u64>,
     ) -> Result<Self, Error> {
         let token_decimals = match order.side {
             order::Side::Buy => tokens
@@ -66,7 +67,7 @@ impl Query<'_> {
         }?;
         let variables = Variables {
             call_data_input: CallDataInput {
-                deadline: None,
+                deadline: swap_deadline,
                 receiver: contract_address.0,
                 sender: contract_address.0,
                 slippage_percentage: slippage.as_factor().clone(),
@@ -391,6 +392,7 @@ mod tests {
             chain_id,
             contract_address,
             false,
+            Some(12345_u64),
         )
         .unwrap();
 
@@ -399,6 +401,7 @@ mod tests {
             "query": QUERY,
             "variables": {
                 "callDataInput": {
+                    "deadline": 12345,
                     "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
                     "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
                     "slippagePercentage": "0.01"

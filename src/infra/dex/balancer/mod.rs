@@ -11,7 +11,12 @@ use {
     contracts::ethcontract::I256,
     ethereum_types::U256,
     ethrpc::current_block::CurrentBlockStream,
-    std::sync::atomic::{self, AtomicU64},
+    num::ToPrimitive,
+    std::{
+        ops::Add,
+        sync::atomic::{self, AtomicU64},
+        time::Duration,
+    },
     tracing::Instrument,
 };
 
@@ -80,6 +85,11 @@ impl Sor {
             self.chain_id,
             self.settlement,
             self.query_batch_swap,
+            // 2 minutes from now
+            chrono::Utc::now()
+                .add(Duration::from_secs(120))
+                .timestamp()
+                .to_u64(),
         )?;
         let quote = {
             // Set up a tracing span to make debugging of API requests easier.

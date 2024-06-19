@@ -13,7 +13,7 @@ use {
 async fn sell() {
     let api = mock::http::setup(vec![mock::http::Expectation::Post {
         path: mock::http::Path::exact("sor"),
-        req: mock::http::RequestBody::Exact(json!({
+        req: mock::http::RequestBody::Partial(json!({
             "query": serde_json::to_value(dto::QUERY).unwrap(),
             "variables": {
                 "callDataInput": {
@@ -29,7 +29,7 @@ async fn sell() {
                 "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
                 "useProtocolVersion": 2
             }
-        })),
+        }), vec!["variables.callDataInput.deadline"]),
         res: json!({
             "data": {
                 "sorGetSwapPaths": {
@@ -192,7 +192,7 @@ async fn sell() {
 async fn buy() {
     let api = mock::http::setup(vec![mock::http::Expectation::Post {
         path: mock::http::Path::exact("sor"),
-        req: mock::http::RequestBody::Exact(json!({
+        req: mock::http::RequestBody::Partial(json!({
             "query": serde_json::to_value(dto::QUERY).unwrap(),
             "variables": {
                 "callDataInput": {
@@ -208,7 +208,7 @@ async fn buy() {
                 "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
                 "useProtocolVersion": 2
               }
-        })),
+        }), vec!["variables.callDataInput.deadline"]),
         res: json!({
             "data": {
                 "sorGetSwapPaths": {

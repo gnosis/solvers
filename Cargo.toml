@@ -45,7 +45,7 @@ web3 = "0.19"
 contracts = { git = "https://github.com/cowprotocol/services.git", tag = "v2.262.0", package = "contracts" }
 ethrpc = { git = "https://github.com/cowprotocol/services.git", tag = "v2.262.0", package = "ethrpc" }
 observe = { git = "https://github.com/cowprotocol/services.git", tag = "v2.262.0", package = "observe" }
-shared = { git = "https://github.com/cowprotocol/services.git", tag = "v2.262.0", package = "shared" }
+shared = { git = "https://github.com/cowprotocol/services.git", tag = "v2.263.0-shared-test-utils", package = "shared" }
 dto =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.262.0", package = "solvers-dto" }
 rate-limit =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.262.0", package = "rate-limit" }
 number =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.262.0", package = "number" }

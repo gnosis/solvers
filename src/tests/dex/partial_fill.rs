@@ -17,23 +17,26 @@ use {
 async fn tested_amounts_adjust_depending_on_response() {
     // observe::tracing::initialize_reentrant("solvers=trace");
     let inner_request = |ether_amount| {
-        mock::http::RequestBody::Exact(json!({
-            "query": serde_json::to_value(dto::QUERY).unwrap(),
-            "variables": {
-                "callDataInput": {
-                    "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                    "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                    "slippagePercentage": "0.01"
-                },
-                "chain": "MAINNET",
-                "queryBatchSwap": false,
-                "swapAmount": ether_amount,
-                "swapType": "EXACT_IN",
-                "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-                "useProtocolVersion": 2
-            }
-        }))
+        mock::http::RequestBody::Partial(
+            json!({
+                "query": serde_json::to_value(dto::QUERY).unwrap(),
+                "variables": {
+                    "callDataInput": {
+                        "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                        "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                        "slippagePercentage": "0.01"
+                    },
+                    "chain": "MAINNET",
+                    "queryBatchSwap": false,
+                    "swapAmount": ether_amount,
+                    "swapType": "EXACT_IN",
+                    "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                    "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                    "useProtocolVersion": 2
+                }
+            }),
+            vec!["variables.callDataInput.deadline"],
+        )
     };
 
     let no_swap_found_response = json!({
@@ -337,23 +340,26 @@ async fn tested_amounts_wrap_around() {
     .into_iter()
     .map(|amount_in| mock::http::Expectation::Post {
         path: mock::http::Path::Any,
-        req: mock::http::RequestBody::Exact(json!({
-            "query": serde_json::to_value(dto::QUERY).unwrap(),
-            "variables": {
-                "callDataInput": {
-                    "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                    "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                    "slippagePercentage": "0.01"
-                },
-                "chain": "MAINNET",
-                "queryBatchSwap": false,
-                "swapAmount": amount_in.value(),
-                "swapType": "EXACT_OUT",
-                "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-                "useProtocolVersion": 2
-            }
-        })),
+        req: mock::http::RequestBody::Partial(
+            json!({
+                "query": serde_json::to_value(dto::QUERY).unwrap(),
+                "variables": {
+                    "callDataInput": {
+                        "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                        "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                        "slippagePercentage": "0.01"
+                    },
+                    "chain": "MAINNET",
+                    "queryBatchSwap": false,
+                    "swapAmount": amount_in.value(),
+                    "swapType": "EXACT_OUT",
+                    "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                    "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                    "useProtocolVersion": 2
+                }
+            }),
+            vec!["variables.callDataInput.deadline"],
+        ),
         res: json!({
             "data": {
                 "sorGetSwapPaths": {
@@ -464,23 +470,26 @@ async fn moves_surplus_fee_to_buy_token() {
     let api = mock::http::setup(vec![
         mock::http::Expectation::Post {
             path: mock::http::Path::Any,
-            req: mock::http::RequestBody::Exact(json!({
-                "query": serde_json::to_value(dto::QUERY).unwrap(),
-                "variables": {
-                    "callDataInput": {
-                        "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                        "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                        "slippagePercentage": "0.01"
-                    },
-                    "chain": "MAINNET",
-                    "queryBatchSwap": false,
-                    "swapAmount": "2",
-                    "swapType": "EXACT_IN",
-                    "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                    "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-                    "useProtocolVersion": 2
-                }
-            })),
+            req: mock::http::RequestBody::Partial(
+                json!({
+                    "query": serde_json::to_value(dto::QUERY).unwrap(),
+                    "variables": {
+                        "callDataInput": {
+                            "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                            "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                            "slippagePercentage": "0.01"
+                        },
+                        "chain": "MAINNET",
+                        "queryBatchSwap": false,
+                        "swapAmount": "2",
+                        "swapType": "EXACT_IN",
+                        "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                        "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                        "useProtocolVersion": 2
+                    }
+                }),
+                vec!["variables.callDataInput.deadline"],
+            ),
             res: json!({
                 "data": {
                     "sorGetSwapPaths": {
@@ -496,23 +505,26 @@ async fn moves_surplus_fee_to_buy_token() {
         },
         mock::http::Expectation::Post {
             path: mock::http::Path::Any,
-            req: mock::http::RequestBody::Exact(json!({
-                "query": serde_json::to_value(dto::QUERY).unwrap(),
-                "variables": {
-                    "callDataInput": {
-                        "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                        "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                        "slippagePercentage": "0.01"
-                    },
-                    "chain": "MAINNET",
-                    "queryBatchSwap": false,
-                    "swapAmount": "1",
-                    "swapType": "EXACT_IN",
-                    "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                    "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-                    "useProtocolVersion": 2
-                }
-            })),
+            req: mock::http::RequestBody::Partial(
+                json!({
+                    "query": serde_json::to_value(dto::QUERY).unwrap(),
+                    "variables": {
+                        "callDataInput": {
+                            "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                            "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                            "slippagePercentage": "0.01"
+                        },
+                        "chain": "MAINNET",
+                        "queryBatchSwap": false,
+                        "swapAmount": "1",
+                        "swapType": "EXACT_IN",
+                        "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                        "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                        "useProtocolVersion": 2
+                    }
+                }),
+                vec!["variables.callDataInput.deadline"],
+            ),
             res: json!({
                 "data": {
                     "sorGetSwapPaths": {
@@ -720,23 +732,26 @@ chain-id = '1'
 async fn insufficient_room_for_surplus_fee() {
     let api = mock::http::setup(vec![mock::http::Expectation::Post {
         path: mock::http::Path::Any,
-        req: mock::http::RequestBody::Exact(json!({
-            "query": serde_json::to_value(dto::QUERY).unwrap(),
-            "variables": {
-                "callDataInput": {
-                    "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                    "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                    "slippagePercentage": "0.01"
-                },
-                "chain": "MAINNET",
-                "queryBatchSwap": false,
-                "swapAmount": "1",
-                "swapType": "EXACT_IN",
-                "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-                "useProtocolVersion": 2
-            }
-        })),
+        req: mock::http::RequestBody::Partial(
+            json!({
+                "query": serde_json::to_value(dto::QUERY).unwrap(),
+                "variables": {
+                    "callDataInput": {
+                        "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                        "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                        "slippagePercentage": "0.01"
+                    },
+                    "chain": "MAINNET",
+                    "queryBatchSwap": false,
+                    "swapAmount": "1",
+                    "swapType": "EXACT_IN",
+                    "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                    "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                    "useProtocolVersion": 2
+                }
+            }),
+            vec!["variables.callDataInput.deadline"],
+        ),
         res: json!({
             "data": {
                 "sorGetSwapPaths": {
@@ -842,23 +857,26 @@ async fn insufficient_room_for_surplus_fee() {
 async fn market() {
     let api = mock::http::setup(vec![mock::http::Expectation::Post {
         path: mock::http::Path::Any,
-        req: mock::http::RequestBody::Exact(json!({
-            "query": serde_json::to_value(dto::QUERY).unwrap(),
-            "variables": {
-                "callDataInput": {
-                    "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                    "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                    "slippagePercentage": "0.01"
-                },
-                "chain": "MAINNET",
-                "queryBatchSwap": false,
-                "swapAmount": "1",
-                "swapType": "EXACT_IN",
-                "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-                "useProtocolVersion": 2
-            }
-        })),
+        req: mock::http::RequestBody::Partial(
+            json!({
+                "query": serde_json::to_value(dto::QUERY).unwrap(),
+                "variables": {
+                    "callDataInput": {
+                        "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                        "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                        "slippagePercentage": "0.01"
+                    },
+                    "chain": "MAINNET",
+                    "queryBatchSwap": false,
+                    "swapAmount": "1",
+                    "swapType": "EXACT_IN",
+                    "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                    "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                    "useProtocolVersion": 2
+                }
+            }),
+            vec!["variables.callDataInput.deadline"],
+        ),
         res: json!({
             "data": {
                 "sorGetSwapPaths": {
