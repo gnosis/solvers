@@ -52,7 +52,7 @@ pub struct Query {
     /// The address that calls the 1Inch contract to execute the returned swap.
     pub from_address: H160,
 
-    /// An externally-owned account (EOA) address that initiate the transaction.
+    /// The end user address(owner).
     pub origin: H160,
 
     /// The maximum negative slippage allowed for swapping.
