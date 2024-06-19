@@ -27,7 +27,7 @@ async fn sell() {
                 "swapType": "EXACT_IN",
                 "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
                 "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-                "useVaultVersion": 2
+                "useProtocolVersion": 2
             }
         })),
         res: json!({
@@ -206,7 +206,7 @@ async fn buy() {
                 "swapType": "EXACT_OUT",
                 "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
                 "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-                "useVaultVersion": 2
+                "useProtocolVersion": 2
               }
         })),
         res: json!({
