@@ -24,6 +24,7 @@ pub struct Order {
     pub buy: eth::TokenAddress,
     pub side: order::Side,
     pub amount: Amount,
+    pub owner: eth::H160,
 }
 
 impl Order {
@@ -36,6 +37,7 @@ impl Order {
                 order::Side::Buy => order.buy.amount,
                 order::Side::Sell => order.sell.amount,
             }),
+            owner: order.owner(),
         }
     }
 

@@ -52,6 +52,9 @@ pub struct Query {
     /// The address that calls the 1Inch contract to execute the returned swap.
     pub from_address: H160,
 
+    /// The end user address(owner).
+    pub origin: H160,
+
     /// The maximum negative slippage allowed for swapping.
     pub slippage: Slippage,
 
@@ -105,6 +108,7 @@ impl Query {
             amount: order.amount.get(),
             slippage: Slippage::from_domain(slippage),
             gas_price: Some(gas_price.0 .0),
+            origin: order.owner,
             ..self
         })
     }
