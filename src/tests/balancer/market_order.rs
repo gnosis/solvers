@@ -2,9 +2,10 @@
 //! market orders, turning Balancer SOR responses into CoW Protocol solutions.
 
 use {
-    crate::{
-        infra::dex::balancer::dto,
-        tests::{self, balancer, mock},
+    crate::tests::{
+        self,
+        balancer::{self, SWAP_QUERY},
+        mock,
     },
     serde_json::json,
 };
@@ -14,7 +15,7 @@ async fn sell() {
     let api = mock::http::setup(vec![mock::http::Expectation::Post {
         path: mock::http::Path::exact("sor"),
         req: mock::http::RequestBody::Partial(json!({
-            "query": serde_json::to_value(dto::QUERY).unwrap(),
+            "query": serde_json::to_value(SWAP_QUERY).unwrap(),
             "variables": {
                 "callDataInput": {
                   "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
@@ -193,7 +194,7 @@ async fn buy() {
     let api = mock::http::setup(vec![mock::http::Expectation::Post {
         path: mock::http::Path::exact("sor"),
         req: mock::http::RequestBody::Partial(json!({
-            "query": serde_json::to_value(dto::QUERY).unwrap(),
+            "query": serde_json::to_value(SWAP_QUERY).unwrap(),
             "variables": {
                 "callDataInput": {
                   "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",

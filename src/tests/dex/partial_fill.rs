@@ -1,8 +1,12 @@
 use {
     crate::{
         domain::eth,
-        infra::dex::balancer::{dto, dto::HumanReadableAmount},
-        tests::{self, balancer, mock},
+        infra::dex::balancer::dto::HumanReadableAmount,
+        tests::{
+            self,
+            balancer::{self, SWAP_QUERY},
+            mock,
+        },
     },
     serde_json::json,
 };
@@ -19,7 +23,7 @@ async fn tested_amounts_adjust_depending_on_response() {
     let inner_request = |ether_amount| {
         mock::http::RequestBody::Partial(
             json!({
-                "query": serde_json::to_value(dto::QUERY).unwrap(),
+                "query": serde_json::to_value(SWAP_QUERY).unwrap(),
                 "variables": {
                     "callDataInput": {
                         "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
@@ -318,21 +322,21 @@ async fn tested_amounts_wrap_around() {
     // Test is set up such that 2.5 BAL or exactly 0.01 ETH.
     // And the lowest amount we are willing to fill is 0.01 ETH.
     let fill_attempts = [
-        HumanReadableAmount::from_decimal_units(
+        HumanReadableAmount::from_u256(
             &eth::U256::from_dec_str("16000000000000000000").unwrap(),
             18,
         ), // 16 BAL == 0.064 ETH
-        HumanReadableAmount::from_decimal_units(
+        HumanReadableAmount::from_u256(
             &eth::U256::from_dec_str("8000000000000000000").unwrap(),
             18,
         ), // 8  BAL == 0.032 ETH
-        HumanReadableAmount::from_decimal_units(
+        HumanReadableAmount::from_u256(
             &eth::U256::from_dec_str("4000000000000000000").unwrap(),
             18,
         ), // 4  BAL == 0.016 ETH
         // Next would be 2 BAL == 0.008 ETH which is below
         // the minimum fill of 0.01 ETH so instead we start over.
-        HumanReadableAmount::from_decimal_units(
+        HumanReadableAmount::from_u256(
             &eth::U256::from_dec_str("16000000000000000000").unwrap(),
             18,
         ), // 16 BAL == 0.06 ETH
@@ -342,7 +346,7 @@ async fn tested_amounts_wrap_around() {
         path: mock::http::Path::Any,
         req: mock::http::RequestBody::Partial(
             json!({
-                "query": serde_json::to_value(dto::QUERY).unwrap(),
+                "query": serde_json::to_value(SWAP_QUERY).unwrap(),
                 "variables": {
                     "callDataInput": {
                         "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
@@ -373,11 +377,11 @@ async fn tested_amounts_wrap_around() {
                                 db8f56000200000000000000000014",
                             "assetInIndex": 0,
                             "assetOutIndex": 1,
-                            "amount": amount_in.to_decimal_units().unwrap().to_string(),
+                            "amount": amount_in.as_wei().to_string(),
                             "userData": "0x",
                         }
                     ],
-                    "swapAmountRaw": amount_in.to_decimal_units().unwrap().to_string(),
+                    "swapAmountRaw": amount_in.as_wei().to_string(),
                     // Does not satisfy limit price of any chunk...
                     "returnAmountRaw": "700000000000000000",
                     "returnAmountConsideringFees": "1",
@@ -472,7 +476,7 @@ async fn moves_surplus_fee_to_buy_token() {
             path: mock::http::Path::Any,
             req: mock::http::RequestBody::Partial(
                 json!({
-                    "query": serde_json::to_value(dto::QUERY).unwrap(),
+                    "query": serde_json::to_value(SWAP_QUERY).unwrap(),
                     "variables": {
                         "callDataInput": {
                             "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
@@ -507,7 +511,7 @@ async fn moves_surplus_fee_to_buy_token() {
             path: mock::http::Path::Any,
             req: mock::http::RequestBody::Partial(
                 json!({
-                    "query": serde_json::to_value(dto::QUERY).unwrap(),
+                    "query": serde_json::to_value(SWAP_QUERY).unwrap(),
                     "variables": {
                         "callDataInput": {
                             "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
@@ -734,7 +738,7 @@ async fn insufficient_room_for_surplus_fee() {
         path: mock::http::Path::Any,
         req: mock::http::RequestBody::Partial(
             json!({
-                "query": serde_json::to_value(dto::QUERY).unwrap(),
+                "query": serde_json::to_value(SWAP_QUERY).unwrap(),
                 "variables": {
                     "callDataInput": {
                         "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
@@ -859,7 +863,7 @@ async fn market() {
         path: mock::http::Path::Any,
         req: mock::http::RequestBody::Partial(
             json!({
-                "query": serde_json::to_value(dto::QUERY).unwrap(),
+                "query": serde_json::to_value(SWAP_QUERY).unwrap(),
                 "variables": {
                     "callDataInput": {
                         "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",

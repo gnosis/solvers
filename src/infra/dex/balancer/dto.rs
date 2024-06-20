@@ -6,13 +6,13 @@ use {
     },
     bigdecimal::{num_bigint::BigInt, BigDecimal},
     ethereum_types::{H160, H256, U256},
-    number::conversions::{big_decimal_to_u256, u256_to_big_decimal},
+    number::conversions::u256_to_big_decimal,
     serde::{Deserialize, Serialize, Serializer},
     serde_with::serde_as,
 };
 
 /// Get swap quote from the SOR v2 for the V2 vault.
-pub const QUERY: &str = r#"
+const QUERY: &str = r#"
 query sorGetSwapPaths($callDataInput: GqlSwapCallDataInput!, $chain: GqlChain!, $queryBatchSwap: Boolean!, $swapAmount: AmountHumanReadable!, $swapType: GqlSorSwapType!, $tokenIn: String!, $tokenOut: String!, $useProtocolVersion: Int) {
     sorGetSwapPaths(
         callDataInput: $callDataInput,
@@ -74,14 +74,11 @@ impl Query<'_> {
             },
             chain: Chain::from_domain(chain_id)?,
             query_batch_swap,
-            swap_amount: HumanReadableAmount::from_decimal_units(
-                &order.amount.get(),
-                token_decimals,
-            ),
+            swap_amount: HumanReadableAmount::from_u256(&order.amount.get(), token_decimals),
             swap_type: SwapType::from_domain(order.side),
             token_in: order.sell.0,
             token_out: order.buy.0,
-            use_protocol_version: Some(VaultVersion::V2.into()),
+            use_protocol_version: Some(ProtocolVersion::V2.into()),
         };
         Ok(Self {
             query: QUERY,
@@ -95,27 +92,27 @@ impl Query<'_> {
 #[serde_as]
 #[derive(Debug, Default, PartialEq)]
 pub struct HumanReadableAmount {
-    value: BigDecimal,
-    decimals: BigDecimal,
+    amount: U256,
+    decimals: u8,
 }
 
 impl HumanReadableAmount {
     /// Convert a `U256` amount to a human form.
-    pub fn from_decimal_units(units: &U256, decimals: u8) -> HumanReadableAmount {
-        let decimals: BigDecimal = BigInt::from(10).pow(decimals as u32).into();
+    pub fn from_u256(amount: &U256, decimals: u8) -> HumanReadableAmount {
         Self {
-            value: u256_to_big_decimal(units) / &decimals,
+            amount: *amount,
             decimals,
         }
     }
 
-    pub fn value(&self) -> &BigDecimal {
-        &self.value
+    pub fn value(&self) -> BigDecimal {
+        let decimals: BigDecimal = BigInt::from(10).pow(self.decimals as u32).into();
+        u256_to_big_decimal(&self.amount) / decimals
     }
 
-    /// Convert the human readable amount to a `U256` with 18 decimals.
-    pub fn to_decimal_units(&self) -> Option<U256> {
-        big_decimal_to_u256(&(&self.value * &self.decimals))
+    /// Convert the human readable amount to a `U256` with the token's decimals.
+    pub fn as_wei(&self) -> U256 {
+        self.amount
     }
 }
 
@@ -124,7 +121,7 @@ impl Serialize for HumanReadableAmount {
     where
         S: Serializer,
     {
-        self.value.serialize(serializer)
+        self.value().serialize(serializer)
     }
 }
 
@@ -214,12 +211,12 @@ impl SwapType {
 }
 
 #[repr(u8)]
-enum VaultVersion {
+enum ProtocolVersion {
     V2 = 2,
 }
 
-impl From<VaultVersion> for u8 {
-    fn from(value: VaultVersion) -> Self {
+impl From<ProtocolVersion> for u8 {
+    fn from(value: ProtocolVersion) -> Self {
         value as u8
     }
 }
