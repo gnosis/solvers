@@ -28,7 +28,7 @@ jobs:
 
       - name: Update Cargo.toml
         run: |
-          sed -i '/git = "https:\/\/github.com\/cowprotocol\/services.git"/s/tag = "v[0-9]*\.[0-9]*\.[0-9]*"/tag = "${{ env.TAG }}"/g' ./Cargo.toml
+          sed -i '/git = "https:\/\/github.com\/cowprotocol\/services.git"/s/tag = ".*"/tag = "${{ env.TAG }}"/g' ./Cargo.toml
 
       - name: Identify and update specific CoW dependencies in Cargo.lock
         run: |
