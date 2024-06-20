@@ -376,6 +376,7 @@ mod tests {
                 .into(),
             side: order::Side::Buy,
             amount: dex::Amount::new(U256::from(1000)),
+            owner: H160::from_str("0x9008d19f58aabd9ed0d60971565aa8510560ab41").unwrap(),
         };
         let slippage = dex::Slippage::one_percent();
         let chain_id = eth::ChainId::Mainnet;
