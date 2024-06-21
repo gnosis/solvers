@@ -20,7 +20,7 @@ use {
     tracing::Instrument,
 };
 
-pub mod dto;
+mod dto;
 mod vault;
 
 /// Bindings to the Balancer Smart Order Router (SOR) API.

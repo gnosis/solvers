@@ -347,7 +347,13 @@ mod value_or_string {
 
 #[cfg(test)]
 mod tests {
-    use {super::*, maplit::hashmap, serde_json::json, std::str::FromStr};
+    use {
+        super::*,
+        maplit::hashmap,
+        number::conversions::big_decimal_to_u256,
+        serde_json::json,
+        std::str::FromStr,
+    };
 
     #[test]
     fn test_query_serialization() {
@@ -415,5 +421,26 @@ mod tests {
         });
 
         assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn test_human_readable_amount() {
+        let amount =
+            big_decimal_to_u256(&BigDecimal::from_str("1230000000000000000021").unwrap()).unwrap();
+        let human_readable_amount = HumanReadableAmount::from_u256(&amount, 18);
+        assert_eq!(
+            human_readable_amount.value(),
+            BigDecimal::from_str("1230.000000000000000021").unwrap()
+        );
+        assert_eq!(human_readable_amount.as_wei(), amount);
+
+        let amount =
+            big_decimal_to_u256(&BigDecimal::from_str("1230000000000021").unwrap()).unwrap();
+        let human_readable_amount = HumanReadableAmount::from_u256(&amount, 18);
+        assert_eq!(
+            human_readable_amount.value(),
+            BigDecimal::from_str("0.001230000000000021").unwrap()
+        );
+        assert_eq!(human_readable_amount.as_wei(), amount);
     }
 }

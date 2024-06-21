@@ -1,12 +1,8 @@
 use {
-    crate::{
-        domain::eth,
-        infra::dex::balancer::dto::HumanReadableAmount,
-        tests::{
-            self,
-            balancer::{self, SWAP_QUERY},
-            mock,
-        },
+    crate::tests::{
+        self,
+        balancer::{self, SWAP_QUERY},
+        mock,
     },
     serde_json::json,
 };
@@ -322,27 +318,13 @@ async fn tested_amounts_wrap_around() {
     // Test is set up such that 2.5 BAL or exactly 0.01 ETH.
     // And the lowest amount we are willing to fill is 0.01 ETH.
     let fill_attempts = [
-        HumanReadableAmount::from_u256(
-            &eth::U256::from_dec_str("16000000000000000000").unwrap(),
-            18,
-        ), // 16 BAL == 0.064 ETH
-        HumanReadableAmount::from_u256(
-            &eth::U256::from_dec_str("8000000000000000000").unwrap(),
-            18,
-        ), // 8  BAL == 0.032 ETH
-        HumanReadableAmount::from_u256(
-            &eth::U256::from_dec_str("4000000000000000000").unwrap(),
-            18,
-        ), // 4  BAL == 0.016 ETH
-        // Next would be 2 BAL == 0.008 ETH which is below
-        // the minimum fill of 0.01 ETH so instead we start over.
-        HumanReadableAmount::from_u256(
-            &eth::U256::from_dec_str("16000000000000000000").unwrap(),
-            18,
-        ), // 16 BAL == 0.06 ETH
+        ("16", "16000000000000000000"), // 16 BAL == 0.064 ETH
+        ("8", "8000000000000000000"),   // 8  BAL == 0.032 ETH
+        ("4", "4000000000000000000"),   // 4  BAL == 0.016 ETH
+        ("16", "16000000000000000000"), // 16 BAL == 0.064 ETH
     ]
     .into_iter()
-    .map(|amount_in| mock::http::Expectation::Post {
+    .map(|(amount_in, amount_in_wei)| mock::http::Expectation::Post {
         path: mock::http::Path::Any,
         req: mock::http::RequestBody::Partial(
             json!({
@@ -355,7 +337,7 @@ async fn tested_amounts_wrap_around() {
                     },
                     "chain": "MAINNET",
                     "queryBatchSwap": false,
-                    "swapAmount": amount_in.value(),
+                    "swapAmount": amount_in,
                     "swapType": "EXACT_OUT",
                     "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
                     "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
@@ -377,11 +359,11 @@ async fn tested_amounts_wrap_around() {
                                 db8f56000200000000000000000014",
                             "assetInIndex": 0,
                             "assetOutIndex": 1,
-                            "amount": amount_in.as_wei().to_string(),
+                            "amount": amount_in_wei,
                             "userData": "0x",
                         }
                     ],
-                    "swapAmountRaw": amount_in.as_wei().to_string(),
+                    "swapAmountRaw": amount_in_wei,
                     // Does not satisfy limit price of any chunk...
                     "returnAmountRaw": "700000000000000000",
                     "returnAmountConsideringFees": "1",
