@@ -1,0 +1,70 @@
+name: Update CoW Dependencies
+
+on:
+  workflow_dispatch:
+  schedule:
+    # At 00:00 on Wednesday
+    - cron: "0 0 * * 3"
+
+jobs:
+  update-dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v2
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Get latest release tag from CoW protocol services
+        id: latest-tag
+        run: |
+          TAG=$(curl -s https://api.github.com/repos/cowprotocol/services/releases/latest | jq -r '.tag_name')
+          echo "TAG=$TAG" >> $GITHUB_ENV
+
+      - name: Create branch
+        run: |
+          git checkout -b update-cow-dependencies/${{ env.TAG }}
+
+      - name: Update Cargo.toml
+        run: |
+          sed -i '/git = "https:\/\/github.com\/cowprotocol\/services.git"/s/tag = ".*"/tag = "${{ env.TAG }}"/g' ./Cargo.toml
+
+      - name: Identify and update specific CoW dependencies in Cargo.lock
+        run: |
+          PACKAGES=$(grep -oP 'package = "\K[^"]*' <(grep -B1 'git = "https:\/\/github.com\/cowprotocol\/services.git"' Cargo.toml))
+          echo "Identified packages: $PACKAGES"
+          for package in $PACKAGES; do
+            echo "Updating package: $package"
+            cargo update -p $package
+          done
+
+      - name: Check for changes
+        run: |
+          git diff --exit-code || echo "CHANGES_DETECTED=true" >> $GITHUB_ENV
+
+      - name: No changes detected
+        if: env.CHANGES_DETECTED != 'true'
+        run: echo "No updates necessary. Dependencies are already up-to-date."
+
+      - name: Commit changes
+        if: env.CHANGES_DETECTED == 'true'
+        id: commit
+        run: |
+          git config --global user.name 'Your Name'
+          git config --global user.email 'your-email@example.com'
+          git add Cargo.toml Cargo.lock
+          git commit -m "Update CoW dependencies to ${{ env.TAG }}"
+          git push --set-upstream origin update-cow-dependencies/${{ env.TAG }}
+          echo "branch=$(git rev-parse --abbrev-ref HEAD)" >> $GITHUB_OUTPUT
+          echo "pr_body=Updated CoW dependencies to ${{ env.TAG }}" >> $GITHUB_OUTPUT
+
+      - name: Create Pull Request
+        if: env.CHANGES_DETECTED == 'true'
+        uses: repo-sync/pull-request@v2
+        with:
+          source_branch: ${{ steps.commit.outputs.branch }}
+          destination_branch: "main"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_title: "Update CoW dependencies to ${{ env.TAG }}"
+          pr_body: "${{ steps.commit.outputs.pr_body }}"

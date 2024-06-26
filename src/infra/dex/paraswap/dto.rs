@@ -57,6 +57,9 @@ pub struct SwapQuery {
 
     /// A relative slippage tolerance denominated in bps.
     pub slippage: u16,
+
+    /// The API version to use.
+    pub version: String,
 }
 
 impl SwapQuery {
@@ -88,6 +91,7 @@ impl SwapQuery {
             slippage: slippage
                 .as_bps()
                 .ok_or(super::Error::InvalidSlippage(slippage.clone()))?,
+            version: "6.2".to_string(),
         })
     }
 }
