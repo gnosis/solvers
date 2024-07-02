@@ -1,5 +1,9 @@
 use {
-    crate::tests::{self, balancer, mock},
+    crate::tests::{
+        self,
+        balancer::{self, SWAP_QUERY},
+        mock,
+    },
     serde_json::json,
 };
 
@@ -42,17 +46,34 @@ async fn test() {
     ] {
         let api = mock::http::setup(vec![mock::http::Expectation::Post {
             path: mock::http::Path::Any,
-            req: mock::http::RequestBody::Exact(json!({
-                "sellToken": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                "buyToken": "0xba100000625a3754423978a60c9317c58a424e3d",
-                "orderKind": side,
-                "amount": if side == "sell" {
-                    "1000000000000000000"
-                } else {
-                    "227598784442065388110"
-                },
-                "gasPrice": "15000000000",
-            })),
+            req: mock::http::RequestBody::Partial(
+                json!({
+                    "query": serde_json::to_value(SWAP_QUERY).unwrap(),
+                    "variables": {
+                        "callDataInput": {
+                            "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                            "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                            "slippagePercentage": "0.01"
+                        },
+                        "chain": "MAINNET",
+                        "queryBatchSwap": false,
+                        "swapAmount": if side == "sell" {
+                            "1"
+                        } else {
+                            "227.59878444206538811"
+                        },
+                        "swapType": if side == "sell" {
+                            "EXACT_IN"
+                        } else {
+                            "EXACT_OUT"
+                        },
+                        "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                        "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                        "useProtocolVersion": 2
+                    }
+                }),
+                vec!["variables.callDataInput.deadline"],
+            ),
             res: json!({
                 "tokenAddresses": [
                     "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
@@ -66,17 +87,12 @@ async fn test() {
                         "assetOutIndex": 1,
                         "amount": input_amount,
                         "userData": "0x",
-                        "returnAmount": output_amount,
                     }
                 ],
-                "swapAmount": input_amount,
-                "swapAmountForSwaps": input_amount,
-                "returnAmount": output_amount,
-                "returnAmountFromSwaps": output_amount,
-                "returnAmountConsideringFees": output_amount,
+                "swapAmountRaw": input_amount,
+                "returnAmountRaw": output_amount,
                 "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
                 "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-                "marketSp": "0.004393607339632106",
             }),
         }])
         .await;

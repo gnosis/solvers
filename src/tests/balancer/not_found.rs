@@ -2,38 +2,16 @@
 //! swap was found for the specified quoted order.
 
 use {
-    crate::tests::{self, balancer, mock},
+    crate::tests::{self, balancer},
     serde_json::json,
+    std::{net::SocketAddr, str::FromStr},
 };
 
 /// Tests that orders get marked as "mandatory" in `/quote` requests.
 #[tokio::test]
 async fn test() {
-    let api = mock::http::setup(vec![mock::http::Expectation::Post {
-        path: mock::http::Path::Any,
-        req: mock::http::RequestBody::Exact(json!({
-            "sellToken": "0x1111111111111111111111111111111111111111",
-            "buyToken": "0x2222222222222222222222222222222222222222",
-            "orderKind": "sell",
-            "amount": "1000000000000000000",
-            "gasPrice": "15000000000",
-        })),
-        res: json!({
-            "tokenAddresses": [],
-            "swaps": [],
-            "swapAmount": "0",
-            "swapAmountForSwaps": "0",
-            "returnAmount": "0",
-            "returnAmountFromSwaps": "0",
-            "returnAmountConsideringFees": "0",
-            "tokenIn": "",
-            "tokenOut": "",
-            "marketSp": "0",
-        }),
-    }])
-    .await;
-
-    let engine = tests::SolverEngine::new("balancer", balancer::config(&api.address)).await;
+    let api_address = SocketAddr::from_str("127.0.0.1:8080").unwrap();
+    let engine = tests::SolverEngine::new("balancer", balancer::config(&api_address)).await;
 
     let solution = engine
         .solve(json!({
