@@ -131,23 +131,8 @@ version = "0.1.0"
 source = "git+https://github.com/cowprotocol/services.git?tag=v2.265.0#c11ee2a88b786165e27f7b455e36a1ac09afe0e4"
 dependencies = [
  "anyhow",
- "app-data-hash 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.262.0)",
- "bytes-hex 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.262.0)",
- "hex",
- "primitive-types",
- "serde",
- "serde_json",
- "serde_with",
-]
-
-[[package]]
-name = "app-data"
-version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.263.0-shared-test-utils#b706d23f056f0338b5896c881af735514f1279cd"
-dependencies = [
- "anyhow",
- "app-data-hash 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.263.0-shared-test-utils)",
- "bytes-hex 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.263.0-shared-test-utils)",
+ "app-data-hash",
+ "bytes-hex",
  "hex",
  "primitive-types",
  "serde",
@@ -159,15 +144,6 @@ dependencies = [
 name = "app-data-hash"
 version = "0.1.0"
 source = "git+https://github.com/cowprotocol/services.git?tag=v2.265.0#c11ee2a88b786165e27f7b455e36a1ac09afe0e4"
-dependencies = [
- "hex-literal",
- "tiny-keccak",
-]
-
-[[package]]
-name = "app-data-hash"
-version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.263.0-shared-test-utils#b706d23f056f0338b5896c881af735514f1279cd"
 dependencies = [
  "hex-literal",
  "tiny-keccak",
@@ -737,17 +713,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bytes-hex"
-version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.263.0-shared-test-utils#b706d23f056f0338b5896c881af735514f1279cd"
-dependencies = [
- "hex",
- "serde",
- "serde_json",
- "serde_with",
-]
-
-[[package]]
 name = "bytes-utils"
 version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -870,16 +835,6 @@ dependencies = [
 name = "contracts"
 version = "0.1.0"
 source = "git+https://github.com/cowprotocol/services.git?tag=v2.265.0#c11ee2a88b786165e27f7b455e36a1ac09afe0e4"
-dependencies = [
- "ethcontract",
- "ethcontract-generate",
- "serde",
-]
-
-[[package]]
-name = "contracts"
-version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.263.0-shared-test-utils#b706d23f056f0338b5896c881af735514f1279cd"
 dependencies = [
  "ethcontract",
  "ethcontract-generate",
@@ -1301,37 +1256,7 @@ source = "git+https://github.com/cowprotocol/services.git?tag=v2.265.0#c11ee2a88
 dependencies = [
  "anyhow",
  "async-trait",
- "contracts 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.262.0)",
- "ethcontract",
- "ethereum-types",
- "futures",
- "hex",
- "hex-literal",
- "lazy_static",
- "mockall",
- "observe 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.262.0)",
- "primitive-types",
- "prometheus",
- "prometheus-metric-storage",
- "reqwest",
- "scopeguard",
- "serde",
- "serde_json",
- "tokio",
- "tokio-stream",
- "tracing",
- "url",
- "web3",
-]
-
-[[package]]
-name = "ethrpc"
-version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.263.0-shared-test-utils#b706d23f056f0338b5896c881af735514f1279cd"
-dependencies = [
- "anyhow",
- "async-trait",
- "contracts 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.263.0-shared-test-utils)",
+ "contracts",
  "ethcontract",
  "ethereum-types",
  "futures",
@@ -1340,7 +1265,7 @@ dependencies = [
  "itertools 0.12.1",
  "lazy_static",
  "mockall",
- "observe 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.263.0-shared-test-utils)",
+ "observe",
  "primitive-types",
  "prometheus",
  "prometheus-metric-storage",
@@ -2343,17 +2268,17 @@ version = "0.1.0"
 source = "git+https://github.com/cowprotocol/services.git?tag=v2.265.0#c11ee2a88b786165e27f7b455e36a1ac09afe0e4"
 dependencies = [
  "anyhow",
- "app-data 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.263.0-shared-test-utils)",
- "app-data-hash 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.263.0-shared-test-utils)",
+ "app-data",
+ "app-data-hash",
  "bigdecimal",
- "bytes-hex 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.263.0-shared-test-utils)",
+ "bytes-hex",
  "chrono",
  "derivative",
  "hex",
  "hex-literal",
  "lazy_static",
  "num",
- "number 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.263.0-shared-test-utils)",
+ "number",
  "primitive-types",
  "secp256k1",
  "serde",
@@ -2520,19 +2445,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "number"
-version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.263.0-shared-test-utils#b706d23f056f0338b5896c881af735514f1279cd"
-dependencies = [
- "anyhow",
- "bigdecimal",
- "num",
- "primitive-types",
- "serde",
- "serde_with",
-]
-
-[[package]]
 name = "object"
 version = "0.36.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2545,23 +2457,6 @@ dependencies = [
 name = "observe"
 version = "0.1.0"
 source = "git+https://github.com/cowprotocol/services.git?tag=v2.265.0#c11ee2a88b786165e27f7b455e36a1ac09afe0e4"
-dependencies = [
- "atty",
- "futures",
- "once_cell",
- "pin-project-lite",
- "prometheus",
- "prometheus-metric-storage",
- "time",
- "tokio",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "observe"
-version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.263.0-shared-test-utils#b706d23f056f0338b5896c881af735514f1279cd"
 dependencies = [
  "atty",
  "futures",
@@ -2637,7 +2532,7 @@ version = "0.1.0"
 source = "git+https://github.com/cowprotocol/services.git?tag=v2.265.0#c11ee2a88b786165e27f7b455e36a1ac09afe0e4"
 dependencies = [
  "cached",
- "contracts 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.263.0-shared-test-utils)",
+ "contracts",
  "ethcontract",
  "thiserror",
  "tracing",
@@ -2965,24 +2860,7 @@ dependencies = [
  "anyhow",
  "futures",
  "humantime",
- "observe 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.262.0)",
- "prometheus",
- "prometheus-metric-storage",
- "reqwest",
- "thiserror",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "rate-limit"
-version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.263.0-shared-test-utils#b706d23f056f0338b5896c881af735514f1279cd"
-dependencies = [
- "anyhow",
- "futures",
- "humantime",
- "observe 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.263.0-shared-test-utils)",
+ "observe",
  "prometheus",
  "prometheus-metric-storage",
  "reqwest",
@@ -3466,20 +3344,20 @@ version = "0.1.0"
 source = "git+https://github.com/cowprotocol/services.git?tag=v2.265.0#c11ee2a88b786165e27f7b455e36a1ac09afe0e4"
 dependencies = [
  "anyhow",
- "app-data 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.263.0-shared-test-utils)",
- "app-data-hash 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.263.0-shared-test-utils)",
+ "app-data",
+ "app-data-hash",
  "async-trait",
  "bigdecimal",
- "bytes-hex 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.263.0-shared-test-utils)",
+ "bytes-hex",
  "cached",
  "chrono",
  "clap",
- "contracts 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.263.0-shared-test-utils)",
+ "contracts",
  "database",
  "delay_map",
  "derivative",
  "ethcontract",
- "ethrpc 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.263.0-shared-test-utils)",
+ "ethrpc",
  "flate2",
  "futures",
  "gas-estimation",
@@ -3493,13 +3371,13 @@ dependencies = [
  "mockall",
  "model",
  "num",
- "number 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.263.0-shared-test-utils)",
- "observe 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.263.0-shared-test-utils)",
+ "number",
+ "observe",
  "order-validation",
  "primitive-types",
  "prometheus",
  "prometheus-metric-storage",
- "rate-limit 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.263.0-shared-test-utils)",
+ "rate-limit",
  "reqwest",
  "secp256k1",
  "serde",
@@ -3586,9 +3464,9 @@ dependencies = [
  "bigdecimal",
  "chrono",
  "clap",
- "contracts 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.262.0)",
+ "contracts",
  "ethereum-types",
- "ethrpc 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.262.0)",
+ "ethrpc",
  "futures",
  "glob",
  "hex",
@@ -3598,11 +3476,11 @@ dependencies = [
  "itertools 0.11.0",
  "maplit",
  "num",
- "number 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.262.0)",
- "observe 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.262.0)",
+ "number",
+ "observe",
  "prometheus",
  "prometheus-metric-storage",
- "rate-limit 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.262.0)",
+ "rate-limit",
  "reqwest",
  "serde",
  "serde_json",
@@ -3624,12 +3502,12 @@ name = "solvers-dto"
 version = "0.1.0"
 source = "git+https://github.com/cowprotocol/services.git?tag=v2.265.0#c11ee2a88b786165e27f7b455e36a1ac09afe0e4"
 dependencies = [
- "app-data 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.262.0)",
+ "app-data",
  "bigdecimal",
- "bytes-hex 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.262.0)",
+ "bytes-hex",
  "chrono",
  "hex",
- "number 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.262.0)",
+ "number",
  "serde",
  "serde_with",
  "web3",

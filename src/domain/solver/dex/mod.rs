@@ -115,7 +115,6 @@ impl Dex {
         order: &Order,
         dex_order: &dex::Order,
         tokens: &auction::Tokens,
-        gas_price: auction::GasPrice,
     ) -> Option<dex::Swap> {
         let dex_err_handler = |err: infra::dex::Error| {
             infra::metrics::solve_error(err.format_variant());
@@ -149,7 +148,7 @@ impl Dex {
         let swap = async {
             let slippage = self.slippage.relative(&dex_order.amount(), tokens);
             self.dex
-                .swap(dex_order, &slippage, tokens, gas_price)
+                .swap(dex_order, &slippage, tokens)
                 .await
                 .map_err(dex_err_handler)
         };
@@ -183,7 +182,7 @@ impl Dex {
     ) -> Option<solution::Solution> {
         let order = order.get();
         let dex_order = self.fills.dex_order(order, tokens)?;
-        let swap = self.try_solve(order, &dex_order, tokens, gas_price).await?;
+        let swap = self.try_solve(order, &dex_order, tokens).await?;
         let sell = tokens.reference_price(&order.sell.token);
         let Some(solution) = swap
             .into_solution(
