@@ -34,8 +34,8 @@ impl Dex {
     ) -> Result<dex::Swap, Error> {
         let swap = match self {
             Dex::Balancer(balancer) => balancer.swap(order, slippage, tokens).await?,
-            Dex::OneInch(oneinch) => oneinch.swap(order, slippage, gas_price).await?,
-            Dex::ZeroEx(zeroex) => zeroex.swap(order, slippage, gas_price).await?,
+            Dex::OneInch(oneinch) => oneinch.swap(order, slippage).await?,
+            Dex::ZeroEx(zeroex) => zeroex.swap(order, slippage).await?,
             Dex::ParaSwap(paraswap) => paraswap.swap(order, slippage, tokens).await?,
         };
         Ok(swap)

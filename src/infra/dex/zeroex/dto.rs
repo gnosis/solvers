@@ -3,7 +3,7 @@
 
 use {
     crate::{
-        domain::{auction, dex, order},
+        domain::{dex, order},
         util::serialize,
     },
     bigdecimal::BigDecimal,
@@ -76,12 +76,7 @@ pub struct Query {
 pub struct Slippage(BigDecimal);
 
 impl Query {
-    pub fn with_domain(
-        self,
-        order: &dex::Order,
-        slippage: &dex::Slippage,
-        gas_price: auction::GasPrice,
-    ) -> Self {
+    pub fn with_domain(self, order: &dex::Order, slippage: &dex::Slippage) -> Self {
         let (sell_amount, buy_amount) = match order.side {
             order::Side::Buy => (None, Some(order.amount.get())),
             order::Side::Sell => (Some(order.amount.get()), None),
@@ -95,7 +90,6 @@ impl Query {
             // Note that the API calls this "slippagePercentage", but it is **not** a
             // percentage but a factor.
             slippage_percentage: Some(Slippage(slippage.as_factor().clone())),
-            gas_price: Some(gas_price.0 .0),
             ..self
         }
     }

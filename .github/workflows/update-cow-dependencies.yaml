@@ -28,16 +28,7 @@ jobs:
 
       - name: Update Cargo.toml
         run: |
-          sed -i '/git = "https:\/\/github.com\/cowprotocol\/services.git"/s/tag = ".*"/tag = "${{ env.TAG }}"/g' ./Cargo.toml
-
-      - name: Identify and update specific CoW dependencies in Cargo.lock
-        run: |
-          PACKAGES=$(grep -oP 'package = "\K[^"]*' <(grep -B1 'git = "https:\/\/github.com\/cowprotocol\/services.git"' Cargo.toml))
-          echo "Identified packages: $PACKAGES"
-          for package in $PACKAGES; do
-            echo "Updating package: $package"
-            cargo update -p $package
-          done
+          sed -i '/git = "https:\/\/github.com\/cowprotocol\/services.git"/!b; s/tag = "[^"]*"/tag = "${{ env.TAG }}"/g' ./Cargo.toml
 
       - name: Check for changes
         run: |
@@ -46,6 +37,16 @@ jobs:
       - name: No changes detected
         if: env.CHANGES_DETECTED != 'true'
         run: echo "No updates necessary. Dependencies are already up-to-date."
+
+      - name: Update specific CoW dependencies in Cargo.lock
+        if: env.CHANGES_DETECTED == 'true'
+        run: |
+          PACKAGES=$(grep -oP 'package = "\K[^"]*' <(grep -B1 'git = "https:\/\/github.com\/cowprotocol\/services.git"' Cargo.toml))
+          echo "Identified packages: $PACKAGES"
+          for package in $PACKAGES; do
+            echo "Updating package: $package"
+            cargo update -p $package
+          done
 
       - name: Commit changes
         if: env.CHANGES_DETECTED == 'true'

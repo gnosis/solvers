@@ -15,7 +15,6 @@ async fn sell() {
              &buyToken=0xe41d2489571d322189246dafa5ebde1f4699f498\
              &sellAmount=1000000000000000000\
              &slippagePercentage=0.01\
-             &gasPrice=15000000000\
              &takerAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41\
              &skipValidation=true\
              &intentOnFilling=false\
@@ -42,7 +41,6 @@ async fn sell() {
             "value": "0",
             "gas": "127886",
             "estimatedGas": "127886",
-            "gasPrice": "15000000000",
             "protocolFee": "0",
             "minimumProtocolFee": "0",
             "buyTokenAddress": "0xe41d2489571d322189246dafa5ebde1f4699f498",
@@ -212,9 +210,9 @@ async fn buy() {
         path: mock::http::Path::exact(
             "swap/v1/quote?sellToken=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&\
              buyToken=0xe41d2489571d322189246dafa5ebde1f4699f498&buyAmount=1000000000000000000000&\
-             slippagePercentage=0.01&gasPrice=15000000000&\
-             takerAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41&skipValidation=true&\
-             intentOnFilling=false&affiliateAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41&\
+             slippagePercentage=0.01&takerAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41&\
+             skipValidation=true&intentOnFilling=false&\
+             affiliateAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41&\
              enableSlippageProtection=false",
         ),
         res: json!({
@@ -237,7 +235,6 @@ async fn buy() {
             "value": "0",
             "gas": "111000",
             "estimatedGas": "111000",
-            "gasPrice": "15000000000",
             "protocolFee": "0",
             "minimumProtocolFee": "0",
             "buyTokenAddress": "0xe41d2489571d322189246dafa5ebde1f4699f498",
