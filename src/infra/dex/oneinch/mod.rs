@@ -1,6 +1,6 @@
 use {
     crate::{
-        domain::{auction, dex, eth},
+        domain::{dex, eth},
         util,
     },
     ethereum_types::H160,
@@ -140,12 +140,11 @@ impl OneInch {
         &self,
         order: &dex::Order,
         slippage: &dex::Slippage,
-        gas_price: auction::GasPrice,
     ) -> Result<dex::Swap, Error> {
         let query = self
             .defaults
             .clone()
-            .with_domain(order, slippage, gas_price)
+            .with_domain(order, slippage)
             .ok_or(Error::OrderNotSupported)?;
         let swap = {
             // Set up a tracing span to make debugging of API requests easier.
