@@ -1,4 +1,5 @@
 use {
+    shared::assert_json_matches_excluding,
     std::{
         fmt::{self, Debug, Formatter},
         net::SocketAddr,
@@ -80,6 +81,10 @@ pub enum Expectation {
 pub enum RequestBody {
     /// The received `[RequestBody]` has to match the provided value exactly.
     Exact(serde_json::Value),
+    /// The received `[RequestBody]` has to match the provided value partially
+    /// excluding the specified paths which are represented as dot-separated
+    /// strings.
+    Partial(serde_json::Value, Vec<&'static str>),
     /// Any `[RequestBody]` will be accepted.
     Any,
 }
@@ -240,6 +245,13 @@ fn post(
         assert_eq!(full_path, expected_path, "POST request has unexpected path");
         match expected_req {
             RequestBody::Exact(value) => assert_eq!(req, value, "POST request has unexpected body"),
+            RequestBody::Partial(value, exclude_paths) => {
+                let exclude_paths = exclude_paths
+                    .iter()
+                    .map(AsRef::as_ref)
+                    .collect::<Vec<&str>>();
+                assert_json_matches_excluding!(req, value, &exclude_paths)
+            }
             RequestBody::Any => (),
         }
         res

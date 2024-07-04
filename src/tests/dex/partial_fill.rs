@@ -1,5 +1,9 @@
 use {
-    crate::tests::{self, balancer, mock},
+    crate::tests::{
+        self,
+        balancer::{self, SWAP_QUERY},
+        mock,
+    },
     serde_json::json,
 };
 
@@ -12,111 +16,122 @@ use {
 #[tokio::test]
 async fn tested_amounts_adjust_depending_on_response() {
     // observe::tracing::initialize_reentrant("solvers=trace");
-    let inner_request = |amount| {
-        mock::http::RequestBody::Exact(json!({
-            "sellToken": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-            "buyToken": "0xba100000625a3754423978a60c9317c58a424e3d",
-            "orderKind": "sell",
-            "amount": amount,
-            "gasPrice": "15000000000",
-        }))
+    let inner_request = |ether_amount| {
+        mock::http::RequestBody::Partial(
+            json!({
+                "query": serde_json::to_value(SWAP_QUERY).unwrap(),
+                "variables": {
+                    "callDataInput": {
+                        "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                        "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                        "slippagePercentage": "0.01"
+                    },
+                    "chain": "MAINNET",
+                    "queryBatchSwap": false,
+                    "swapAmount": ether_amount,
+                    "swapType": "EXACT_IN",
+                    "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                    "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                    "useProtocolVersion": 2
+                }
+            }),
+            vec!["variables.callDataInput.deadline"],
+        )
     };
 
     let no_swap_found_response = json!({
-        "tokenAddresses": [],
-        "swaps": [],
-        "swapAmount": "0",
-        "swapAmountForSwaps": "0",
-        "returnAmount": "0",
-        "returnAmountFromSwaps": "0",
-        "returnAmountConsideringFees": "0",
-        "tokenIn": "0x0000000000000000000000000000000000000000",
-        "tokenOut": "0x0000000000000000000000000000000000000000",
-        "marketSp": "0",
+        "data": {
+            "sorGetSwapPaths": {
+                "tokenAddresses": [],
+                "swaps": [],
+                "swapAmountRaw": "0",
+                "returnAmountRaw": "0",
+                "tokenIn": "0x0000000000000000000000000000000000000000",
+                "tokenOut": "0x0000000000000000000000000000000000000000",
+            }
+        }
     });
 
-    let limit_price_violation_response = |in_amount| {
+    let limit_price_violation_response = |in_wei_amount| {
         json!({
-            "tokenAddresses": [
-                "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                "0xba100000625a3754423978a60c9317c58a424e3d"
-            ],
-            "swaps": [
-                {
-                    "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820\
-                        db8f56000200000000000000000014",
-                    "assetInIndex": 0,
-                    "assetOutIndex": 1,
-                    "amount": in_amount,
-                    "userData": "0x",
-                    "returnAmount": "1"
+            "data": {
+                "sorGetSwapPaths": {
+                    "tokenAddresses": [
+                        "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                        "0xba100000625a3754423978a60c9317c58a424e3d"
+                    ],
+                    "swaps": [
+                        {
+                            "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820\
+                                db8f56000200000000000000000014",
+                            "assetInIndex": 0,
+                            "assetOutIndex": 1,
+                            "amount": in_wei_amount,
+                            "userData": "0x",
+                        }
+                    ],
+                    "swapAmountRaw": in_wei_amount,
+                    "returnAmountRaw": "1",
+                    "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                    "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
                 }
-            ],
-            "swapAmount": in_amount,
-            "swapAmountForSwaps": in_amount,
-            "returnAmount": "1",
-            "returnAmountFromSwaps": "1",
-            "returnAmountConsideringFees": "1",
-            "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-            "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-            "marketSp": "0.004393607339632106",
+            }
         })
     };
 
     let api = mock::http::setup(vec![
         mock::http::Expectation::Post {
             path: mock::http::Path::Any,
-            req: inner_request("16000000000000000000"),
+            req: inner_request("16"),
             res: no_swap_found_response.clone(),
         },
         mock::http::Expectation::Post {
             path: mock::http::Path::Any,
-            req: inner_request("8000000000000000000"),
+            req: inner_request("8"),
             res: no_swap_found_response.clone(),
         },
         mock::http::Expectation::Post {
             path: mock::http::Path::Any,
-            req: inner_request("4000000000000000000"),
+            req: inner_request("4"),
             res: limit_price_violation_response("4000000000000000000").clone(),
         },
         mock::http::Expectation::Post {
             path: mock::http::Path::Any,
-            req: inner_request("2000000000000000000"),
+            req: inner_request("2"),
             res: limit_price_violation_response("2000000000000000000").clone(),
         },
         mock::http::Expectation::Post {
             path: mock::http::Path::Any,
-            req: inner_request("1000000000000000000"),
+            req: inner_request("1"),
             res: json!({
-                "tokenAddresses": [
-                    "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                    "0xba100000625a3754423978a60c9317c58a424e3d"
-                ],
-                "swaps": [
-                    {
-                        "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820\
-                            db8f56000200000000000000000014",
-                        "assetInIndex": 0,
-                        "assetOutIndex": 1,
-                        "amount": "1000000000000000000",
-                        "userData": "0x",
-                        "returnAmount": "227598784442065388110"
+                "data": {
+                    "sorGetSwapPaths": {
+                        "tokenAddresses": [
+                            "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                            "0xba100000625a3754423978a60c9317c58a424e3d"
+                        ],
+                        "swaps": [
+                            {
+                                "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820\
+                                    db8f56000200000000000000000014",
+                                "assetInIndex": 0,
+                                "assetOutIndex": 1,
+                                "amount": "1000000000000000000",
+                                "userData": "0x",
+                            }
+                        ],
+                        "swapAmountRaw": "1000000000000000000",
+                        "returnAmountRaw": "227598784442065388110",
+                        "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                        "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
                     }
-                ],
-                "swapAmount": "1000000000000000000",
-                "swapAmountForSwaps": "1000000000000000000",
-                "returnAmount": "227598784442065388110",
-                "returnAmountFromSwaps": "227598784442065388110",
-                "returnAmountConsideringFees": "227307710853355710706",
-                "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-                "marketSp": "0.004393607339632106",
+                }
             }),
         },
         // After a successful response we try the next time with a bigger amount.
         mock::http::Expectation::Post {
             path: mock::http::Path::Any,
-            req: inner_request("2000000000000000000"),
+            req: inner_request("2"),
             res: no_swap_found_response.clone(),
         },
     ])
@@ -140,6 +155,7 @@ async fn tested_amounts_adjust_depending_on_response() {
 node-url = 'http://{}'
 [dex]
 endpoint = 'http://{}/sor'
+chain-id = '1'
         ",
         simulation_node.address, api.address,
     ));
@@ -302,48 +318,59 @@ async fn tested_amounts_wrap_around() {
     // Test is set up such that 2.5 BAL or exactly 0.01 ETH.
     // And the lowest amount we are willing to fill is 0.01 ETH.
     let fill_attempts = [
-        "16000000000000000000", // 16 BAL == 0.064 ETH
-        "8000000000000000000",  // 8  BAL == 0.032 ETH
-        "4000000000000000000",  // 4  BAL == 0.016 ETH
-        // Next would be 2 BAL == 0.008 ETH which is below
-        // the minimum fill of 0.01 ETH so instead we start over.
-        "16000000000000000000", // 16 BAL == 0.06 ETH
+        ("16", "16000000000000000000"), // 16 BAL == 0.064 ETH
+        ("8", "8000000000000000000"),   // 8  BAL == 0.032 ETH
+        ("4", "4000000000000000000"),   // 4  BAL == 0.016 ETH
+        ("16", "16000000000000000000"), // 16 BAL == 0.064 ETH
     ]
     .into_iter()
-    .map(|amount| mock::http::Expectation::Post {
+    .map(|(amount_in, amount_in_wei)| mock::http::Expectation::Post {
         path: mock::http::Path::Any,
-        req: mock::http::RequestBody::Exact(json!({
-            "sellToken": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-            "buyToken": "0xba100000625a3754423978a60c9317c58a424e3d",
-            "orderKind": "buy",
-            "amount": amount,
-            "gasPrice": "15000000000",
-        })),
-        res: json!({
-            "tokenAddresses": [
-                "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                "0xba100000625a3754423978a60c9317c58a424e3d"
-            ],
-            "swaps": [
-                {
-                    "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820\
-                        db8f56000200000000000000000014",
-                    "assetInIndex": 0,
-                    "assetOutIndex": 1,
-                    "amount": amount,
-                    "userData": "0x",
-                    "returnAmount": "70000000000000000"
+        req: mock::http::RequestBody::Partial(
+            json!({
+                "query": serde_json::to_value(SWAP_QUERY).unwrap(),
+                "variables": {
+                    "callDataInput": {
+                        "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                        "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                        "slippagePercentage": "0.01"
+                    },
+                    "chain": "MAINNET",
+                    "queryBatchSwap": false,
+                    "swapAmount": amount_in,
+                    "swapType": "EXACT_OUT",
+                    "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                    "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                    "useProtocolVersion": 2
                 }
-            ],
-            "swapAmount": amount,
-            "swapAmountForSwaps": amount,
-            // Does not satisfy limit price of any chunk...
-            "returnAmount": "70000000000000000",
-            "returnAmountFromSwaps": "70000000000000000",
-            "returnAmountConsideringFees": "1",
-            "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-            "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-            "marketSp": "0.004393607339632106",
+            }),
+            vec!["variables.callDataInput.deadline"],
+        ),
+        res: json!({
+            "data": {
+                "sorGetSwapPaths": {
+                    "tokenAddresses": [
+                        "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                        "0xba100000625a3754423978a60c9317c58a424e3d"
+                    ],
+                    "swaps": [
+                        {
+                            "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820\
+                                db8f56000200000000000000000014",
+                            "assetInIndex": 0,
+                            "assetOutIndex": 1,
+                            "amount": amount_in_wei,
+                            "userData": "0x",
+                        }
+                    ],
+                    "swapAmountRaw": amount_in_wei,
+                    // Does not satisfy limit price of any chunk...
+                    "returnAmountRaw": "700000000000000000",
+                    "returnAmountConsideringFees": "1",
+                    "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                    "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                }
+            }
         }),
     })
     .collect();
@@ -429,59 +456,84 @@ async fn moves_surplus_fee_to_buy_token() {
     let api = mock::http::setup(vec![
         mock::http::Expectation::Post {
             path: mock::http::Path::Any,
-            req: mock::http::RequestBody::Exact(json!({
-                "sellToken": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                "buyToken": "0xba100000625a3754423978a60c9317c58a424e3d",
-                "orderKind": "sell",
-                "amount": "2000000000000000000",
-                "gasPrice": "6000000000000",
-            })),
+            req: mock::http::RequestBody::Partial(
+                json!({
+                    "query": serde_json::to_value(SWAP_QUERY).unwrap(),
+                    "variables": {
+                        "callDataInput": {
+                            "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                            "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                            "slippagePercentage": "0.01"
+                        },
+                        "chain": "MAINNET",
+                        "queryBatchSwap": false,
+                        "swapAmount": "2",
+                        "swapType": "EXACT_IN",
+                        "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                        "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                        "useProtocolVersion": 2
+                    }
+                }),
+                vec!["variables.callDataInput.deadline"],
+            ),
             res: json!({
-                "tokenAddresses": [],
-                "swaps": [],
-                "swapAmount": "0",
-                "swapAmountForSwaps": "0",
-                "returnAmount": "0",
-                "returnAmountFromSwaps": "0",
-                "returnAmountConsideringFees": "0",
-                "tokenIn": "0x0000000000000000000000000000000000000000",
-                "tokenOut": "0x0000000000000000000000000000000000000000",
-                "marketSp": "0",
+                "data": {
+                    "sorGetSwapPaths": {
+                        "tokenAddresses": [],
+                        "swaps": [],
+                        "swapAmountRaw": "0",
+                        "returnAmountRaw": "0",
+                        "tokenIn": "0x0000000000000000000000000000000000000000",
+                        "tokenOut": "0x0000000000000000000000000000000000000000",
+                    }
+                }
             }),
         },
         mock::http::Expectation::Post {
             path: mock::http::Path::Any,
-            req: mock::http::RequestBody::Exact(json!({
-                "sellToken": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                "buyToken": "0xba100000625a3754423978a60c9317c58a424e3d",
-                "orderKind": "sell",
-                "amount": "1000000000000000000",
-                "gasPrice": "6000000000000",
-            })),
-            res: json!({
-                "tokenAddresses": [
-                    "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                    "0xba100000625a3754423978a60c9317c58a424e3d"
-                ],
-                "swaps": [
-                    {
-                        "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820\
-                            db8f56000200000000000000000014",
-                        "assetInIndex": 0,
-                        "assetOutIndex": 1,
-                        "amount": "1000000000000000000",
-                        "userData": "0x",
-                        "returnAmount": "227598784442065388110"
+            req: mock::http::RequestBody::Partial(
+                json!({
+                    "query": serde_json::to_value(SWAP_QUERY).unwrap(),
+                    "variables": {
+                        "callDataInput": {
+                            "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                            "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                            "slippagePercentage": "0.01"
+                        },
+                        "chain": "MAINNET",
+                        "queryBatchSwap": false,
+                        "swapAmount": "1",
+                        "swapType": "EXACT_IN",
+                        "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                        "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                        "useProtocolVersion": 2
                     }
-                ],
-                "swapAmount": "1000000000000000000",
-                "swapAmountForSwaps": "1000000000000000000",
-                "returnAmount": "227598784442065388110",
-                "returnAmountFromSwaps": "227598784442065388110",
-                "returnAmountConsideringFees": "227307710853355710706",
-                "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-                "marketSp": "0.004393607339632106",
+                }),
+                vec!["variables.callDataInput.deadline"],
+            ),
+            res: json!({
+                "data": {
+                    "sorGetSwapPaths": {
+                        "tokenAddresses": [
+                            "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                            "0xba100000625a3754423978a60c9317c58a424e3d"
+                        ],
+                        "swaps": [
+                            {
+                                "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820\
+                                    db8f56000200000000000000000014",
+                                "assetInIndex": 0,
+                                "assetOutIndex": 1,
+                                "amount": "1000000000000000000",
+                                "userData": "0x",
+                            }
+                        ],
+                        "swapAmountRaw": "1000000000000000000",
+                        "returnAmountRaw": "227598784442065388110",
+                        "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                        "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                    }
+                }
             }),
         },
     ])
@@ -510,6 +562,7 @@ async fn moves_surplus_fee_to_buy_token() {
 node-url = 'http://{}'
 [dex]
 endpoint = 'http://{}/sor'
+chain-id = '1'
         ",
         simulation_node.address, api.address,
     ));
@@ -665,37 +718,49 @@ endpoint = 'http://{}/sor'
 async fn insufficient_room_for_surplus_fee() {
     let api = mock::http::setup(vec![mock::http::Expectation::Post {
         path: mock::http::Path::Any,
-        req: mock::http::RequestBody::Exact(json!({
-            "sellToken": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-            "buyToken": "0xba100000625a3754423978a60c9317c58a424e3d",
-            "orderKind": "sell",
-            "amount": "1000000000000000000",
-            "gasPrice": "15000000000",
-        })),
-        res: json!({
-            "tokenAddresses": [
-                "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                "0xba100000625a3754423978a60c9317c58a424e3d"
-            ],
-            "swaps": [
-                {
-                    "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820\
-                        db8f56000200000000000000000014",
-                    "assetInIndex": 0,
-                    "assetOutIndex": 1,
-                    "amount": "1000000000000000000",
-                    "userData": "0x",
-                    "returnAmount": "227598784442065388110"
+        req: mock::http::RequestBody::Partial(
+            json!({
+                "query": serde_json::to_value(SWAP_QUERY).unwrap(),
+                "variables": {
+                    "callDataInput": {
+                        "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                        "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                        "slippagePercentage": "0.01"
+                    },
+                    "chain": "MAINNET",
+                    "queryBatchSwap": false,
+                    "swapAmount": "1",
+                    "swapType": "EXACT_IN",
+                    "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                    "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                    "useProtocolVersion": 2
                 }
-            ],
-            "swapAmount": "1000000000000000000",
-            "swapAmountForSwaps": "1000000000000000000",
-            "returnAmount": "227598784442065388110",
-            "returnAmountFromSwaps": "227598784442065388110",
-            "returnAmountConsideringFees": "227307710853355710706",
-            "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-            "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-            "marketSp": "0.004393607339632106",
+            }),
+            vec!["variables.callDataInput.deadline"],
+        ),
+        res: json!({
+            "data": {
+                "sorGetSwapPaths": {
+                    "tokenAddresses": [
+                        "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                        "0xba100000625a3754423978a60c9317c58a424e3d"
+                    ],
+                    "swaps": [
+                        {
+                            "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820\
+                                db8f56000200000000000000000014",
+                            "assetInIndex": 0,
+                            "assetOutIndex": 1,
+                            "amount": "1000000000000000000",
+                            "userData": "0x",
+                        }
+                    ],
+                    "swapAmountRaw": "1000000000000000000",
+                    "returnAmountRaw": "227598784442065388110",
+                    "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                    "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                }
+            }
         }),
     }])
     .await;
@@ -778,37 +843,50 @@ async fn insufficient_room_for_surplus_fee() {
 async fn market() {
     let api = mock::http::setup(vec![mock::http::Expectation::Post {
         path: mock::http::Path::Any,
-        req: mock::http::RequestBody::Exact(json!({
-            "sellToken": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-            "buyToken": "0xba100000625a3754423978a60c9317c58a424e3d",
-            "orderKind": "sell",
-            "amount": "1000000000000000000",
-            "gasPrice": "15000000000",
-        })),
-        res: json!({
-            "tokenAddresses": [
-                "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                "0xba100000625a3754423978a60c9317c58a424e3d"
-            ],
-            "swaps": [
-                {
-                    "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820\
-                        db8f56000200000000000000000014",
-                    "assetInIndex": 0,
-                    "assetOutIndex": 1,
-                    "amount": "1000000000000000000",
-                    "userData": "0x",
-                    "returnAmount": "227598784442065388110"
+        req: mock::http::RequestBody::Partial(
+            json!({
+                "query": serde_json::to_value(SWAP_QUERY).unwrap(),
+                "variables": {
+                    "callDataInput": {
+                        "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                        "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+                        "slippagePercentage": "0.01"
+                    },
+                    "chain": "MAINNET",
+                    "queryBatchSwap": false,
+                    "swapAmount": "1",
+                    "swapType": "EXACT_IN",
+                    "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                    "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                    "useProtocolVersion": 2
                 }
-            ],
-            "swapAmount": "1000000000000000000",
-            "swapAmountForSwaps": "1000000000000000000",
-            "returnAmount": "227598784442065388110",
-            "returnAmountFromSwaps": "227598784442065388110",
-            "returnAmountConsideringFees": "227307710853355710706",
-            "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-            "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-            "marketSp": "0.004393607339632106",
+            }),
+            vec!["variables.callDataInput.deadline"],
+        ),
+        res: json!({
+            "data": {
+                "sorGetSwapPaths": {
+                    "tokenAddresses": [
+                        "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                        "0xba100000625a3754423978a60c9317c58a424e3d"
+                    ],
+                    "swaps": [
+                        {
+                            "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820\
+                                db8f56000200000000000000000014",
+                            "assetInIndex": 0,
+                            "assetOutIndex": 1,
+                            "amount": "1000000000000000000",
+                            "userData": "0x",
+                            "returnAmount": "227598784442065388110"
+                        }
+                    ],
+                    "swapAmountRaw": "1000000000000000000",
+                    "returnAmountRaw": "227598784442065388110",
+                    "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                    "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                }
+            }
         }),
     }])
     .await;

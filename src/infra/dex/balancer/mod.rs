@@ -1,12 +1,22 @@
 use {
     crate::{
-        domain::{auction, dex, eth, order},
+        domain::{
+            auction,
+            dex,
+            eth::{self, TokenAddress},
+            order,
+        },
         util,
     },
     contracts::ethcontract::I256,
     ethereum_types::U256,
     ethrpc::current_block::CurrentBlockStream,
-    std::sync::atomic::{self, AtomicU64},
+    num::ToPrimitive,
+    std::{
+        ops::Add,
+        sync::atomic::{self, AtomicU64},
+        time::Duration,
+    },
     tracing::Instrument,
 };
 
@@ -19,6 +29,8 @@ pub struct Sor {
     endpoint: reqwest::Url,
     vault: vault::Vault,
     settlement: eth::ContractAddress,
+    chain_id: eth::ChainId,
+    query_batch_swap: bool,
 }
 
 pub struct Config {
@@ -33,6 +45,13 @@ pub struct Config {
 
     /// The address of the Settlement contract.
     pub settlement: eth::ContractAddress,
+
+    /// For which chain the solver is configured.
+    pub chain_id: eth::ChainId,
+
+    /// Whether to run `queryBatchSwap` to update the return amount with most
+    /// up-to-date on-chain values.
+    pub query_batch_swap: bool,
 }
 
 impl Sor {
@@ -48,6 +67,8 @@ impl Sor {
             endpoint: config.endpoint,
             vault: vault::Vault::new(config.vault),
             settlement: config.settlement,
+            chain_id: config.chain_id,
+            query_batch_swap: config.query_batch_swap,
         }
     }
 
@@ -55,9 +76,21 @@ impl Sor {
         &self,
         order: &dex::Order,
         slippage: &dex::Slippage,
-        gas_price: auction::GasPrice,
+        tokens: &auction::Tokens,
     ) -> Result<dex::Swap, Error> {
-        let query = dto::Query::from_domain(order, gas_price);
+        let query = dto::Query::from_domain(
+            order,
+            tokens,
+            slippage,
+            self.chain_id,
+            self.settlement,
+            self.query_batch_swap,
+            // 2 minutes from now
+            chrono::Utc::now()
+                .add(Duration::from_secs(120))
+                .timestamp()
+                .to_u64(),
+        )?;
         let quote = {
             // Set up a tracing span to make debugging of API requests easier.
             // Historically, debugging API requests to external DEXs was a bit
@@ -74,8 +107,8 @@ impl Sor {
         }
 
         let (input, output) = match order.side {
-            order::Side::Buy => (quote.return_amount, quote.swap_amount),
-            order::Side::Sell => (quote.swap_amount, quote.return_amount),
+            order::Side::Buy => (quote.return_amount_raw, quote.swap_amount_raw),
+            order::Side::Sell => (quote.swap_amount_raw, quote.return_amount_raw),
         };
 
         let (max_input, min_output) = match order.side {
@@ -151,15 +184,15 @@ impl Sor {
         })
     }
 
-    async fn quote(&self, query: &dto::Query) -> Result<dto::Quote, Error> {
-        let quote = util::http::roundtrip!(
-            <dto::Quote, util::serialize::Never>;
+    async fn quote(&self, query: &dto::Query<'_>) -> Result<dto::Quote, Error> {
+        let response = util::http::roundtrip!(
+            <dto::GetSwapPathsResponse, util::serialize::Never>;
             self.client
                 .request(reqwest::Method::POST, self.endpoint.clone())
                 .json(query)
         )
         .await?;
-        Ok(quote)
+        Ok(response.data.sor_get_swap_paths)
     }
 }
 
@@ -171,6 +204,10 @@ pub enum Error {
     RateLimited,
     #[error(transparent)]
     Http(util::http::Error),
+    #[error("unsupported chain: {0:?}")]
+    UnsupportedChainId(eth::ChainId),
+    #[error("decimals are missing for the swapped token: {0:?}")]
+    MissingDecimals(TokenAddress),
 }
 
 impl From<util::http::RoundtripError<util::serialize::Never>> for Error {

@@ -11,6 +11,36 @@ pub fn config(solver_addr: &SocketAddr) -> tests::Config {
 node-url = 'http://localhost:8545'
 [dex]
 endpoint = 'http://{solver_addr}/sor'
+chain-id = '1'
         ",
     ))
 }
+
+// Copy from src/infra/dex/balancer/dto.rs
+pub const SWAP_QUERY: &str = r#"
+query sorGetSwapPaths($callDataInput: GqlSwapCallDataInput!, $chain: GqlChain!, $queryBatchSwap: Boolean!, $swapAmount: AmountHumanReadable!, $swapType: GqlSorSwapType!, $tokenIn: String!, $tokenOut: String!, $useProtocolVersion: Int) {
+    sorGetSwapPaths(
+        callDataInput: $callDataInput,
+        chain: $chain,
+        queryBatchSwap: $queryBatchSwap,
+        swapAmount: $swapAmount,
+        swapType: $swapType,
+        tokenIn: $tokenIn,
+        tokenOut: $tokenOut,
+        useProtocolVersion: $useProtocolVersion
+    ) {
+        tokenAddresses
+        swaps {
+            poolId
+            assetInIndex
+            assetOutIndex
+            amount
+            userData
+        }
+        swapAmountRaw
+        returnAmountRaw
+        tokenIn
+        tokenOut
+    }
+}
+"#;
