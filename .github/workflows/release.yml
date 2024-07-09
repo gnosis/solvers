@@ -22,8 +22,7 @@ jobs:
         id: check_changes
         run: |
           LATEST_TAG=$(git tag --merged=main --sort=-committerdate | head -n 1)
-          CHANGES=$(git log $LATEST_TAG..HEAD --oneline)
-          if [[ -z "$CHANGES" ]]; then
+          if git diff $LATEST_TAG..HEAD --quiet; then
             echo "No changes since the last tag."
           else
             echo "Changes detected since the last tag."
