@@ -128,7 +128,7 @@ checksum = "59d2a3357dde987206219e78ecfbbb6e8dad06cbb65292758d3270e6254f7355"
 [[package]]
 name = "app-data"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.266.0#5d6915cd13b3c2bce3b800d1ed74d51540092b23"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.266.1#cf5f424c5eb0eedc934aae81acb4f9aa222fd786"
 dependencies = [
  "anyhow",
  "app-data-hash",
@@ -143,7 +143,7 @@ dependencies = [
 [[package]]
 name = "app-data-hash"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.266.0#5d6915cd13b3c2bce3b800d1ed74d51540092b23"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.266.1#cf5f424c5eb0eedc934aae81acb4f9aa222fd786"
 dependencies = [
  "hex-literal",
  "tiny-keccak",
@@ -166,28 +166,6 @@ dependencies = [
  "memchr",
  "pin-project-lite",
  "tokio",
-]
-
-[[package]]
-name = "async-stream"
-version = "0.3.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd56dd203fef61ac097dd65721a419ddccb106b2d2b70ba60a6b529f03961a51"
-dependencies = [
- "async-stream-impl",
- "futures-core",
- "pin-project-lite",
-]
-
-[[package]]
-name = "async-stream-impl"
-version = "0.3.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "16e62a023e7c117e27523144c5d2459f4397fcc3cab0085af8e2224f643a0193"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.66",
 ]
 
 [[package]]
@@ -726,7 +704,7 @@ checksum = "514de17de45fdb8dc022b1a7975556c53c86f9f0aa5f534b98977b171857c2c9"
 [[package]]
 name = "bytes-hex"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.266.0#5d6915cd13b3c2bce3b800d1ed74d51540092b23"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.266.1#cf5f424c5eb0eedc934aae81acb4f9aa222fd786"
 dependencies = [
  "hex",
  "serde",
@@ -828,44 +806,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0b6a852b24ab71dffc585bcb46eaf7959d175cb865a7152e35b348d1b2960422"
 
 [[package]]
-name = "console-api"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a257c22cd7e487dd4a13d413beabc512c5052f0bc048db0da6a84c3d8a6142fd"
-dependencies = [
- "futures-core",
- "prost",
- "prost-types",
- "tonic",
- "tracing-core",
-]
-
-[[package]]
-name = "console-subscriber"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "31c4cc54bae66f7d9188996404abdf7fdfa23034ef8e43478c8810828abad758"
-dependencies = [
- "console-api",
- "crossbeam-channel",
- "crossbeam-utils",
- "futures-task",
- "hdrhistogram",
- "humantime",
- "prost",
- "prost-types",
- "serde",
- "serde_json",
- "thread_local",
- "tokio",
- "tokio-stream",
- "tonic",
- "tracing",
- "tracing-core",
- "tracing-subscriber",
-]
-
-[[package]]
 name = "const-oid"
 version = "0.9.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -894,7 +834,7 @@ dependencies = [
 [[package]]
 name = "contracts"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.266.0#5d6915cd13b3c2bce3b800d1ed74d51540092b23"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.266.1#cf5f424c5eb0eedc934aae81acb4f9aa222fd786"
 dependencies = [
  "ethcontract",
  "ethcontract-generate",
@@ -985,15 +925,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "crossbeam-channel"
-version = "0.5.13"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "33480d6946193aa8033910124896ca395333cae7e2d1113d1fef6c3272217df2"
-dependencies = [
- "crossbeam-utils",
-]
-
-[[package]]
 name = "crossbeam-queue"
 version = "0.3.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1062,7 +993,7 @@ dependencies = [
 [[package]]
 name = "database"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.266.0#5d6915cd13b3c2bce3b800d1ed74d51540092b23"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.266.1#cf5f424c5eb0eedc934aae81acb4f9aa222fd786"
 dependencies = [
  "bigdecimal",
  "chrono",
@@ -1321,7 +1252,7 @@ dependencies = [
 [[package]]
 name = "ethrpc"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.266.0#5d6915cd13b3c2bce3b800d1ed74d51540092b23"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.266.1#cf5f424c5eb0eedc934aae81acb4f9aa222fd786"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1648,19 +1579,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "hdrhistogram"
-version = "7.5.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "765c9198f173dd59ce26ff9f95ef0aafd0a0fe01fb9d72841bc5066a4c06511d"
-dependencies = [
- "base64 0.21.7",
- "byteorder",
- "flate2",
- "nom",
- "num-traits",
-]
-
-[[package]]
 name = "headers"
 version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1846,18 +1764,6 @@ dependencies = [
  "rustls-native-certs",
  "tokio",
  "tokio-rustls",
-]
-
-[[package]]
-name = "hyper-timeout"
-version = "0.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bbb958482e8c7be4bc3cf272a766a2b0bf1a6755e7a6ae777f017a31d11b13b1"
-dependencies = [
- "hyper",
- "pin-project-lite",
- "tokio",
- "tokio-io-timeout",
 ]
 
 [[package]]
@@ -2359,7 +2265,7 @@ dependencies = [
 [[package]]
 name = "model"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.266.0#5d6915cd13b3c2bce3b800d1ed74d51540092b23"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.266.1#cf5f424c5eb0eedc934aae81acb4f9aa222fd786"
 dependencies = [
  "anyhow",
  "app-data",
@@ -2528,7 +2434,7 @@ dependencies = [
 [[package]]
 name = "number"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.266.0#5d6915cd13b3c2bce3b800d1ed74d51540092b23"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.266.1#cf5f424c5eb0eedc934aae81acb4f9aa222fd786"
 dependencies = [
  "anyhow",
  "bigdecimal",
@@ -2550,10 +2456,9 @@ dependencies = [
 [[package]]
 name = "observe"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.266.0#5d6915cd13b3c2bce3b800d1ed74d51540092b23"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.266.1#cf5f424c5eb0eedc934aae81acb4f9aa222fd786"
 dependencies = [
  "atty",
- "console-subscriber",
  "futures",
  "once_cell",
  "pin-project-lite",
@@ -2624,7 +2529,7 @@ dependencies = [
 [[package]]
 name = "order-validation"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.266.0#5d6915cd13b3c2bce3b800d1ed74d51540092b23"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.266.1#cf5f424c5eb0eedc934aae81acb4f9aa222fd786"
 dependencies = [
  "cached",
  "contracts",
@@ -2881,38 +2786,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "prost"
-version = "0.12.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "deb1435c188b76130da55f17a466d252ff7b1418b2ad3e037d127b94e3411f29"
-dependencies = [
- "bytes",
- "prost-derive",
-]
-
-[[package]]
-name = "prost-derive"
-version = "0.12.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "81bddcdb20abf9501610992b6759a4c888aef7d1a7247ef75e2404275ac24af1"
-dependencies = [
- "anyhow",
- "itertools 0.11.0",
- "proc-macro2",
- "quote",
- "syn 2.0.66",
-]
-
-[[package]]
-name = "prost-types"
-version = "0.12.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9091c90b0a32608e984ff2fa4091273cbdd755d54935c51d520887f4a1dbd5b0"
-dependencies = [
- "prost",
-]
-
-[[package]]
 name = "protobuf"
 version = "2.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2982,7 +2855,7 @@ dependencies = [
 [[package]]
 name = "rate-limit"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.266.0#5d6915cd13b3c2bce3b800d1ed74d51540092b23"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.266.1#cf5f424c5eb0eedc934aae81acb4f9aa222fd786"
 dependencies = [
  "anyhow",
  "futures",
@@ -3468,7 +3341,7 @@ dependencies = [
 [[package]]
 name = "shared"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.266.0#5d6915cd13b3c2bce3b800d1ed74d51540092b23"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.266.1#cf5f424c5eb0eedc934aae81acb4f9aa222fd786"
 dependencies = [
  "anyhow",
  "app-data",
@@ -3627,7 +3500,7 @@ dependencies = [
 [[package]]
 name = "solvers-dto"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.266.0#5d6915cd13b3c2bce3b800d1ed74d51540092b23"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.266.1#cf5f424c5eb0eedc934aae81acb4f9aa222fd786"
 dependencies = [
  "app-data",
  "bigdecimal",
@@ -4130,18 +4003,7 @@ dependencies = [
  "signal-hook-registry",
  "socket2",
  "tokio-macros",
- "tracing",
  "windows-sys 0.48.0",
-]
-
-[[package]]
-name = "tokio-io-timeout"
-version = "1.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "30b74022ada614a1b4834de765f9bb43877f910cc8ce4be40e89042c9223a8bf"
-dependencies = [
- "pin-project-lite",
- "tokio",
 ]
 
 [[package]]
@@ -4249,33 +4111,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tonic"
-version = "0.11.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "76c4eb7a4e9ef9d4763600161f12f5070b92a578e1b634db88a6887844c91a13"
-dependencies = [
- "async-stream",
- "async-trait",
- "axum",
- "base64 0.21.7",
- "bytes",
- "h2",
- "http",
- "http-body",
- "hyper",
- "hyper-timeout",
- "percent-encoding",
- "pin-project",
- "prost",
- "tokio",
- "tokio-stream",
- "tower",
- "tower-layer",
- "tower-service",
- "tracing",
-]
-
-[[package]]
 name = "tower"
 version = "0.4.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4283,13 +4118,9 @@ checksum = "b8fa9be0de6cf49e536ce1851f987bd21a43b771b09473c3549a6c853db37c1c"
 dependencies = [
  "futures-core",
  "futures-util",
- "indexmap 1.9.3",
  "pin-project",
  "pin-project-lite",
- "rand",
- "slab",
  "tokio",
- "tokio-util",
  "tower-layer",
  "tower-service",
  "tracing",
