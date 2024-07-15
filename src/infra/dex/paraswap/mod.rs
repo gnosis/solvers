@@ -25,6 +25,9 @@ pub struct Config {
     /// The DEXs to exclude when using ParaSwap.
     pub exclude_dexs: Vec<String>,
 
+    /// Whether to throw an error if the USD price is not available.
+    pub ignore_bad_usd_price: bool,
+
     /// The solver address.
     pub address: Address,
 

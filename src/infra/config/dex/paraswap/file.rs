@@ -20,6 +20,10 @@ struct Config {
     #[serde(default)]
     pub exclude_dexs: Vec<String>,
 
+    /// Whether to throw an error if the USD price is not available.
+    #[serde(default)]
+    pub ignore_bad_usd_price: bool,
+
     /// The solver address.
     pub address: eth::H160,
 
@@ -48,6 +52,7 @@ pub async fn load(path: &Path) -> super::Config {
                 .endpoint
                 .unwrap_or_else(|| paraswap::DEFAULT_URL.parse().unwrap()),
             exclude_dexs: config.exclude_dexs,
+            ignore_bad_usd_price: config.ignore_bad_usd_price,
             address: config.address,
             api_key: config.api_key,
             partner: config.partner,

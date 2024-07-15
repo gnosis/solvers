@@ -60,6 +60,9 @@ pub struct SwapQuery {
 
     /// The API version to use.
     pub version: String,
+
+    /// Whether to throw an error if the USD price is not available.
+    pub ignore_bad_usd_price: bool,
 }
 
 impl SwapQuery {
@@ -84,6 +87,7 @@ impl SwapQuery {
             },
             amount: order.amount.get(),
             exclude_dexs: config.exclude_dexs.clone(),
+            ignore_bad_usd_price: config.ignore_bad_usd_price,
             network: config.chain_id.network_id().to_string(),
             partner: config.partner.clone(),
             max_impact: 100,
