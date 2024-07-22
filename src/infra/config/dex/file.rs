@@ -71,6 +71,11 @@ struct Config {
     /// This is useful for caching requests on an egress proxy.
     #[serde(with = "humantime_serde", default)]
     current_block_poll_interval: Option<Duration>,
+
+    /// Whether to internalize the solution interactions using the Settlement
+    /// contract buffers.
+    #[serde(default = "default_internalize_interactions")]
+    internalize_interactions: bool,
 }
 
 fn default_relative_slippage() -> BigDecimal {
@@ -101,6 +106,10 @@ fn default_gas_offset() -> eth::U256 {
     // Rough estimation of the gas overhead of settling a single
     // trade via the settlement contract.
     106_391.into()
+}
+
+fn default_internalize_interactions() -> bool {
+    false
 }
 
 /// Loads the base solver configuration from a TOML file.
@@ -167,6 +176,7 @@ pub async fn load<T: DeserializeOwned>(path: &Path) -> (super::Config, T) {
         .unwrap(),
         gas_offset: eth::Gas(config.gas_offset),
         block_stream,
+        internalize_interactions: config.internalize_interactions,
     };
     (config, dex)
 }

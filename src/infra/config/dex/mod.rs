@@ -26,4 +26,5 @@ pub struct Config {
     pub rate_limiting_strategy: rate_limit::Strategy,
     pub gas_offset: eth::Gas,
     pub block_stream: Option<CurrentBlockStream>,
+    pub internalize_interactions: bool,
 }
