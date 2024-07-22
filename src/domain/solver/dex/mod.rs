@@ -202,6 +202,6 @@ impl Dex {
         // Maybe some liquidity appeared that enables a bigger fill.
         self.fills.increase_next_try(order.uid);
 
-        Some(solution.with_buffers_internalizations(tokens))
+        Some(solution)
     }
 }

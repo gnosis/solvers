@@ -355,7 +355,7 @@ async fn buy() {
                 "interactions": [
                     {
                         "kind": "custom",
-                        "internalize": true,
+                        "internalize": false,
                         "target": "0xdef1c0ded9bec7f1a1670819833240f027b25eff",
                         "value": "0",
                         "callData": "0xd9627aa4\
