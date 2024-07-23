@@ -109,7 +109,7 @@ fn default_gas_offset() -> eth::U256 {
 }
 
 fn default_internalize_interactions() -> bool {
-    false
+    true
 }
 
 /// Loads the base solver configuration from a TOML file.
