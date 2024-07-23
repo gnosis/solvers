@@ -43,6 +43,10 @@ pub struct Dex {
     /// Amount of gas that gets added to each swap to tweak the cost coverage of
     /// the solver.
     gas_offset: eth::Gas,
+
+    /// Whether to internalize the solution interactions using the Settlement
+    /// contract buffer.
+    internalize_interactions: bool,
 }
 
 /// The amount of time we aim the solver to finish before the final deadline is
@@ -67,6 +71,7 @@ impl Dex {
             fills: Fills::new(config.smallest_partial_fill),
             rate_limiter,
             gas_offset: config.gas_offset,
+            internalize_interactions: config.internalize_interactions,
         }
     }
 
@@ -202,6 +207,10 @@ impl Dex {
         // Maybe some liquidity appeared that enables a bigger fill.
         self.fills.increase_next_try(order.uid);
 
-        Some(solution.with_buffers_internalizations(tokens))
+        if self.internalize_interactions {
+            Some(solution.with_buffers_internalizations(tokens))
+        } else {
+            Some(solution)
+        }
     }
 }
