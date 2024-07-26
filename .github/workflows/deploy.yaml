@@ -31,7 +31,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: docker/Dockerfile.binary
+          file: docker/Dockerfile
           push: true
           tags: ${{ steps.meta_solvers.outputs.tags }}
           labels: ${{ steps.meta_solvers.outputs.labels }}

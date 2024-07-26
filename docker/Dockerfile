@@ -2,11 +2,14 @@ FROM docker.io/rust:1-slim-bullseye as cargo-build
 WORKDIR /src/
 
 # Install dependencies
-RUN apt-get update && apt-get install -y git libssl-dev pkg-config
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked apt-get update && \
+    apt-get install -y git libssl-dev pkg-config git
 
 # Copy and Build Code
 COPY . .
-RUN CARGO_PROFILE_RELEASE_DEBUG=1 cargo build --release
+RUN --mount=type=cache,target=/usr/local/cargo/registry --mount=type=cache,target=/src/target \
+    CARGO_PROFILE_RELEASE_DEBUG=1 cargo build --release && \
+    cp target/release/solvers /
 
 # Extract Binary
 FROM docker.io/debian:bullseye-slim
@@ -19,8 +22,8 @@ RUN git clone https://invent.kde.org/sdk/heaptrack.git /heaptrack && \
     make -j$(nproc) && \
     make install && \
     cd / && rm -rf /heaptrack
-COPY --from=cargo-build /src/target/release/solvers /usr/local/bin/solvers
-COPY ./entrypoint.sh /entrypoint.sh
+COPY --from=cargo-build /solvers /usr/local/bin/solvers
+COPY ./docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 CMD echo "Specify binary..."
