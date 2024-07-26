@@ -14,7 +14,6 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry --mount=type=cache,targe
 # Extract Binary
 FROM docker.io/debian:bullseye-slim
 
-# Handle signal handlers properly
 RUN apt-get update && apt-get install -y ca-certificates tini build-essential cmake git zlib1g-dev libelf-dev libdw-dev libboost-dev libboost-iostreams-dev libboost-program-options-dev libboost-system-dev libboost-filesystem-dev libunwind-dev libzstd-dev git && apt-get clean
 RUN git clone https://invent.kde.org/sdk/heaptrack.git /heaptrack && \
     mkdir /heaptrack/build && cd /heaptrack/build && \
