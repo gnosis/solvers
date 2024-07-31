@@ -128,7 +128,7 @@ checksum = "59d2a3357dde987206219e78ecfbbb6e8dad06cbb65292758d3270e6254f7355"
 [[package]]
 name = "app-data"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.268.1#4606b7d7a29e03b58fbd84e2b0ccfc36e932bd9a"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.269.1#516719f1517eb29e8d10410c97f93e4df128258a"
 dependencies = [
  "anyhow",
  "app-data-hash",
@@ -143,7 +143,7 @@ dependencies = [
 [[package]]
 name = "app-data-hash"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.268.1#4606b7d7a29e03b58fbd84e2b0ccfc36e932bd9a"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.269.1#516719f1517eb29e8d10410c97f93e4df128258a"
 dependencies = [
  "hex-literal",
  "tiny-keccak",
@@ -704,7 +704,7 @@ checksum = "514de17de45fdb8dc022b1a7975556c53c86f9f0aa5f534b98977b171857c2c9"
 [[package]]
 name = "bytes-hex"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.268.1#4606b7d7a29e03b58fbd84e2b0ccfc36e932bd9a"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.269.1#516719f1517eb29e8d10410c97f93e4df128258a"
 dependencies = [
  "hex",
  "serde",
@@ -834,7 +834,7 @@ dependencies = [
 [[package]]
 name = "contracts"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.268.1#4606b7d7a29e03b58fbd84e2b0ccfc36e932bd9a"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.269.1#516719f1517eb29e8d10410c97f93e4df128258a"
 dependencies = [
  "ethcontract",
  "ethcontract-generate",
@@ -993,7 +993,7 @@ dependencies = [
 [[package]]
 name = "database"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.268.1#4606b7d7a29e03b58fbd84e2b0ccfc36e932bd9a"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.269.1#516719f1517eb29e8d10410c97f93e4df128258a"
 dependencies = [
  "bigdecimal",
  "chrono",
@@ -1252,7 +1252,7 @@ dependencies = [
 [[package]]
 name = "ethrpc"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.268.1#4606b7d7a29e03b58fbd84e2b0ccfc36e932bd9a"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.269.1#516719f1517eb29e8d10410c97f93e4df128258a"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2265,7 +2265,7 @@ dependencies = [
 [[package]]
 name = "model"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.268.1#4606b7d7a29e03b58fbd84e2b0ccfc36e932bd9a"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.269.1#516719f1517eb29e8d10410c97f93e4df128258a"
 dependencies = [
  "anyhow",
  "app-data",
@@ -2434,7 +2434,7 @@ dependencies = [
 [[package]]
 name = "number"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.268.1#4606b7d7a29e03b58fbd84e2b0ccfc36e932bd9a"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.269.1#516719f1517eb29e8d10410c97f93e4df128258a"
 dependencies = [
  "anyhow",
  "bigdecimal",
@@ -2456,7 +2456,7 @@ dependencies = [
 [[package]]
 name = "observe"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.268.1#4606b7d7a29e03b58fbd84e2b0ccfc36e932bd9a"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.269.1#516719f1517eb29e8d10410c97f93e4df128258a"
 dependencies = [
  "atty",
  "futures",
@@ -2529,7 +2529,7 @@ dependencies = [
 [[package]]
 name = "order-validation"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.268.1#4606b7d7a29e03b58fbd84e2b0ccfc36e932bd9a"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.269.1#516719f1517eb29e8d10410c97f93e4df128258a"
 dependencies = [
  "cached",
  "contracts",
@@ -2855,7 +2855,7 @@ dependencies = [
 [[package]]
 name = "rate-limit"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.268.1#4606b7d7a29e03b58fbd84e2b0ccfc36e932bd9a"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.269.1#516719f1517eb29e8d10410c97f93e4df128258a"
 dependencies = [
  "anyhow",
  "futures",
@@ -3341,7 +3341,7 @@ dependencies = [
 [[package]]
 name = "shared"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.268.1#4606b7d7a29e03b58fbd84e2b0ccfc36e932bd9a"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.269.1#516719f1517eb29e8d10410c97f93e4df128258a"
 dependencies = [
  "anyhow",
  "app-data",
@@ -3500,7 +3500,7 @@ dependencies = [
 [[package]]
 name = "solvers-dto"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.268.1#4606b7d7a29e03b58fbd84e2b0ccfc36e932bd9a"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.269.1#516719f1517eb29e8d10410c97f93e4df128258a"
 dependencies = [
  "app-data",
  "bigdecimal",
