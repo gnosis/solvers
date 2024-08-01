@@ -657,6 +657,8 @@ components:
           $ref: "#/components/schemas/TokenAmount"
         buy_amount:
           $ref: "#/components/schemas/TokenAmount"
+        fee:
+          $ref: "#/components/schemas/TokenAmount"
     Fulfillment:
       description: |
         A trade which fulfills an order from the auction.
