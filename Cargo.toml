@@ -42,13 +42,13 @@ tower-http = { version = "0.4", features = ["trace"] }
 tracing = "0.1"
 web3 = "0.19"
 
-contracts = { git = "https://github.com/cowprotocol/services.git", tag = "v2.268.1", package = "contracts" }
-ethrpc = { git = "https://github.com/cowprotocol/services.git", tag = "v2.268.1", package = "ethrpc" }
-observe = { git = "https://github.com/cowprotocol/services.git", tag = "v2.268.1", package = "observe" }
-shared = { git = "https://github.com/cowprotocol/services.git", tag = "v2.268.1", package = "shared" }
-dto =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.268.1", package = "solvers-dto" }
-rate-limit =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.268.1", package = "rate-limit" }
-number =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.268.1", package = "number" }
+contracts = { git = "https://github.com/cowprotocol/services.git", tag = "v2.269.1", package = "contracts" }
+ethrpc = { git = "https://github.com/cowprotocol/services.git", tag = "v2.269.1", package = "ethrpc" }
+observe = { git = "https://github.com/cowprotocol/services.git", tag = "v2.269.1", package = "observe" }
+shared = { git = "https://github.com/cowprotocol/services.git", tag = "v2.269.1", package = "shared" }
+dto =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.269.1", package = "solvers-dto" }
+rate-limit =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.269.1", package = "rate-limit" }
+number =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.269.1", package = "number" }
 
 [dev-dependencies]
 glob = "0.3"
