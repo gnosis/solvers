@@ -1,6 +1,6 @@
 use {
     crate::domain::{auction, dex},
-    ethrpc::current_block::CurrentBlockStream,
+    ethrpc::block_stream::CurrentBlockWatcher,
     reqwest::RequestBuilder,
 };
 
@@ -64,11 +64,11 @@ struct Client {
     client: reqwest::Client,
 
     /// Block stream to read the current block.
-    block_stream: Option<CurrentBlockStream>,
+    block_stream: Option<CurrentBlockWatcher>,
 }
 
 impl Client {
-    pub fn new(client: reqwest::Client, block_stream: Option<CurrentBlockStream>) -> Self {
+    pub fn new(client: reqwest::Client, block_stream: Option<CurrentBlockWatcher>) -> Self {
         Self {
             client,
             block_stream,
