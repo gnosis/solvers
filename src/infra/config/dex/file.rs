@@ -148,7 +148,7 @@ pub async fn load<T: DeserializeOwned>(path: &Path) -> (super::Config, T) {
 
     let block_stream = match config.current_block_poll_interval {
         Some(interval) => Some(
-            ethrpc::current_block::current_block_stream(config.node_url.clone(), interval)
+            ethrpc::block_stream::current_block_stream(config.node_url.clone(), interval)
                 .await
                 .unwrap(),
         ),

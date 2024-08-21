@@ -4,7 +4,7 @@ use {
         util,
     },
     ethereum_types::H160,
-    ethrpc::current_block::CurrentBlockStream,
+    ethrpc::block_stream::CurrentBlockWatcher,
     hyper::StatusCode,
     std::sync::atomic::{self, AtomicU64},
     tracing::Instrument,
@@ -46,7 +46,7 @@ pub struct Config {
     pub enable_slippage_protection: bool,
 
     /// The stream that yields every new block.
-    pub block_stream: Option<CurrentBlockStream>,
+    pub block_stream: Option<CurrentBlockWatcher>,
 }
 
 impl ZeroEx {

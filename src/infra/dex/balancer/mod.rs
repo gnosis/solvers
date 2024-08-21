@@ -10,7 +10,7 @@ use {
     },
     contracts::ethcontract::I256,
     ethereum_types::U256,
-    ethrpc::current_block::CurrentBlockStream,
+    ethrpc::block_stream::CurrentBlockWatcher,
     num::ToPrimitive,
     std::{
         ops::Add,
@@ -35,7 +35,7 @@ pub struct Sor {
 
 pub struct Config {
     /// Stream that yields every new block.
-    pub block_stream: Option<CurrentBlockStream>,
+    pub block_stream: Option<CurrentBlockWatcher>,
 
     /// The URL for the Balancer SOR API.
     pub endpoint: reqwest::Url,

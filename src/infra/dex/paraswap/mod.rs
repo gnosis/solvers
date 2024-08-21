@@ -4,7 +4,7 @@ use {
         util,
     },
     ethereum_types::Address,
-    ethrpc::current_block::CurrentBlockStream,
+    ethrpc::block_stream::CurrentBlockWatcher,
 };
 
 mod dto;
@@ -42,7 +42,7 @@ pub struct Config {
     pub chain_id: eth::ChainId,
 
     /// A stream that yields every new block.
-    pub block_stream: Option<CurrentBlockStream>,
+    pub block_stream: Option<CurrentBlockWatcher>,
 }
 
 impl ParaSwap {
