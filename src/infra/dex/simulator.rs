@@ -35,6 +35,11 @@ impl Simulator {
     ///
     /// This will return a `None` if the gas simulation is unavailable.
     pub async fn gas(&self, owner: Address, swap: &dex::Swap) -> Result<eth::Gas, Error> {
+        if owner == self.settlement.0 {
+            // we can't have both the settlement and swapper contracts at the same address
+            return Err(Error::SettlementContractIsOwner);
+        }
+
         let swapper = contracts::support::Swapper::at(&self.web3, owner);
         let tx = swapper
             .methods()
@@ -125,4 +130,7 @@ pub enum Error {
 
     #[error("invalid return data")]
     InvalidReturnData,
+
+    #[error("can't simulate gas for an order for which the settlement contract is the owner")]
+    SettlementContractIsOwner,
 }

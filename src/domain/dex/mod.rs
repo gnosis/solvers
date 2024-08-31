@@ -115,6 +115,7 @@ impl Swap {
         let gas = if order.class == order::Class::Limit {
             match simulator.gas(order.owner(), &self).await {
                 Ok(value) => value,
+                Err(infra::dex::simulator::Error::SettlementContractIsOwner) => self.gas,
                 Err(err) => {
                     tracing::warn!(?err, "gas simulation failed");
                     return None;
