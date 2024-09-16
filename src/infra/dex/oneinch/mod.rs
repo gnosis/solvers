@@ -218,8 +218,8 @@ impl From<util::http::RoundtripError<dto::Error>> for Error {
                 // Unfortunately, AFAIK these codes aren't documented anywhere. These
                 // based on empirical observations of what the API has returned in the
                 // past.
-                match err.description.as_str() {
-                    "insufficient liquidity" => Self::NotFound,
+                match err.status_code {
+                    400 => Self::NotFound,
                     _ => Self::Api {
                         code: err.status_code,
                         description: err.description,
