@@ -270,7 +270,7 @@ impl Quote {
     /// enough liquidity, no trading path, etc.). We don't consider this an
     /// error case.
     pub fn is_empty(&self) -> bool {
-        *self == Quote::default()
+        self.return_amount_raw.is_zero() && self.swap_amount_raw.is_zero() && self.swaps.is_empty()
     }
 }
 
