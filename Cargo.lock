@@ -139,7 +139,7 @@ checksum = "59d2a3357dde987206219e78ecfbbb6e8dad06cbb65292758d3270e6254f7355"
 [[package]]
 name = "app-data"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.275.1#57df49931e29d165798fd2cddb888db5d83432f2"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.276.1#6a7748a28393fcd6b3c1e80923fd16109087b01f"
 dependencies = [
  "anyhow",
  "app-data-hash",
@@ -154,7 +154,7 @@ dependencies = [
 [[package]]
 name = "app-data-hash"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.275.1#57df49931e29d165798fd2cddb888db5d83432f2"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.276.1#6a7748a28393fcd6b3c1e80923fd16109087b01f"
 dependencies = [
  "hex-literal",
  "tiny-keccak",
@@ -783,7 +783,7 @@ checksum = "514de17de45fdb8dc022b1a7975556c53c86f9f0aa5f534b98977b171857c2c9"
 [[package]]
 name = "bytes-hex"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.275.1#57df49931e29d165798fd2cddb888db5d83432f2"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.276.1#6a7748a28393fcd6b3c1e80923fd16109087b01f"
 dependencies = [
  "hex",
  "serde",
@@ -957,7 +957,7 @@ dependencies = [
 [[package]]
 name = "contracts"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.275.1#57df49931e29d165798fd2cddb888db5d83432f2"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.276.1#6a7748a28393fcd6b3c1e80923fd16109087b01f"
 dependencies = [
  "ethcontract",
  "ethcontract-generate",
@@ -1123,9 +1123,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "dashmap"
+version = "6.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5041cc499144891f3790297212f32a74fb938e5136a14943f338ef9e0ae276cf"
+dependencies = [
+ "cfg-if",
+ "crossbeam-utils",
+ "hashbrown 0.14.5",
+ "lock_api",
+ "once_cell",
+ "parking_lot_core",
+]
+
+[[package]]
 name = "database"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.275.1#57df49931e29d165798fd2cddb888db5d83432f2"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.276.1#6a7748a28393fcd6b3c1e80923fd16109087b01f"
 dependencies = [
  "bigdecimal",
  "chrono",
@@ -1374,7 +1388,7 @@ dependencies = [
 [[package]]
 name = "ethrpc"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.275.1#57df49931e29d165798fd2cddb888db5d83432f2"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.276.1#6a7748a28393fcd6b3c1e80923fd16109087b01f"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2421,7 +2435,7 @@ dependencies = [
 [[package]]
 name = "model"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.275.1#57df49931e29d165798fd2cddb888db5d83432f2"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.276.1#6a7748a28393fcd6b3c1e80923fd16109087b01f"
 dependencies = [
  "anyhow",
  "app-data",
@@ -2590,7 +2604,7 @@ dependencies = [
 [[package]]
 name = "number"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.275.1#57df49931e29d165798fd2cddb888db5d83432f2"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.276.1#6a7748a28393fcd6b3c1e80923fd16109087b01f"
 dependencies = [
  "anyhow",
  "bigdecimal",
@@ -2612,7 +2626,7 @@ dependencies = [
 [[package]]
 name = "observe"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.275.1#57df49931e29d165798fd2cddb888db5d83432f2"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.276.1#6a7748a28393fcd6b3c1e80923fd16109087b01f"
 dependencies = [
  "atty",
  "console-subscriber",
@@ -2686,7 +2700,7 @@ dependencies = [
 [[package]]
 name = "order-validation"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.275.1#57df49931e29d165798fd2cddb888db5d83432f2"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.276.1#6a7748a28393fcd6b3c1e80923fd16109087b01f"
 dependencies = [
  "cached",
  "contracts",
@@ -2983,7 +2997,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "81bddcdb20abf9501610992b6759a4c888aef7d1a7247ef75e2404275ac24af1"
 dependencies = [
  "anyhow",
- "itertools 0.11.0",
+ "itertools 0.12.1",
  "proc-macro2",
  "quote",
  "syn 2.0.66",
@@ -3088,7 +3102,7 @@ dependencies = [
 [[package]]
 name = "rate-limit"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.275.1#57df49931e29d165798fd2cddb888db5d83432f2"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.276.1#6a7748a28393fcd6b3c1e80923fd16109087b01f"
 dependencies = [
  "anyhow",
  "futures",
@@ -3634,7 +3648,7 @@ dependencies = [
 [[package]]
 name = "shared"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.275.1#57df49931e29d165798fd2cddb888db5d83432f2"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.276.1#6a7748a28393fcd6b3c1e80923fd16109087b01f"
 dependencies = [
  "anyhow",
  "app-data",
@@ -3646,6 +3660,7 @@ dependencies = [
  "chrono",
  "clap",
  "contracts",
+ "dashmap",
  "database",
  "derivative",
  "ethcontract",
@@ -3800,7 +3815,7 @@ dependencies = [
 [[package]]
 name = "solvers-dto"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.275.1#57df49931e29d165798fd2cddb888db5d83432f2"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.276.1#6a7748a28393fcd6b3c1e80923fd16109087b01f"
 dependencies = [
  "app-data",
  "bigdecimal",
