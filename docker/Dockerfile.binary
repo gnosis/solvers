@@ -1,4 +1,4 @@
-FROM docker.io/rust:1-slim-bullseye as cargo-build
+FROM docker.io/rust:1-slim-bookworm as cargo-build
 WORKDIR /src/
 
 # Install dependencies
@@ -12,9 +12,11 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry --mount=type=cache,targe
     cp target/release/solvers /
 
 # Extract Binary
-FROM docker.io/debian:bullseye-slim
+FROM docker.io/debian:bookworm-slim
 
-RUN apt-get update && apt-get install -y ca-certificates tini build-essential cmake git zlib1g-dev libelf-dev libdw-dev libboost-dev libboost-iostreams-dev libboost-program-options-dev libboost-system-dev libboost-filesystem-dev libunwind-dev libzstd-dev git && apt-get clean
+RUN apt-get update && apt-get install -y ca-certificates tini gettext-base \
+    build-essential cmake git zlib1g-dev libelf-dev libdw-dev libboost-dev libboost-iostreams-dev libboost-program-options-dev libboost-system-dev libboost-filesystem-dev libunwind-dev libzstd-dev git \
+    && apt-get clean
 RUN git clone https://invent.kde.org/sdk/heaptrack.git /heaptrack && \
     mkdir /heaptrack/build && cd /heaptrack/build && \
     cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=OFF .. && \
