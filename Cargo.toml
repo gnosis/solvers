@@ -46,7 +46,7 @@ contracts = { git = "https://github.com/cowprotocol/services.git", tag = "v2.280
 ethrpc = { git = "https://github.com/cowprotocol/services.git", tag = "v2.280.0", package = "ethrpc" }
 observe = { git = "https://github.com/cowprotocol/services.git", tag = "v2.280.0", package = "observe" }
 shared = { git = "https://github.com/cowprotocol/services.git", tag = "v2.280.0", package = "shared" }
-dto =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.280.0", package = "solvers-dto" }
+dto =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.280.1", package = "solvers-dto" }
 rate-limit =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.280.0", package = "rate-limit" }
 number =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.280.0", package = "number" }
 
