@@ -103,10 +103,10 @@ impl Dex {
         &'a self,
         auction: &'a auction::Auction,
     ) -> impl stream::Stream<Item = solution::Solution> + 'a {
-        stream::iter(auction.orders.iter().filter_map(order::UserOrder::new))
+        stream::iter(auction.orders.iter())
             .enumerate()
             .map(|(i, order)| {
-                let span = tracing::info_span!("solve", order = %order.get().uid);
+                let span = tracing::info_span!("solve", order = %order.uid);
                 self.solve_order(order, &auction.tokens, auction.gas_price)
                     .map(move |solution| solution.map(|s| s.with_id(solution::Id(i as u64))))
                     .instrument(span)
@@ -181,11 +181,10 @@ impl Dex {
 
     async fn solve_order(
         &self,
-        order: order::UserOrder<'_>,
+        order: &order::Order,
         tokens: &auction::Tokens,
         gas_price: auction::GasPrice,
     ) -> Option<solution::Solution> {
-        let order = order.get();
         let dex_order = self.fills.dex_order(order, tokens)?;
         let swap = self.try_solve(order, &dex_order, tokens).await?;
         let sell = tokens.reference_price(&order.sell.token);
