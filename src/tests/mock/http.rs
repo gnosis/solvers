@@ -57,7 +57,7 @@ impl Debug for Path {
 
 pub fn abort_on_panic() {
     let previous_hook = std::panic::take_hook();
-    let new_hook = move |info: &std::panic::PanicInfo| {
+    let new_hook = move |info: &std::panic::PanicHookInfo| {
         previous_hook(info);
         std::process::exit(1);
     };
