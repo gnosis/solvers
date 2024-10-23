@@ -139,26 +139,11 @@ checksum = "59d2a3357dde987206219e78ecfbbb6e8dad06cbb65292758d3270e6254f7355"
 [[package]]
 name = "app-data"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.280.0#9619dd299c0105ca0a1206d8cac3bae3ed7bbf30"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.281.0#3690ba5182d4cc3e77e70d18d2072575fdf0ce97"
 dependencies = [
  "anyhow",
- "app-data-hash 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.280.0)",
- "bytes-hex 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.280.0)",
- "hex",
- "primitive-types",
- "serde",
- "serde_json",
- "serde_with",
-]
-
-[[package]]
-name = "app-data"
-version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.280.1#1c8c14fef21bef8753080ba6a74585d50ddd05ab"
-dependencies = [
- "anyhow",
- "app-data-hash 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.280.1)",
- "bytes-hex 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.280.1)",
+ "app-data-hash",
+ "bytes-hex",
  "hex",
  "primitive-types",
  "serde",
@@ -169,16 +154,7 @@ dependencies = [
 [[package]]
 name = "app-data-hash"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.280.0#9619dd299c0105ca0a1206d8cac3bae3ed7bbf30"
-dependencies = [
- "hex-literal",
- "tiny-keccak",
-]
-
-[[package]]
-name = "app-data-hash"
-version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.280.1#1c8c14fef21bef8753080ba6a74585d50ddd05ab"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.281.0#3690ba5182d4cc3e77e70d18d2072575fdf0ce97"
 dependencies = [
  "hex-literal",
  "tiny-keccak",
@@ -807,18 +783,7 @@ checksum = "514de17de45fdb8dc022b1a7975556c53c86f9f0aa5f534b98977b171857c2c9"
 [[package]]
 name = "bytes-hex"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.280.0#9619dd299c0105ca0a1206d8cac3bae3ed7bbf30"
-dependencies = [
- "hex",
- "serde",
- "serde_json",
- "serde_with",
-]
-
-[[package]]
-name = "bytes-hex"
-version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.280.1#1c8c14fef21bef8753080ba6a74585d50ddd05ab"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.281.0#3690ba5182d4cc3e77e70d18d2072575fdf0ce97"
 dependencies = [
  "hex",
  "serde",
@@ -992,7 +957,7 @@ dependencies = [
 [[package]]
 name = "contracts"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.280.0#9619dd299c0105ca0a1206d8cac3bae3ed7bbf30"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.281.0#3690ba5182d4cc3e77e70d18d2072575fdf0ce97"
 dependencies = [
  "ethcontract",
  "ethcontract-generate",
@@ -1174,7 +1139,7 @@ dependencies = [
 [[package]]
 name = "database"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.280.0#9619dd299c0105ca0a1206d8cac3bae3ed7bbf30"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.281.0#3690ba5182d4cc3e77e70d18d2072575fdf0ce97"
 dependencies = [
  "bigdecimal",
  "chrono",
@@ -1423,7 +1388,7 @@ dependencies = [
 [[package]]
 name = "ethrpc"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.280.0#9619dd299c0105ca0a1206d8cac3bae3ed7bbf30"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.281.0#3690ba5182d4cc3e77e70d18d2072575fdf0ce97"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2470,20 +2435,20 @@ dependencies = [
 [[package]]
 name = "model"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.280.0#9619dd299c0105ca0a1206d8cac3bae3ed7bbf30"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.281.0#3690ba5182d4cc3e77e70d18d2072575fdf0ce97"
 dependencies = [
  "anyhow",
- "app-data 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.280.0)",
- "app-data-hash 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.280.0)",
+ "app-data",
+ "app-data-hash",
  "bigdecimal",
- "bytes-hex 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.280.0)",
+ "bytes-hex",
  "chrono",
  "derivative",
  "hex",
  "hex-literal",
  "lazy_static",
  "num",
- "number 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.280.0)",
+ "number",
  "primitive-types",
  "secp256k1",
  "serde",
@@ -2639,20 +2604,7 @@ dependencies = [
 [[package]]
 name = "number"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.280.0#9619dd299c0105ca0a1206d8cac3bae3ed7bbf30"
-dependencies = [
- "anyhow",
- "bigdecimal",
- "num",
- "primitive-types",
- "serde",
- "serde_with",
-]
-
-[[package]]
-name = "number"
-version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.280.1#1c8c14fef21bef8753080ba6a74585d50ddd05ab"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.281.0#3690ba5182d4cc3e77e70d18d2072575fdf0ce97"
 dependencies = [
  "anyhow",
  "bigdecimal",
@@ -2674,7 +2626,7 @@ dependencies = [
 [[package]]
 name = "observe"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.280.0#9619dd299c0105ca0a1206d8cac3bae3ed7bbf30"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.281.0#3690ba5182d4cc3e77e70d18d2072575fdf0ce97"
 dependencies = [
  "atty",
  "console-subscriber",
@@ -2748,7 +2700,7 @@ dependencies = [
 [[package]]
 name = "order-validation"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.280.0#9619dd299c0105ca0a1206d8cac3bae3ed7bbf30"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.281.0#3690ba5182d4cc3e77e70d18d2072575fdf0ce97"
 dependencies = [
  "cached",
  "contracts",
@@ -3045,7 +2997,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "81bddcdb20abf9501610992b6759a4c888aef7d1a7247ef75e2404275ac24af1"
 dependencies = [
  "anyhow",
- "itertools 0.12.1",
+ "itertools 0.11.0",
  "proc-macro2",
  "quote",
  "syn 2.0.66",
@@ -3150,7 +3102,7 @@ dependencies = [
 [[package]]
 name = "rate-limit"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.280.0#9619dd299c0105ca0a1206d8cac3bae3ed7bbf30"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.281.0#3690ba5182d4cc3e77e70d18d2072575fdf0ce97"
 dependencies = [
  "anyhow",
  "futures",
@@ -3696,14 +3648,14 @@ dependencies = [
 [[package]]
 name = "shared"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.280.0#9619dd299c0105ca0a1206d8cac3bae3ed7bbf30"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.281.0#3690ba5182d4cc3e77e70d18d2072575fdf0ce97"
 dependencies = [
  "anyhow",
- "app-data 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.280.0)",
- "app-data-hash 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.280.0)",
+ "app-data",
+ "app-data-hash",
  "async-trait",
  "bigdecimal",
- "bytes-hex 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.280.0)",
+ "bytes-hex",
  "cached",
  "chrono",
  "clap",
@@ -3726,7 +3678,7 @@ dependencies = [
  "mockall",
  "model",
  "num",
- "number 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.280.0)",
+ "number",
  "observe",
  "order-validation",
  "primitive-types",
@@ -3840,7 +3792,7 @@ dependencies = [
  "itertools 0.11.0",
  "maplit",
  "num",
- "number 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.280.0)",
+ "number",
  "observe",
  "prometheus",
  "prometheus-metric-storage",
@@ -3864,14 +3816,14 @@ dependencies = [
 [[package]]
 name = "solvers-dto"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.280.1#1c8c14fef21bef8753080ba6a74585d50ddd05ab"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.281.0#3690ba5182d4cc3e77e70d18d2072575fdf0ce97"
 dependencies = [
- "app-data 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.280.1)",
+ "app-data",
  "bigdecimal",
- "bytes-hex 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.280.1)",
+ "bytes-hex",
  "chrono",
  "hex",
- "number 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.280.1)",
+ "number",
  "serde",
  "serde_with",
  "web3",
