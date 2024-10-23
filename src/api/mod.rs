@@ -2,6 +2,7 @@
 
 use {
     crate::domain::solver::Solver,
+    axum::extract::DefaultBodyLimit,
     std::{future::Future, net::SocketAddr, sync::Arc},
     tokio::sync::oneshot,
 };
@@ -26,6 +27,7 @@ impl Api {
             .layer(
                 tower::ServiceBuilder::new().layer(tower_http::trace::TraceLayer::new_for_http()),
             )
+            .layer(DefaultBodyLimit::disable())
             .with_state(Arc::new(self.solver));
 
         let make_svc = observe::make_service_with_task_local_storage!(app);
