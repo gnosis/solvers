@@ -97,12 +97,22 @@ impl Query {
             return None;
         };
 
+        // 1Inch checks `origin` for legal reasons.
+        // If we provide the zero address the API will return status code 403.
+        // `order.owner` is only zero while quoting and calldata generated
+        // for quotes will not be used to actually settle orders to it's fine
+        // to send a different `origin` here.
+        let origin = match order.owner.is_zero() {
+            true => self.from_address,
+            false => order.owner,
+        };
+
         Some(Self {
             from_token_address: order.sell.0,
             to_token_address: order.buy.0,
             amount: order.amount.get(),
             slippage: Slippage::from_domain(slippage),
-            origin: order.owner,
+            origin,
             ..self
         })
     }
