@@ -1200,6 +1200,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "difflib"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6184e33543162437515c2e2b48714794e37845ec9851711914eec9d308f6ebe8"
+
+[[package]]
 name = "digest"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1328,6 +1334,7 @@ dependencies = [
  "aws-config",
  "aws-sdk-kms",
  "ethcontract-common",
+ "ethcontract-derive",
  "futures",
  "futures-timer",
  "hex",
@@ -1361,6 +1368,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "ethcontract-derive"
+version = "0.25.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "21e8f1e55f0f1c341859821a045d33867323fe8b778944bbf60cff883574cca1"
+dependencies = [
+ "anyhow",
+ "ethcontract-common",
+ "ethcontract-generate",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.66",
+]
+
+[[package]]
 name = "ethcontract-generate"
 version = "0.25.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1373,6 +1394,19 @@ dependencies = [
  "quote",
  "syn 2.0.66",
  "url",
+]
+
+[[package]]
+name = "ethcontract-mock"
+version = "0.25.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6d56f0a4e3aba1a4f4aa06182c3cbe329c0bfecdd3280662abeabbf7620f9569"
+dependencies = [
+ "ethcontract",
+ "hex",
+ "mockall 0.11.4",
+ "predicates 3.1.0",
+ "rlp",
 ]
 
 [[package]]
@@ -1404,7 +1438,7 @@ dependencies = [
  "hex-literal",
  "itertools 0.12.1",
  "lazy_static",
- "mockall",
+ "mockall 0.12.1",
  "observe",
  "primitive-types",
  "prometheus",
@@ -1461,6 +1495,15 @@ checksum = "5f54427cfd1c7829e2a139fcefea601bf088ebca651d2bf53ebc600eac295dae"
 dependencies = [
  "crc32fast",
  "miniz_oxide",
+]
+
+[[package]]
+name = "float-cmp"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "98de4bbd547a563b716d8dfa9aad1cb19bfab00f4fa09a6a4ed21dbcf44ce9c4"
+dependencies = [
+ "num-traits",
 ]
 
 [[package]]
@@ -2209,6 +2252,15 @@ checksum = "f8478577c03552c21db0e2724ffb8986a5ce7af88107e6be5d2ee6e158c12800"
 
 [[package]]
 name = "itertools"
+version = "0.10.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b0fd2260e829bddf4cb6ea802289de2f86d6a7a690192fbe91b3f46e0f2c8473"
+dependencies = [
+ "either",
+]
+
+[[package]]
+name = "itertools"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b1c173a5686ce8bfa551b3563d0c2170bf24ca44da99c7ca4bfdab5418c3fe57"
@@ -2411,6 +2463,21 @@ dependencies = [
 
 [[package]]
 name = "mockall"
+version = "0.11.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4c84490118f2ee2d74570d114f3d0493cbf02790df303d2707606c3e14e07c96"
+dependencies = [
+ "cfg-if",
+ "downcast",
+ "fragile",
+ "lazy_static",
+ "mockall_derive 0.11.4",
+ "predicates 2.1.5",
+ "predicates-tree",
+]
+
+[[package]]
+name = "mockall"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "43766c2b5203b10de348ffe19f7e54564b64f3d6018ff7648d1e2d6d3a0f0a48"
@@ -2419,9 +2486,21 @@ dependencies = [
  "downcast",
  "fragile",
  "lazy_static",
- "mockall_derive",
- "predicates",
+ "mockall_derive 0.12.1",
+ "predicates 3.1.0",
  "predicates-tree",
+]
+
+[[package]]
+name = "mockall_derive"
+version = "0.11.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "22ce75669015c4f47b289fd4d4f56e894e4c96003ffdf3ac51313126f94c6cbb"
+dependencies = [
+ "cfg-if",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
 ]
 
 [[package]]
@@ -2486,6 +2565,12 @@ dependencies = [
  "memchr",
  "minimal-lexical",
 ]
+
+[[package]]
+name = "normalize-line-endings"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "61807f77802ff30975e01f4f071c8ba10c022052f98b3294119f3e615d13e5be"
 
 [[package]]
 name = "nu-ansi-term"
@@ -2870,12 +2955,30 @@ checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
 
 [[package]]
 name = "predicates"
+version = "2.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "59230a63c37f3e18569bdb90e4a89cbf5bf8b06fea0b84e65ea10cc4df47addd"
+dependencies = [
+ "difflib",
+ "float-cmp",
+ "itertools 0.10.5",
+ "normalize-line-endings",
+ "predicates-core",
+ "regex",
+]
+
+[[package]]
+name = "predicates"
 version = "3.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "68b87bfd4605926cdfefc1c3b5f8fe560e3feca9d5552cf68c466d3d8236c7e8"
 dependencies = [
  "anstyle",
+ "difflib",
+ "float-cmp",
+ "normalize-line-endings",
  "predicates-core",
+ "regex",
 ]
 
 [[package]]
@@ -3002,7 +3105,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "81bddcdb20abf9501610992b6759a4c888aef7d1a7247ef75e2404275ac24af1"
 dependencies = [
  "anyhow",
- "itertools 0.12.1",
+ "itertools 0.11.0",
  "proc-macro2",
  "quote",
  "syn 2.0.66",
@@ -3680,7 +3783,7 @@ dependencies = [
  "itertools 0.12.1",
  "lazy_static",
  "maplit",
- "mockall",
+ "mockall 0.12.1",
  "model",
  "num",
  "number",
@@ -3809,6 +3912,7 @@ dependencies = [
  "shared",
  "solvers-dto",
  "tempfile",
+ "testlib",
  "thiserror",
  "tokio",
  "toml",
@@ -4224,6 +4328,19 @@ name = "termtree"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3369f5ac52d5eb6ab48c6b4ffdc8efbcad6b89c765749064ba298f2c68a16a76"
+
+[[package]]
+name = "testlib"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.284.0#822d9807a434c3cb68d47585d618bd7c4676a53b"
+dependencies = [
+ "anyhow",
+ "ethcontract",
+ "ethcontract-mock",
+ "hex-literal",
+ "maplit",
+ "serde_json",
+]
 
 [[package]]
 name = "thiserror"
