@@ -1,5 +1,4 @@
 use {
-    shared::assert_json_matches_excluding,
     std::{
         fmt::{self, Debug, Formatter},
         net::SocketAddr,
@@ -9,6 +8,7 @@ use {
             Mutex,
         },
     },
+    testlib::assert_json_matches_excluding,
     tokio::task::JoinHandle,
 };
 
