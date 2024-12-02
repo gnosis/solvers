@@ -190,7 +190,7 @@ impl Chain {
             eth::ChainId::Gnosis => Ok(Self::Gnosis),
             eth::ChainId::ArbitrumOne => Ok(Self::Arbitrum),
             eth::ChainId::Base => Ok(Self::Base),
-            unsupported => Err(Error::UnsupportedChainId(unsupported)),
+            eth::ChainId::Goerli => Err(Error::UnsupportedChainId(chain_id)),
         }
     }
 }
