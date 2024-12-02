@@ -6,6 +6,7 @@ use {
             eth::{self, TokenAddress},
             order,
         },
+        infra::dex::balancer::dto::Chain,
         util,
     },
     contracts::ethcontract::I256,
@@ -29,7 +30,7 @@ pub struct Sor {
     endpoint: reqwest::Url,
     vault: vault::Vault,
     settlement: eth::ContractAddress,
-    chain_id: eth::ChainId,
+    chain_id: Chain,
     query_batch_swap: bool,
 }
 
@@ -61,15 +62,15 @@ impl Sor {
     /// lost to time... See <https://github.com/cowprotocol/services/pull/171>.
     const GAS_PER_SWAP: u64 = 88_892;
 
-    pub fn new(config: Config) -> Self {
-        Self {
+    pub fn new(config: Config) -> Result<Self, Error> {
+        Ok(Self {
             client: super::Client::new(Default::default(), config.block_stream),
             endpoint: config.endpoint,
             vault: vault::Vault::new(config.vault),
             settlement: config.settlement,
-            chain_id: config.chain_id,
+            chain_id: Chain::from_domain(config.chain_id)?,
             query_batch_swap: config.query_batch_swap,
-        }
+        })
     }
 
     pub async fn swap(

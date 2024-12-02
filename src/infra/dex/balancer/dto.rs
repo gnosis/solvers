@@ -52,7 +52,7 @@ impl Query<'_> {
         order: &dex::Order,
         tokens: &auction::Tokens,
         slippage: &dex::Slippage,
-        chain_id: eth::ChainId,
+        chain: Chain,
         contract_address: eth::ContractAddress,
         query_batch_swap: bool,
         swap_deadline: Option<u64>,
@@ -72,7 +72,7 @@ impl Query<'_> {
                 sender: contract_address.0,
                 slippage_percentage: slippage.as_factor().clone(),
             },
-            chain: Chain::from_domain(chain_id)?,
+            chain,
             query_batch_swap,
             swap_amount: HumanReadableAmount::from_u256(&order.amount.get(), token_decimals),
             swap_type: SwapType::from_domain(order.side),
@@ -166,9 +166,9 @@ struct CallDataInput {
 }
 
 /// Balancer SOR API supported chains.
-#[derive(Serialize)]
+#[derive(Serialize, Clone, Copy)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-enum Chain {
+pub(super) enum Chain {
     Arbitrum,
     Avalanche,
     Base,
@@ -184,7 +184,7 @@ enum Chain {
 }
 
 impl Chain {
-    fn from_domain(chain_id: eth::ChainId) -> Result<Self, Error> {
+    pub(crate) fn from_domain(chain_id: eth::ChainId) -> Result<Self, Error> {
         match chain_id {
             eth::ChainId::Mainnet => Ok(Self::Mainnet),
             eth::ChainId::Gnosis => Ok(Self::Gnosis),
@@ -386,7 +386,7 @@ mod tests {
             owner: H160::from_str("0x9008d19f58aabd9ed0d60971565aa8510560ab41").unwrap(),
         };
         let slippage = dex::Slippage::one_percent();
-        let chain_id = eth::ChainId::Mainnet;
+        let chain = Chain::Mainnet;
         let contract_address = eth::ContractAddress(
             H160::from_str("0x9008d19f58aabd9ed0d60971565aa8510560ab41").unwrap(),
         );
@@ -394,7 +394,7 @@ mod tests {
             &order,
             &tokens,
             &slippage,
-            chain_id,
+            chain,
             contract_address,
             false,
             Some(12345_u64),
