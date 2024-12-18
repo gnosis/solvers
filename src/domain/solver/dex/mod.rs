@@ -13,6 +13,7 @@ use {
         },
         infra,
     },
+    ethereum_types::U256,
     futures::{future, stream, FutureExt, StreamExt},
     std::num::NonZeroUsize,
     tracing::Instrument,
@@ -188,7 +189,7 @@ impl Dex {
         let dex_order = self.fills.dex_order(order, tokens)?;
         let swap = self.try_solve(order, &dex_order, tokens).await?;
         let sell = tokens.reference_price(&order.sell.token);
-        let Some(solution) = swap
+        let Some(mut solution) = swap
             .into_solution(
                 order.clone(),
                 gas_price,
@@ -201,6 +202,39 @@ impl Dex {
             tracing::debug!("no solution for swap");
             return None;
         };
+
+        // Filter out the trades which do not respect the limit price
+        solution.trades = solution
+            .trades
+            .into_iter()
+            .filter_map(|trade| {
+                let buy_price = U256::from(
+                    tokens
+                        .get(&trade.buy_token())
+                        .and_then(|token| token.reference_price)?,
+                );
+                let sell_price = U256::from(
+                    tokens
+                        .get(&trade.sell_token())
+                        .and_then(|token| token.reference_price)?,
+                );
+
+                let buy_amount = trade.buy_amount(buy_price, sell_price).ok()?;
+                let sell_amount = trade.sell_amount(buy_price, sell_price).ok()?;
+
+                if sell_amount.checked_mul(sell_price)? >= buy_amount.checked_mul(buy_price)? {
+                    Some(trade)
+                } else {
+                    tracing::warn!(
+                        ?trade,
+                        ?tokens,
+                        "Settlement contract rule not fulfilled: order.sellAmount.mul(sellPrice) \
+                         >= order.buyAmount.mul(buyPrice)"
+                    );
+                    None
+                }
+            })
+            .collect();
 
         tracing::debug!("solved");
         // Maybe some liquidity appeared that enables a bigger fill.

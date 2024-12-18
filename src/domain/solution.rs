@@ -1,9 +1,15 @@
 use {
     crate::{
-        domain::{auction, eth, liquidity, order},
+        domain::{
+            auction,
+            eth::{self, TokenAddress},
+            liquidity,
+            order::{self, Side},
+        },
         util,
     },
     ethereum_types::{Address, U256},
+    shared::conversions::U256Ext,
     std::{collections::HashMap, slice},
 };
 
@@ -232,6 +238,80 @@ pub struct Fulfillment {
     fee: Fee,
 }
 
+impl Trade {
+    fn side(&self) -> Side {
+        match self {
+            Trade::Fulfillment(fulfillment) => fulfillment.order.side,
+            Trade::Jit(jit) => jit.order.side,
+        }
+    }
+
+    fn executed(&self) -> U256 {
+        match self {
+            Trade::Fulfillment(fulfillment) => fulfillment.executed,
+            Trade::Jit(jit) => jit.executed,
+        }
+    }
+
+    fn fee(&self) -> U256 {
+        match self {
+            Trade::Fulfillment(fulfillment) => fulfillment
+                .surplus_fee()
+                .map(|surplus| surplus.amount)
+                .unwrap_or(U256::zero()),
+            Trade::Jit(_) => U256::zero(),
+        }
+    }
+
+    /// Returns the trade sell token
+    pub fn sell_token(&self) -> TokenAddress {
+        match self {
+            Trade::Fulfillment(fulfillment) => fulfillment.order.sell.token,
+            Trade::Jit(jit) => jit.order.sell.token,
+        }
+    }
+
+    /// Returns the trade buy token
+    pub fn buy_token(&self) -> TokenAddress {
+        match self {
+            Trade::Fulfillment(fulfillment) => fulfillment.order.buy.token,
+            Trade::Jit(jit) => jit.order.sell.token,
+        }
+    }
+
+    /// The effective amount that left the user's wallet including all fees.
+    pub fn sell_amount(&self, sell_price: U256, buy_price: U256) -> Result<U256, error::Math> {
+        let before_fee = match self.side() {
+            Side::Sell => self.executed(),
+            Side::Buy => self
+                .executed()
+                .checked_mul(buy_price)
+                .ok_or(error::Math::Overflow)?
+                .checked_div(sell_price)
+                .ok_or(error::Math::DivisionByZero)?,
+        };
+        before_fee
+            .checked_add(self.fee())
+            .ok_or(error::Math::Overflow)
+    }
+
+    /// The effective amount the user received after all fees.
+    ///
+    /// Settlement contract uses `ceil` division for buy amount calculation.
+    pub fn buy_amount(&self, sell_price: U256, buy_price: U256) -> Result<U256, error::Math> {
+        let amount = match self.side() {
+            Side::Buy => self.executed(),
+            Side::Sell => self
+                .executed()
+                .checked_mul(sell_price)
+                .ok_or(error::Math::Overflow)?
+                .checked_ceil_div(&buy_price)
+                .ok_or(error::Math::DivisionByZero)?,
+        };
+        Ok(amount)
+    }
+}
+
 impl Fulfillment {
     /// Creates a new order filled to the specified amount. Returns `None` if
     /// the fill amount is incompatible with the order.
@@ -294,6 +374,18 @@ impl Fulfillment {
             token: self.order.sell.token,
             amount: self.fee.surplus()?,
         })
+    }
+}
+
+pub mod error {
+    #[derive(Debug, thiserror::Error)]
+    pub enum Math {
+        #[error("overflow")]
+        Overflow,
+        #[error("division by zero")]
+        DivisionByZero,
+        #[error("negative")]
+        Negative,
     }
 }
 
