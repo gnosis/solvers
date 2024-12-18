@@ -219,7 +219,9 @@ impl From<util::http::RoundtripError<dto::Error>> for Error {
                 // based on empirical observations of what the API has returned in the
                 // past.
                 match err.status_code {
-                    400 => Self::NotFound,
+                    // 403 is returned when the 1inch quote API is forbidden due to legal reason for
+                    // a specific address or an artificial address was used in the request.
+                    400 | 403 => Self::NotFound,
                     _ => Self::Api {
                         code: err.status_code,
                         description: err.description,
