@@ -9,6 +9,7 @@ pub mod oneinch;
 pub mod paraswap;
 pub mod simulator;
 pub mod zeroex;
+pub mod okx;
 
 pub use self::simulator::Simulator;
 
@@ -18,6 +19,7 @@ pub enum Dex {
     OneInch(oneinch::OneInch),
     ZeroEx(zeroex::ZeroEx),
     ParaSwap(paraswap::ParaSwap),
+    Okx(okx::Okx),
 }
 
 impl Dex {
@@ -36,6 +38,7 @@ impl Dex {
             Dex::OneInch(oneinch) => oneinch.swap(order, slippage).await?,
             Dex::ZeroEx(zeroex) => zeroex.swap(order, slippage).await?,
             Dex::ParaSwap(paraswap) => paraswap.swap(order, slippage, tokens).await?,
+            Dex::Okx(okx) => okx.swap(order, slippage).await?,
         };
         Ok(swap)
     }
@@ -137,6 +140,17 @@ impl From<paraswap::Error> for Error {
         match err {
             paraswap::Error::NotFound | paraswap::Error::MissingDecimals => Self::NotFound,
             paraswap::Error::RateLimited => Self::RateLimited,
+            _ => Self::Other(Box::new(err)),
+        }
+    }
+}
+
+impl From<okx::Error> for Error {
+    fn from(err: okx::Error) -> Self {
+        match err {
+            okx::Error::NotFound => Self::NotFound,
+            okx::Error::RateLimited => Self::RateLimited,
+            okx::Error::UnavailableForLegalReasons => Self::UnavailableForLegalReasons,
             _ => Self::Other(Box::new(err)),
         }
     }
