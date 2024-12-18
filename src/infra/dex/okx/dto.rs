@@ -1,5 +1,5 @@
-//! DTOs for the 0x swap API. Full documentation for the API can be found
-//! [here](https://docs.0x.org/0x-api-swap/api-references/get-swap-v1-quote).
+//! DTOs for the OKX swap API. Full documentation for the API can be found
+//! [here](https://www.okx.com/en-au/web3/build/docs/waas/dex-swap).
 
 use {
     crate::{
@@ -12,84 +12,135 @@ use {
     serde_with::serde_as,
 };
 
-/// A 0x API quote query parameters.
+/// A OKX API swap query parameters.
 ///
-/// See [API](https://docs.0x.org/0x-api-swap/api-references/get-swap-v1-quote)
+/// See [API](https://www.okx.com/en-au/web3/build/docs/waas/dex-swap)
 /// documentation for more detailed information on each parameter.
 #[serde_as]
 #[derive(Clone, Default, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Query {
-    /// Contract address of a token to sell.
-    pub sell_token: H160,
 
-    /// Contract address of a token to buy.
-    pub buy_token: H160,
+    /// Chain ID
+    #[serde_as(as = "serde_with::DisplayFromStr")]
+    pub chain_id: u64,
 
-    /// Amount of a token to sell, set in atoms.
+    /// Input amount of a token to be sold set in minimal divisible units
+    #[serde_as(as = "serialize::U256")]
+    pub amount: U256,
+
+    /// Contract address of a token to be send
+    pub from_token_address: H160,
+
+    /// Contract address of a token to be received
+    pub to_token_address: H160,
+
+    /// Limit of price slippage you are willing to accept
+    pub slippage: Slippage,
+
+    /// User's wallet address
+    pub user_wallet_address: H160,
+
+    /// The fromToken address that receives the commission.
+    /// Only for SOL or SPL-Token commissions.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub referrer_address: Option<H160>,
+
+    /// Recipient address of a purchased token if not set, 
+    /// user_wallet_address will receive a purchased token.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub swap_receiver_address: Option<H160>,
+
+    /// The percentage of from_token_address will be sent to the referrer's address, 
+    /// the rest will be set as the input amount to be sold. 
+    /// Min percentage：0 
+    /// Max percentage：3
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde_as(as = "Option<serde_with::DisplayFromStr>")]
+    pub fee_percent: Option<f64>,
+
+    /// The gas limit (in wei) for the swap transaction.
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde_as(as = "Option<serialize::U256>")]
-    pub sell_amount: Option<U256>,
+    pub gas_limit: Option<U256>,
 
-    /// Amount of a token to sell, set in atoms.
+    /// The target gas price level for the swap transaction.
+    /// Default value: average
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde_as(as = "Option<serialize::U256>")]
-    pub buy_amount: Option<U256>,
+    pub gas_level: Option<GasLevel>,
 
-    /// Limit of price slippage you are willing to accept.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub slippage_percentage: Option<Slippage>,
-
-    /// The target gas price for the swap transaction.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde_as(as = "Option<serialize::U256>")]
-    pub gas_price: Option<U256>,
-
-    /// The address which will fill the quote.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub taker_address: Option<H160>,
-
-    /// List of sources to exclude.
+    /// List of DexId of the liquidity pool for limited quotes.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     #[serde_as(as = "serialize::CommaSeparated")]
-    pub excluded_sources: Vec<String>,
+    pub dex_ids: Vec<String>,
 
-    /// Whether or not to skip quote validation.
-    pub skip_validation: bool,
+    /// The percentage of the price impact allowed.
+    /// Min value: 0 
+    /// Max value：1 (100%)
+    /// Default value: 0.9 (90%)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde_as(as = "Option<serde_with::DisplayFromStr>")]
+    pub price_impact_protection_percentage: Option<f64>,
 
-    /// Wether or not you intend to actually fill the quote. Setting this flag
-    /// enables RFQ-T liquidity.
-    ///
-    /// <https://docs.0x.org/market-makers/docs/introduction>
-    pub intent_on_filling: bool,
+    /// Customized parameters sent on the blockchain in callData.
+    /// Hex encoded 128-characters string.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde_as(as = "serialize::Hex")]
+    pub call_data_memo: Vec<u8>,
 
-    /// The affiliate address to use for tracking and analytics purposes.
-    pub affiliate_address: H160,
+    /// Address that receives the commission.
+    /// Only for SOL or SPL-Token commissions.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub to_token_referrer_address: Option<H160>,
 
-    /// Requests trade routes which aim to protect against high slippage and MEV
-    /// attacks.
-    pub enable_slippage_protection: bool,
+    /// Used for transactions on the Solana network and similar to gas_price on Ethereum.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde_as(as = "Option<serialize::U256>")]
+    pub compute_unit_price: Option<U256>,
+
+    /// Used for transactions on the Solana network and analogous to gas_limit on Ethereum.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde_as(as = "Option<serialize::U256>")]
+    pub compute_unit_limit: Option<U256>,
+
+    /// The wallet address to receive the commission fee from the from_token.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub from_token_referrer_wallet_address: Option<H160>,
+
+    /// The wallet address to receive the commission fee from the to_token
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub to_token_referrer_wallet_address: Option<H160>,
 }
 
-/// A 0x slippage amount.
-#[derive(Clone, Debug, Serialize)]
+/// A OKX slippage amount.
+#[derive(Clone, Debug, Default, Serialize)]
 pub struct Slippage(BigDecimal);
+
+/// A OKX gas level.
+#[derive(Clone, Debug, Default, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum GasLevel {
+    #[default]
+    Average,
+    Fast,
+    Slow
+}
+
+
 
 impl Query {
     pub fn with_domain(self, order: &dex::Order, slippage: &dex::Slippage) -> Self {
-        let (sell_amount, buy_amount) = match order.side {
-            order::Side::Buy => (None, Some(order.amount.get())),
-            order::Side::Sell => (Some(order.amount.get()), None),
+        let (from_token_address, to_token_address, amount) = match order.side {
+            order::Side::Sell => (order.sell.0, order.buy.0, order.amount.get()),
+            order::Side::Buy => (order.buy.0, order.sell.0, order.amount.get()),
         };
 
         Self {
-            sell_token: order.sell.0,
-            buy_token: order.buy.0,
-            sell_amount,
-            buy_amount,
-            // Note that the API calls this "slippagePercentage", but it is **not** a
-            // percentage but a factor.
-            slippage_percentage: Some(Slippage(slippage.as_factor().clone())),
+            chain_id: 1, // todo ms: from config
+            from_token_address,
+            to_token_address,
+            amount,
+            slippage: Slippage(slippage.as_factor().clone()),
             ..self
         }
     }
@@ -122,25 +173,7 @@ pub struct Quote {
 
     /// The target contract address for which the user needs to have an
     /// allowance in order to be able to complete the swap.
-    #[serde(with = "address_none_when_zero")]
     pub allowance_target: Option<H160>,
-}
-
-/// The 0x API uses the 0-address to indicate that no approvals are needed for a
-/// swap. Use a custom deserializer to turn that into `None`.
-mod address_none_when_zero {
-    use {
-        ethereum_types::H160,
-        serde::{Deserialize, Deserializer},
-    };
-
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<H160>, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let value = H160::deserialize(deserializer)?;
-        Ok((!value.is_zero()).then_some(value))
-    }
 }
 
 #[derive(Deserialize)]

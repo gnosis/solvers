@@ -3,7 +3,6 @@ use {
         domain::{dex, eth, order},
         util,
     },
-    ethereum_types::H160,
     ethrpc::block_stream::CurrentBlockWatcher,
     hyper::StatusCode,
     std::sync::atomic::{self, AtomicU64},
@@ -12,7 +11,7 @@ use {
 
 mod dto;
 
-/// Bindings to the 0x swap API.
+/// Bindings to the OKX swap API.
 pub struct Okx {
     client: super::Client,
     endpoint: reqwest::Url,
@@ -20,30 +19,29 @@ pub struct Okx {
 }
 
 pub struct Config {
-    /// The base URL for the 0x swap API.
+    /// The base URL for the 0KX swap API.
     pub endpoint: reqwest::Url,
 
-    /// 0x provides a gated API for partners that requires authentication
-    /// by specifying this as header in the HTTP request.
+    pub chain_id: eth::ChainId,
+
+    /// OKX project ID to use. Instruction on how to create project:
+    /// https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#create-project
+    pub project_id: String,
+
+    /// OKX API key. Instruction on how to generate API key:
+    /// https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#generate-api-keys
     pub api_key: String,
 
-    /// The list of excluded liquidity sources. Liquidity from these sources
-    /// will not be considered when solving.
-    pub excluded_sources: Vec<String>,
+    /// OKX API key additional security token. Instruction on how to get security token:
+    /// https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#view-the-secret-key
+    pub api_secret_key: String,
 
-    /// The affiliate address to use.
-    ///
-    /// This is used by 0x for tracking and analytic purposes.
-    pub affiliate: H160,
+    /// OKX API key passphrase used to encrypt secrety key. Instruction on how to get passhprase:
+    /// https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#generate-api-keys
+    pub api_passphrase: String,
 
     /// The address of the settlement contract.
     pub settlement: eth::ContractAddress,
-
-    /// Wether or not to enable RFQ-T liquidity.
-    pub enable_rfqt: bool,
-
-    /// Whether or not to enable slippage protection.
-    pub enable_slippage_protection: bool,
 
     /// The stream that yields every new block.
     pub block_stream: Option<CurrentBlockWatcher>,
@@ -52,11 +50,19 @@ pub struct Config {
 impl Okx {
     pub fn new(config: Config) -> Result<Self, CreationError> {
         let client = {
-            let mut key = reqwest::header::HeaderValue::from_str(&config.api_key)?;
-            key.set_sensitive(true);
+            let mut api_key = reqwest::header::HeaderValue::from_str(&config.api_key)?;
+            api_key.set_sensitive(true);
+            let mut api_secret_key = reqwest::header::HeaderValue::from_str(&config.api_secret_key)?;
+            api_secret_key.set_sensitive(true);
+            let mut api_passphrase = reqwest::header::HeaderValue::from_str(&config.api_passphrase)?;
+            api_passphrase.set_sensitive(true);
 
             let mut headers = reqwest::header::HeaderMap::new();
-            headers.insert("0x-api-key", key);
+            headers.insert("OK-ACCESS-PROJECT", reqwest::header::HeaderValue::from_str(&config.project_id)?);
+            headers.insert("OK-ACCESS-KEY", api_key);
+            headers.insert("OK-ACCESS-SIGN", api_secret_key);
+            headers.insert("OK-ACCESS-PASSPHRASE", api_passphrase);
+            headers.insert("OK-ACCESS-TIMESTAMP", reqwest::header::HeaderValue::from_str(&chrono::Utc::now().to_string())?);
 
             let client = reqwest::Client::builder()
                 .default_headers(headers)
@@ -64,12 +70,8 @@ impl Okx {
             super::Client::new(client, config.block_stream)
         };
         let defaults = dto::Query {
-            taker_address: Some(config.settlement.0),
-            excluded_sources: config.excluded_sources,
-            skip_validation: true,
-            intent_on_filling: config.enable_rfqt,
-            affiliate_address: config.affiliate,
-            enable_slippage_protection: config.enable_slippage_protection,
+            chain_id: config.chain_id as u64,
+            user_wallet_address: config.settlement.0,
             ..Default::default()
         };
 

@@ -2,6 +2,7 @@ use {
     crate::{
         domain::eth,
         infra::{config::dex::file, contracts, dex::okx},
+        util::serialize,
     },
     ethereum_types::H160,
     serde::Deserialize,
@@ -18,30 +19,17 @@ struct Config {
     #[serde_as(as = "serde_with::DisplayFromStr")]
     endpoint: reqwest::Url,
 
-    /// This is needed when configuring 0x to use
-    /// the gated API for partners.
-    api_key: String,
+    /// Chain ID used to automatically determine contract addresses.
+    #[serde_as(as = "serialize::ChainId")]
+    chain_id: eth::ChainId,
 
-    /// The list of excluded liquidity sources. Liquidity from these sources
-    /// will not be considered when solving.
-    #[serde(default)]
-    excluded_sources: Vec<String>,
+    pub api_project_id: String,
 
-    /// The affiliate address to use. Defaults to the mainnet CoW Protocol
-    /// settlement contract address.
-    #[serde(default = "default_affiliate")]
-    affiliate: H160,
+    pub api_key: String,
 
-    /// Whether or not to enable 0x RFQ-T liquidity.
-    #[serde(default)]
-    enable_rfqt: bool,
+    pub api_secret_key: String,
 
-    /// Whether or not to enable slippage protection. The slippage protection
-    /// considers average negative slippage paid out in MEV when quoting,
-    /// preferring private market maker orders when they are close to what you
-    /// would get with on-chain liquidity pools.
-    #[serde(default)]
-    enable_slippage_protection: bool,
+    pub api_passphrase: String,
 }
 
 fn default_endpoint() -> reqwest::Url {
@@ -62,19 +50,17 @@ fn default_affiliate() -> H160 {
 pub async fn load(path: &Path) -> super::Config {
     let (base, config) = file::load::<Config>(path).await;
 
-    // Note that we just assume Mainnet here - this is because this is the
-    // only chain that the 0x solver supports anyway.
     let settlement = contracts::Contracts::for_chain(eth::ChainId::Mainnet).settlement;
 
     super::Config {
         okx: okx::Config {
-            endpoint: config.endpoint,
+            chain_id: config.chain_id,
+            project_id: config.api_project_id,
             api_key: config.api_key,
-            excluded_sources: config.excluded_sources,
-            affiliate: config.affiliate,
+            api_secret_key: config.api_secret_key,
+            api_passphrase: config.api_passphrase,
+            endpoint: config.endpoint,
             settlement,
-            enable_rfqt: config.enable_rfqt,
-            enable_slippage_protection: config.enable_slippage_protection,
             block_stream: base.block_stream.clone(),
         },
         base,
