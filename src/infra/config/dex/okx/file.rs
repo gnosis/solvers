@@ -4,7 +4,6 @@ use {
         infra::{config::dex::file, contracts, dex::okx},
         util::serialize,
     },
-    ethereum_types::H160,
     serde::Deserialize,
     serde_with::serde_as,
     std::path::Path,
@@ -33,13 +32,9 @@ struct Config {
 }
 
 fn default_endpoint() -> reqwest::Url {
-    "https://api.0x.org/swap/v1/".parse().unwrap()
-}
-
-fn default_affiliate() -> H160 {
-    contracts::Contracts::for_chain(eth::ChainId::Mainnet)
-        .settlement
-        .0
+    "https://www.okx.com/api/v5/dex/aggregator/"
+        .parse()
+        .unwrap()
 }
 
 /// Load the 0x solver configuration from a TOML file.
@@ -50,7 +45,7 @@ fn default_affiliate() -> H160 {
 pub async fn load(path: &Path) -> super::Config {
     let (base, config) = file::load::<Config>(path).await;
 
-    let settlement = contracts::Contracts::for_chain(eth::ChainId::Mainnet).settlement;
+    let settlement = contracts::Contracts::for_chain(config.chain_id).settlement;
 
     super::Config {
         okx: okx::Config {

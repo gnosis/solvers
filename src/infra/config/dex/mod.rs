@@ -1,9 +1,9 @@
 pub mod balancer;
 mod file;
+pub mod okx;
 pub mod oneinch;
 pub mod paraswap;
 pub mod zeroex;
-pub mod okx;
 
 use {
     crate::domain::{dex::slippage, eth},

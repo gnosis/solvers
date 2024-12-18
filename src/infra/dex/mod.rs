@@ -5,11 +5,11 @@ use {
 };
 
 pub mod balancer;
+pub mod okx;
 pub mod oneinch;
 pub mod paraswap;
 pub mod simulator;
 pub mod zeroex;
-pub mod okx;
 
 pub use self::simulator::Simulator;
 

@@ -15,7 +15,7 @@ mod dto;
 pub struct Okx {
     client: super::Client,
     endpoint: reqwest::Url,
-    defaults: dto::Query,
+    defaults: dto::SwapRequest,
 }
 
 pub struct Config {
@@ -32,12 +32,12 @@ pub struct Config {
     /// https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#generate-api-keys
     pub api_key: String,
 
-    /// OKX API key additional security token. Instruction on how to get security token:
-    /// https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#view-the-secret-key
+    /// OKX API key additional security token. Instruction on how to get
+    /// security token: https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#view-the-secret-key
     pub api_secret_key: String,
 
-    /// OKX API key passphrase used to encrypt secrety key. Instruction on how to get passhprase:
-    /// https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#generate-api-keys
+    /// OKX API key passphrase used to encrypt secrety key. Instruction on how
+    /// to get passhprase: https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#generate-api-keys
     pub api_passphrase: String,
 
     /// The address of the settlement contract.
@@ -52,24 +52,32 @@ impl Okx {
         let client = {
             let mut api_key = reqwest::header::HeaderValue::from_str(&config.api_key)?;
             api_key.set_sensitive(true);
-            let mut api_secret_key = reqwest::header::HeaderValue::from_str(&config.api_secret_key)?;
+            let mut api_secret_key =
+                reqwest::header::HeaderValue::from_str(&config.api_secret_key)?;
             api_secret_key.set_sensitive(true);
-            let mut api_passphrase = reqwest::header::HeaderValue::from_str(&config.api_passphrase)?;
+            let mut api_passphrase =
+                reqwest::header::HeaderValue::from_str(&config.api_passphrase)?;
             api_passphrase.set_sensitive(true);
 
             let mut headers = reqwest::header::HeaderMap::new();
-            headers.insert("OK-ACCESS-PROJECT", reqwest::header::HeaderValue::from_str(&config.project_id)?);
+            headers.insert(
+                "OK-ACCESS-PROJECT",
+                reqwest::header::HeaderValue::from_str(&config.project_id)?,
+            );
             headers.insert("OK-ACCESS-KEY", api_key);
             headers.insert("OK-ACCESS-SIGN", api_secret_key);
             headers.insert("OK-ACCESS-PASSPHRASE", api_passphrase);
-            headers.insert("OK-ACCESS-TIMESTAMP", reqwest::header::HeaderValue::from_str(&chrono::Utc::now().to_string())?);
+            headers.insert(
+                "OK-ACCESS-TIMESTAMP",
+                reqwest::header::HeaderValue::from_str(&chrono::Utc::now().to_string())?,
+            );
 
             let client = reqwest::Client::builder()
                 .default_headers(headers)
                 .build()?;
             super::Client::new(client, config.block_stream)
         };
-        let defaults = dto::Query {
+        let defaults = dto::SwapRequest {
             chain_id: config.chain_id as u64,
             user_wallet_address: config.settlement.0,
             ..Default::default()
@@ -99,40 +107,39 @@ impl Okx {
                 .await?
         };
 
+        let quote_result = quote.data.first().ok_or(Error::NotFound)?;
+
         let max_sell_amount = match order.side {
-            order::Side::Buy => slippage.add(quote.sell_amount),
-            order::Side::Sell => quote.sell_amount,
+            order::Side::Buy => slippage.add(quote_result.router_result.from_token_amount),
+            order::Side::Sell => quote_result.router_result.from_token_amount,
         };
 
         Ok(dex::Swap {
             call: dex::Call {
-                to: eth::ContractAddress(quote.to),
-                calldata: quote.data,
+                to: eth::ContractAddress(quote_result.tx.to),
+                calldata: quote_result.tx.data.clone(),
             },
             input: eth::Asset {
                 token: order.sell,
-                amount: quote.sell_amount,
+                amount: quote_result.router_result.from_token_amount,
             },
             output: eth::Asset {
                 token: order.buy,
-                amount: quote.buy_amount,
+                amount: quote_result.router_result.to_token_amount,
             },
             allowance: dex::Allowance {
-                spender: quote
-                    .allowance_target
-                    .ok_or(Error::MissingSpender)
-                    .map(eth::ContractAddress)?,
+                spender: eth::ContractAddress(quote_result.tx.to),
                 amount: dex::Amount::new(max_sell_amount),
             },
-            gas: eth::Gas(quote.estimated_gas),
+            gas: eth::Gas(quote_result.tx.gas), // todo ms: increase by 50% according to docs?
         })
     }
 
-    async fn quote(&self, query: &dto::Query) -> Result<dto::Quote, Error> {
+    async fn quote(&self, query: &dto::SwapRequest) -> Result<dto::SwapResponse, Error> {
         let quote = util::http::roundtrip!(
-            <dto::Quote, dto::Error>;
+            <dto::SwapResponse, dto::Error>;
             self.client
-                .request(reqwest::Method::GET, util::url::join(&self.endpoint, "quote"))
+                .request(reqwest::Method::GET, util::url::join(&self.endpoint, "swap"))
                 .query(query)
         )
         .await?;

@@ -12,15 +12,14 @@ use {
     serde_with::serde_as,
 };
 
-/// A OKX API swap query parameters.
+/// A OKX API swap request parameters.
 ///
 /// See [API](https://www.okx.com/en-au/web3/build/docs/waas/dex-swap)
 /// documentation for more detailed information on each parameter.
 #[serde_as]
 #[derive(Clone, Default, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Query {
-
+pub struct SwapRequest {
     /// Chain ID
     #[serde_as(as = "serde_with::DisplayFromStr")]
     pub chain_id: u64,
@@ -46,14 +45,14 @@ pub struct Query {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub referrer_address: Option<H160>,
 
-    /// Recipient address of a purchased token if not set, 
+    /// Recipient address of a purchased token if not set,
     /// user_wallet_address will receive a purchased token.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub swap_receiver_address: Option<H160>,
 
-    /// The percentage of from_token_address will be sent to the referrer's address, 
-    /// the rest will be set as the input amount to be sold. 
-    /// Min percentage：0 
+    /// The percentage of from_token_address will be sent to the referrer's
+    /// address, the rest will be set as the input amount to be sold.
+    /// Min percentage：0
     /// Max percentage：3
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde_as(as = "Option<serde_with::DisplayFromStr>")]
@@ -75,7 +74,7 @@ pub struct Query {
     pub dex_ids: Vec<String>,
 
     /// The percentage of the price impact allowed.
-    /// Min value: 0 
+    /// Min value: 0
     /// Max value：1 (100%)
     /// Default value: 0.9 (90%)
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -93,12 +92,14 @@ pub struct Query {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub to_token_referrer_address: Option<H160>,
 
-    /// Used for transactions on the Solana network and similar to gas_price on Ethereum.
+    /// Used for transactions on the Solana network and similar to gas_price on
+    /// Ethereum.
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde_as(as = "Option<serialize::U256>")]
     pub compute_unit_price: Option<U256>,
 
-    /// Used for transactions on the Solana network and analogous to gas_limit on Ethereum.
+    /// Used for transactions on the Solana network and analogous to gas_limit
+    /// on Ethereum.
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde_as(as = "Option<serialize::U256>")]
     pub compute_unit_limit: Option<U256>,
@@ -123,12 +124,10 @@ pub enum GasLevel {
     #[default]
     Average,
     Fast,
-    Slow
+    Slow,
 }
 
-
-
-impl Query {
+impl SwapRequest {
     pub fn with_domain(self, order: &dex::Order, slippage: &dex::Slippage) -> Self {
         let (from_token_address, to_token_address, amount) = match order.side {
             order::Side::Sell => (order.sell.0, order.buy.0, order.amount.get()),
@@ -136,7 +135,6 @@ impl Query {
         };
 
         Self {
-            chain_id: 1, // todo ms: from config
             from_token_address,
             to_token_address,
             amount,
@@ -146,46 +144,165 @@ impl Query {
     }
 }
 
-/// A Ox API quote response.
+/// A OKX API quote response.
 #[serde_as]
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Quote {
-    /// The address of the contract to call in order to execute the swap.
+pub struct SwapResponse {
+    pub code: String,
+
+    pub data: Vec<SwapResponseInner>,
+
+    pub msg: String,
+}
+
+#[serde_as]
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SwapResponseInner {
+    pub router_result: SwapResponseRouterResult,
+
+    pub tx: SwapResponseTx,
+}
+
+#[serde_as]
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SwapResponseRouterResult {
+    #[serde_as(as = "serde_with::DisplayFromStr")]
+    pub chain_id: u64,
+
+    #[serde_as(as = "serialize::U256")]
+    pub from_token_amount: U256,
+
+    #[serde_as(as = "serialize::U256")]
+    pub to_token_amount: U256,
+
+    #[serde_as(as = "serialize::U256")]
+    pub trade_fee: U256,
+
+    #[serde_as(as = "serialize::U256")]
+    pub estimate_gas_fee: U256,
+
+    pub dex_router_list: Vec<SwapResponseDexRouterList>,
+
+    pub quote_compare_list: Vec<SwapResponseQuoteCompareList>,
+
+    pub to_token: SwapResponseFromToToken,
+
+    pub from_token: SwapResponseFromToToken,
+}
+
+#[serde_as]
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SwapResponseDexRouterList {
+    pub router: String,
+
+    #[serde_as(as = "serde_with::DisplayFromStr")]
+    pub router_percent: f64,
+
+    pub sub_router_list: Vec<SwapResponseDexSubRouterList>,
+}
+
+#[serde_as]
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SwapResponseDexSubRouterList {
+    pub dex_protocol: Vec<SwapResponseDexProtocol>,
+
+    pub from_token: SwapResponseFromToToken,
+
+    pub to_token: SwapResponseFromToToken,
+}
+
+#[serde_as]
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SwapResponseDexProtocol {
+    pub dex_name: String,
+
+    #[serde_as(as = "serde_with::DisplayFromStr")]
+    pub percent: f64,
+}
+
+#[serde_as]
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SwapResponseFromToToken {
+    pub token_contract_address: H160,
+
+    pub token_symbol: String,
+
+    #[serde_as(as = "serde_with::DisplayFromStr")]
+    pub token_unit_price: f64,
+
+    #[serde_as(as = "serde_with::DisplayFromStr")]
+    pub decimal: u8,
+
+    pub is_honey_pot: bool,
+
+    #[serde_as(as = "serde_with::DisplayFromStr")]
+    pub tax_rate: f64,
+}
+
+#[serde_as]
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SwapResponseQuoteCompareList {
+    pub dex_name: String,
+
+    pub dex_logo: String,
+
+    #[serde_as(as = "serde_with::DisplayFromStr")]
+    pub trade_fee: f64,
+
+    #[serde_as(as = "serialize::U256")]
+    pub receive_amount: U256,
+
+    #[serde_as(as = "serde_with::DisplayFromStr")]
+    pub price_impact_percentage: f64,
+}
+
+#[serde_as]
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SwapResponseTx {
+    pub signature_data: Vec<String>,
+
+    pub from: H160,
+
+    #[serde_as(as = "serialize::U256")]
+    pub gas: U256,
+
+    #[serde_as(as = "serialize::U256")]
+    pub gas_price: U256,
+
+    #[serde_as(as = "serialize::U256")]
+    pub max_priority_fee_per_gas: U256,
+
     pub to: H160,
 
-    /// The swap calldata.
+    #[serde_as(as = "serialize::U256")]
+    pub value: U256,
+
+    #[serde_as(as = "serialize::U256")]
+    pub min_receive_amount: U256,
+
     #[serde_as(as = "serialize::Hex")]
     pub data: Vec<u8>,
-
-    /// The estimate for the amount of gas that will actually be used in the
-    /// transaction.
-    #[serde_as(as = "serialize::U256")]
-    pub estimated_gas: U256,
-
-    /// The amount of sell token (in atoms) that would be sold in this swap.
-    #[serde_as(as = "serialize::U256")]
-    pub sell_amount: U256,
-
-    /// The amount of buy token (in atoms) that would be bought in this swap.
-    #[serde_as(as = "serialize::U256")]
-    pub buy_amount: U256,
-
-    /// The target contract address for which the user needs to have an
-    /// allowance in order to be able to complete the swap.
-    pub allowance_target: Option<H160>,
 }
 
 #[derive(Deserialize)]
 #[serde(untagged)]
 pub enum Response {
-    Ok(Quote),
+    Ok(SwapResponse),
     Err(Error),
 }
 
 impl Response {
     /// Turns the API response into a [`std::result::Result`].
-    pub fn into_result(self) -> Result<Quote, Error> {
+    pub fn into_result(self) -> Result<SwapResponse, Error> {
         match self {
             Response::Ok(quote) => Ok(quote),
             Response::Err(err) => Err(err),
