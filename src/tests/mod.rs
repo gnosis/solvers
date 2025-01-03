@@ -14,10 +14,10 @@ use {
 mod balancer;
 mod dex;
 mod mock;
+mod okx;
 mod oneinch;
 mod paraswap;
 mod zeroex;
-mod okx;
 
 /// A solver engine handle for E2E testing.
 pub struct SolverEngine {

@@ -3,14 +3,14 @@ use {
         domain::{dex, eth, order},
         util,
     },
-    ethrpc::block_stream::CurrentBlockWatcher,
-    hyper::{StatusCode, header::HeaderValue},
-    std::sync::atomic::{self, AtomicU64},
-    chrono::SecondsFormat,
-    tracing::Instrument,
-    sha2::Sha256,
-    hmac::{Hmac, Mac},
     base64::prelude::*,
+    chrono::SecondsFormat,
+    ethrpc::block_stream::CurrentBlockWatcher,
+    hmac::{Hmac, Mac},
+    hyper::{header::HeaderValue, StatusCode},
+    sha2::Sha256,
+    std::sync::atomic::{self, AtomicU64},
+    tracing::Instrument,
 };
 
 mod dto;
@@ -90,7 +90,14 @@ impl Okx {
 
     fn sign_request(&self, request: &reqwest::Request) -> String {
         let mut data = String::new();
-        data.push_str(request.headers().get("OK-ACCESS-TIMESTAMP").unwrap().to_str().unwrap());
+        data.push_str(
+            request
+                .headers()
+                .get("OK-ACCESS-TIMESTAMP")
+                .unwrap()
+                .to_str()
+                .unwrap(),
+        );
         data.push_str(request.method().as_str());
         data.push_str(request.url().path());
         data.push('?');
@@ -151,8 +158,12 @@ impl Okx {
     }
 
     async fn quote(&self, query: &dto::SwapRequest) -> Result<dto::SwapResponse, Error> {
-        let request_builder = self.client
-            .request(reqwest::Method::GET, util::url::join(&self.endpoint, "swap"))
+        let request_builder = self
+            .client
+            .request(
+                reqwest::Method::GET,
+                util::url::join(&self.endpoint, "swap"),
+            )
             .query(query);
 
         let quote = util::http::roundtrip!(

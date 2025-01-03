@@ -1,30 +1,27 @@
 #![allow(unreachable_code)]
 #![allow(unused_imports)]
 use {
-    crate::domain::dex::*,
-    crate::domain::eth,
-    crate::domain::eth::*,
     crate::{
+        domain::{
+            dex::*,
+            eth::{self, *},
+        },
         infra::{config::dex::okx as okx_config, dex::okx as okx_dex},
         tests::{self, mock, okx},
     },
     bigdecimal::BigDecimal,
     ethereum_types::H160,
     serde_json::json,
-    std::default,
-    std::num::NonZeroUsize,
-    std::str::FromStr,
-    std::env,
+    std::{default, env, num::NonZeroUsize, str::FromStr},
 };
 
 #[ignore]
 #[tokio::test]
-// To run this test set following environment variables accordingly to your OKX setup:
-//  OKX_PROJECT_ID, OKX_API_KEY, OKX_SECRET_KEY, OKX_PASSPHRASE
+// To run this test set following environment variables accordingly to your OKX
+// setup:  OKX_PROJECT_ID, OKX_API_KEY, OKX_SECRET_KEY, OKX_PASSPHRASE
 async fn simple() {
     let okx_config = okx_dex::Config {
-        endpoint: reqwest::Url::parse("https://www.okx.com/api/v5/dex/aggregator/")
-            .unwrap(),
+        endpoint: reqwest::Url::parse("https://www.okx.com/api/v5/dex/aggregator/").unwrap(),
         chain_id: crate::domain::eth::ChainId::Mainnet,
         project_id: env::var("OKX_PROJECT_ID").unwrap(),
         api_key: env::var("OKX_API_KEY").unwrap(),
@@ -45,9 +42,7 @@ async fn simple() {
         )),
         side: crate::domain::order::Side::Buy,
         amount: Amount::new(U256::from_str("10000000000000").unwrap()),
-        owner: H160::from_slice(
-            &hex::decode("6f9ffea7370310cd0f890dfde5e0e061059dcfb8").unwrap(),
-        ),
+        owner: H160::from_slice(&hex::decode("6f9ffea7370310cd0f890dfde5e0e061059dcfb8").unwrap()),
     };
 
     let slippage = Slippage::one_percent();
