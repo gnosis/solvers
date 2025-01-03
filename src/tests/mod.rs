@@ -17,6 +17,7 @@ mod mock;
 mod oneinch;
 mod paraswap;
 mod zeroex;
+mod okx;
 
 /// A solver engine handle for E2E testing.
 pub struct SolverEngine {

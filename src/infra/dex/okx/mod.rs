@@ -4,9 +4,13 @@ use {
         util,
     },
     ethrpc::block_stream::CurrentBlockWatcher,
-    hyper::StatusCode,
+    hyper::{StatusCode, header::HeaderValue},
     std::sync::atomic::{self, AtomicU64},
+    chrono::SecondsFormat,
     tracing::Instrument,
+    sha2::Sha256,
+    hmac::{Hmac, Mac},
+    base64::prelude::*,
 };
 
 mod dto;
@@ -15,6 +19,7 @@ mod dto;
 pub struct Okx {
     client: super::Client,
     endpoint: reqwest::Url,
+    api_secret_key: String,
     defaults: dto::SwapRequest,
 }
 
@@ -52,9 +57,6 @@ impl Okx {
         let client = {
             let mut api_key = reqwest::header::HeaderValue::from_str(&config.api_key)?;
             api_key.set_sensitive(true);
-            let mut api_secret_key =
-                reqwest::header::HeaderValue::from_str(&config.api_secret_key)?;
-            api_secret_key.set_sensitive(true);
             let mut api_passphrase =
                 reqwest::header::HeaderValue::from_str(&config.api_passphrase)?;
             api_passphrase.set_sensitive(true);
@@ -65,12 +67,7 @@ impl Okx {
                 reqwest::header::HeaderValue::from_str(&config.project_id)?,
             );
             headers.insert("OK-ACCESS-KEY", api_key);
-            headers.insert("OK-ACCESS-SIGN", api_secret_key);
             headers.insert("OK-ACCESS-PASSPHRASE", api_passphrase);
-            headers.insert(
-                "OK-ACCESS-TIMESTAMP",
-                reqwest::header::HeaderValue::from_str(&chrono::Utc::now().to_string())?,
-            );
 
             let client = reqwest::Client::builder()
                 .default_headers(headers)
@@ -86,8 +83,26 @@ impl Okx {
         Ok(Self {
             client,
             endpoint: config.endpoint,
+            api_secret_key: config.api_secret_key,
             defaults,
         })
+    }
+
+    fn sign_request(&self, request: &reqwest::Request) -> String {
+        let mut data = String::new();
+        data.push_str(request.headers().get("OK-ACCESS-TIMESTAMP").unwrap().to_str().unwrap());
+        data.push_str(request.method().as_str());
+        data.push_str(request.url().path());
+        data.push('?');
+        data.push_str(request.url().query().unwrap());
+        println!("{:?}", data);
+
+        type HmacSha256 = Hmac<Sha256>;
+        let mut mac = HmacSha256::new_from_slice(self.api_secret_key.as_bytes()).unwrap();
+        mac.update(data.as_bytes());
+        let signature = mac.finalize().into_bytes();
+
+        BASE64_STANDARD.encode(signature)
     }
 
     pub async fn swap(
@@ -136,11 +151,21 @@ impl Okx {
     }
 
     async fn quote(&self, query: &dto::SwapRequest) -> Result<dto::SwapResponse, Error> {
+        let request_builder = self.client
+            .request(reqwest::Method::GET, util::url::join(&self.endpoint, "swap"))
+            .query(query);
+
         let quote = util::http::roundtrip!(
             <dto::SwapResponse, dto::Error>;
-            self.client
-                .request(reqwest::Method::GET, util::url::join(&self.endpoint, "swap"))
-                .query(query)
+            request_builder,
+            |request| {
+                request.headers_mut().insert(
+                    "OK-ACCESS-TIMESTAMP",
+                    reqwest::header::HeaderValue::from_str(&chrono::Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true).to_string()).unwrap(),
+                );
+                let signature = self.sign_request(request);
+                request.headers_mut().insert("OK-ACCESS-SIGN", HeaderValue::from_str(&signature).unwrap());
+            }
         )
         .await?;
         Ok(quote)
