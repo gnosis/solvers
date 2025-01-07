@@ -174,7 +174,7 @@ impl Okx {
                 request.headers_mut().insert(
                     "OK-ACCESS-TIMESTAMP",
                     // Safe to unwrap as timestamp in RFC3339 format is a valid HTTP header value.
-                    reqwest::header::HeaderValue::from_str(&timestamp).unwrap(),
+                    reqwest::header::HeaderValue::from_str(timestamp).unwrap(),
                 );
                 request.headers_mut().insert("OK-ACCESS-SIGN", HeaderValue::from_str(&signature)
                     .expect("Request sign header value has invalid characters: {signature}"));
