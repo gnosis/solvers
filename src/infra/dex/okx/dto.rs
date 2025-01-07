@@ -178,8 +178,8 @@ pub struct SwapResponseRouterResult {
     #[serde_as(as = "serialize::U256")]
     pub to_token_amount: U256,
 
-    #[serde_as(as = "serialize::U256")]
-    pub trade_fee: U256,
+    #[serde_as(as = "serde_with::DisplayFromStr")]
+    pub trade_fee: f64,
 
     #[serde_as(as = "serialize::U256")]
     pub estimate_gas_fee: U256,
@@ -257,11 +257,17 @@ pub struct SwapResponseQuoteCompareList {
     #[serde_as(as = "serde_with::DisplayFromStr")]
     pub trade_fee: f64,
 
-    #[serde_as(as = "serialize::U256")]
-    pub receive_amount: U256,
-
+    // todo: missing in docs?
     #[serde_as(as = "serde_with::DisplayFromStr")]
-    pub price_impact_percentage: f64,
+    pub amount_out: f64,
+
+    // todo: missing from response?
+    //#[serde_as(as = "serialize::U256")]
+    //pub receive_amount: U256,
+
+    // todo: missing from response?
+    //#[serde_as(as = "serde_with::DisplayFromStr")]
+    //pub price_impact_percentage: f64,
 }
 
 #[serde_as]
