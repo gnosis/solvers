@@ -6,7 +6,7 @@ use {
     base64::prelude::*,
     chrono::SecondsFormat,
     ethrpc::block_stream::CurrentBlockWatcher,
-    hmac::{digest::crypto_common::KeySizeUser, Hmac, Mac},
+    hmac::{Hmac, Mac},
     hyper::{header::HeaderValue, StatusCode},
     sha2::Sha256,
     std::sync::atomic::{self, AtomicU64},
@@ -14,8 +14,6 @@ use {
 };
 
 mod dto;
-
-type HmacSha256 = Hmac<Sha256>;
 
 /// Bindings to the OKX swap API.
 pub struct Okx {
@@ -77,10 +75,6 @@ impl Okx {
             super::Client::new(client, config.block_stream)
         };
 
-        if config.api_secret_key.as_bytes().len() != HmacSha256::key_size() {
-            return Err(CreationError::ConfigWrongSecretKeyLength);
-        }
-
         let defaults = dto::SwapRequest {
             chain_id: config.chain_id as u64,
             user_wallet_address: config.settlement.0,
@@ -108,7 +102,8 @@ impl Okx {
                 .expect("Request query cannot be empty."),
         );
 
-        // Safe to unwrap as we checked key size in the constructor
+        type HmacSha256 = Hmac<Sha256>;
+        // Safe to unwrap as HMAC can take key of any size
         let mut mac = HmacSha256::new_from_slice(self.api_secret_key.as_bytes()).unwrap();
         mac.update(data.as_bytes());
         let signature = mac.finalize().into_bytes();
@@ -196,8 +191,6 @@ pub enum CreationError {
     Header(#[from] reqwest::header::InvalidHeaderValue),
     #[error(transparent)]
     Client(#[from] reqwest::Error),
-    #[error("Secret key length is wrong")]
-    ConfigWrongSecretKeyLength,
 }
 
 #[derive(Debug, thiserror::Error)]
