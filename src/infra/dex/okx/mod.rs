@@ -149,7 +149,7 @@ impl Okx {
                 amount: quote_result.router_result.to_token_amount,
             },
             allowance: dex::Allowance {
-                spender: eth::ContractAddress(quote_result.tx.to),
+                spender: eth::ContractAddress(quote_result.tx.from),
                 amount: dex::Amount::new(max_sell_amount),
             },
             gas: eth::Gas(quote_result.tx.gas), // todo ms: increase by 50% according to docs?

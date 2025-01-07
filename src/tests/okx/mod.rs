@@ -48,6 +48,11 @@ async fn simple() {
     let slippage = Slippage::one_percent();
 
     let okx = crate::infra::dex::okx::Okx::try_new(okx_config).unwrap();
-    let swap_result = okx.swap(&order, &slippage).await;
-    swap_result.unwrap();
+    let swap_response = okx.swap(&order, &slippage).await;
+    let swap = swap_response.unwrap();
+
+    assert_eq!(swap.input.token, order.amount().token);
+    assert_eq!(swap.input.amount, order.amount().amount);
+    assert_eq!(swap.output.token, order.buy);
+    assert_eq!(swap.allowance.spender.0, order.owner);
 }
