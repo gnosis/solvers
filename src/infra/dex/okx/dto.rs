@@ -260,7 +260,6 @@ pub struct SwapResponseQuoteCompareList {
     // todo: missing in docs?
     #[serde_as(as = "serde_with::DisplayFromStr")]
     pub amount_out: f64,
-
     // todo: missing from response?
     //#[serde_as(as = "serialize::U256")]
     //pub receive_amount: U256,
