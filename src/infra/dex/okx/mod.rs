@@ -6,7 +6,7 @@ use {
     base64::prelude::*,
     chrono::SecondsFormat,
     ethrpc::block_stream::CurrentBlockWatcher,
-    hmac::{Hmac, Mac},
+    hmac::{digest::crypto_common::KeySizeUser, Hmac, Mac},
     hyper::{header::HeaderValue, StatusCode},
     sha2::Sha256,
     std::sync::atomic::{self, AtomicU64},
@@ -14,6 +14,8 @@ use {
 };
 
 mod dto;
+
+type HmacSha256 = Hmac<Sha256>;
 
 /// Bindings to the OKX swap API.
 pub struct Okx {
@@ -53,7 +55,7 @@ pub struct Config {
 }
 
 impl Okx {
-    pub fn new(config: Config) -> Result<Self, CreationError> {
+    pub fn try_new(config: Config) -> Result<Self, CreationError> {
         let client = {
             let mut api_key = reqwest::header::HeaderValue::from_str(&config.api_key)?;
             api_key.set_sensitive(true);
@@ -74,6 +76,11 @@ impl Okx {
                 .build()?;
             super::Client::new(client, config.block_stream)
         };
+
+        if config.api_secret_key.as_bytes().len() != HmacSha256::key_size() {
+            return Err(CreationError::ConfigWrongSecretKeyLength);
+        }
+
         let defaults = dto::SwapRequest {
             chain_id: config.chain_id as u64,
             user_wallet_address: config.settlement.0,
@@ -88,23 +95,20 @@ impl Okx {
         })
     }
 
-    fn sign_request(&self, request: &reqwest::Request) -> String {
+    fn sign_request(&self, request: &reqwest::Request, timestamp: &str) -> String {
         let mut data = String::new();
-        data.push_str(
-            request
-                .headers()
-                .get("OK-ACCESS-TIMESTAMP")
-                .unwrap()
-                .to_str()
-                .unwrap(),
-        );
+        data.push_str(timestamp);
         data.push_str(request.method().as_str());
         data.push_str(request.url().path());
         data.push('?');
-        data.push_str(request.url().query().unwrap());
-        println!("{:?}", data);
+        data.push_str(
+            request
+                .url()
+                .query()
+                .expect("Request query cannot be empty."),
+        );
 
-        type HmacSha256 = Hmac<Sha256>;
+        // Safe to unwrap as we checked key size in the constructor
         let mut mac = HmacSha256::new_from_slice(self.api_secret_key.as_bytes()).unwrap();
         mac.update(data.as_bytes());
         let signature = mac.finalize().into_bytes();
@@ -170,12 +174,15 @@ impl Okx {
             <dto::SwapResponse, dto::Error>;
             request_builder,
             |request| {
+                let timestamp = &chrono::Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true).to_string();
+                let signature = self.sign_request(request, timestamp);
                 request.headers_mut().insert(
                     "OK-ACCESS-TIMESTAMP",
-                    reqwest::header::HeaderValue::from_str(&chrono::Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true).to_string()).unwrap(),
+                    // Safe to unwrap as timestamp in RFC3339 format is a valid HTTP header value.
+                    reqwest::header::HeaderValue::from_str(&timestamp).unwrap(),
                 );
-                let signature = self.sign_request(request);
-                request.headers_mut().insert("OK-ACCESS-SIGN", HeaderValue::from_str(&signature).unwrap());
+                request.headers_mut().insert("OK-ACCESS-SIGN", HeaderValue::from_str(&signature)
+                    .expect("Request sign header value has invalid characters: {signature}"));
             }
         )
         .await?;
@@ -189,6 +196,8 @@ pub enum CreationError {
     Header(#[from] reqwest::header::InvalidHeaderValue),
     #[error(transparent)]
     Client(#[from] reqwest::Error),
+    #[error("Secret key length is wrong")]
+    ConfigWrongSecretKeyLength,
 }
 
 #[derive(Debug, thiserror::Error)]

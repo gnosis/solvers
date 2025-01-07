@@ -47,7 +47,7 @@ async fn simple() {
 
     let slippage = Slippage::one_percent();
 
-    let okx = crate::infra::dex::okx::Okx::new(okx_config).unwrap();
+    let okx = crate::infra::dex::okx::Okx::try_new(okx_config).unwrap();
     let swap_result = okx.swap(&order, &slippage).await;
     swap_result.unwrap();
 }

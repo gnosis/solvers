@@ -20,7 +20,7 @@ use {
 /// the HTTP roundtripping is happening.
 macro_rules! roundtrip {
     (<$t:ty, $e:ty>; $request:expr) => {
-        $crate::util::http::roundtrip!(<$t, $e>; $request, |_|{})
+        $crate::util::http::roundtrip!(<$t, $e>; $request, |_|())
     };
     // Pass additional opeartion which will be executed on built request.
     (<$t:ty, $e:ty>; $request:expr, $operation:expr) => {
