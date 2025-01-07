@@ -40,7 +40,7 @@ async fn simple() {
         buy: TokenAddress::from(H160::from_slice(
             &hex::decode("a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48").unwrap(),
         )),
-        side: crate::domain::order::Side::Buy,
+        side: crate::domain::order::Side::Sell,
         amount: Amount::new(U256::from_str("10000000000000").unwrap()),
         owner: H160::from_slice(&hex::decode("6f9ffea7370310cd0f890dfde5e0e061059dcfb8").unwrap()),
     };
