@@ -89,26 +89,21 @@ impl Okx {
         })
     }
 
-    fn sign_request(&self, request: &reqwest::Request, timestamp: &str) -> String {
+    fn sign_request(&self, request: &reqwest::Request, timestamp: &str) -> Result<String, Error> {
         let mut data = String::new();
         data.push_str(timestamp);
         data.push_str(request.method().as_str());
         data.push_str(request.url().path());
         data.push('?');
-        data.push_str(
-            request
-                .url()
-                .query()
-                .expect("Request query cannot be empty."),
-        );
+        data.push_str(request.url().query().ok_or(Error::SignRequestFailed)?);
 
         type HmacSha256 = Hmac<Sha256>;
-        // Safe to unwrap as HMAC can take key of any size
-        let mut mac = HmacSha256::new_from_slice(self.api_secret_key.as_bytes()).unwrap();
+        let mut mac = HmacSha256::new_from_slice(self.api_secret_key.as_bytes())
+            .map_err(|_| Error::SignRequestFailed)?;
         mac.update(data.as_bytes());
         let signature = mac.finalize().into_bytes();
 
-        BASE64_STANDARD.encode(signature)
+        Ok(BASE64_STANDARD.encode(signature))
     }
 
     pub async fn swap(
@@ -178,23 +173,23 @@ impl Okx {
 
         let request = request_builder
             .try_clone()
-            .ok_or(Error::SignRequestFailed)?
+            .ok_or(Error::RequestBuildFailed)?
             .build()
-            .map_err(|_| Error::SignRequestFailed)?;
+            .map_err(|_| Error::RequestBuildFailed)?;
 
         let timestamp = &chrono::Utc::now()
             .to_rfc3339_opts(SecondsFormat::Millis, true)
             .to_string();
-        let signature = self.sign_request(&request, timestamp);
+        let signature = self.sign_request(&request, timestamp)?;
 
         request_builder = request_builder.header(
             "OK-ACCESS-TIMESTAMP",
             reqwest::header::HeaderValue::from_str(timestamp)
-                .map_err(|_| Error::SignRequestFailed)?,
+                .map_err(|_| Error::RequestBuildFailed)?,
         );
         request_builder = request_builder.header(
             "OK-ACCESS-SIGN",
-            HeaderValue::from_str(&signature).map_err(|_| Error::SignRequestFailed)?,
+            HeaderValue::from_str(&signature).map_err(|_| Error::RequestBuildFailed)?,
         );
 
         let quote = util::http::roundtrip!(
@@ -216,6 +211,8 @@ pub enum CreationError {
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+    #[error("failed to build the request")]
+    RequestBuildFailed,
     #[error("failed to sign the request")]
     SignRequestFailed,
     #[error("unable to find a quote")]
