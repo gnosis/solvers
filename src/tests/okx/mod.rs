@@ -21,7 +21,7 @@ use {
 // setup:  OKX_PROJECT_ID, OKX_API_KEY, OKX_SECRET_KEY, OKX_PASSPHRASE
 async fn simple_sell() {
     let okx_config = okx_dex::Config {
-        endpoint: reqwest::Url::parse("https://www.okx.com/api/v5/dex/aggregator/").unwrap(),
+        endpoint: reqwest::Url::parse("https://www.okx.com/api/v5/dex/aggregator/swap").unwrap(),
         chain_id: crate::domain::eth::ChainId::Mainnet,
         project_id: env::var("OKX_PROJECT_ID").unwrap(),
         api_key: env::var("OKX_API_KEY").unwrap(),
@@ -63,7 +63,7 @@ async fn simple_sell() {
 // setup:  OKX_PROJECT_ID, OKX_API_KEY, OKX_SECRET_KEY, OKX_PASSPHRASE
 async fn simple_buy() {
     let okx_config = okx_dex::Config {
-        endpoint: reqwest::Url::parse("https://www.okx.com/api/v5/dex/aggregator/").unwrap(),
+        endpoint: reqwest::Url::parse("https://www.okx.com/api/v5/dex/aggregator/swap").unwrap(),
         chain_id: crate::domain::eth::ChainId::Mainnet,
         project_id: env::var("OKX_PROJECT_ID").unwrap(),
         api_key: env::var("OKX_API_KEY").unwrap(),

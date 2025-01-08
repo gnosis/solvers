@@ -173,10 +173,7 @@ impl Okx {
     async fn quote(&self, query: &dto::SwapRequest) -> Result<dto::SwapResponse, Error> {
         let request_builder = self
             .client
-            .request(
-                reqwest::Method::GET,
-                util::url::join(&self.endpoint, "swap"),
-            )
+            .request(reqwest::Method::GET, self.endpoint.clone())
             .query(query);
 
         let quote = util::http::roundtrip!(
