@@ -171,25 +171,35 @@ impl Okx {
     }
 
     async fn quote(&self, query: &dto::SwapRequest) -> Result<dto::SwapResponse, Error> {
-        let request_builder = self
+        let mut request_builder = self
             .client
             .request(reqwest::Method::GET, self.endpoint.clone())
             .query(query);
 
+        let request = request_builder
+            .try_clone()
+            .ok_or(Error::SignRequestFailed)?
+            .build()
+            .map_err(|_| Error::SignRequestFailed)?;
+
+        let timestamp = &chrono::Utc::now()
+            .to_rfc3339_opts(SecondsFormat::Millis, true)
+            .to_string();
+        let signature = self.sign_request(&request, timestamp);
+
+        request_builder = request_builder.header(
+            "OK-ACCESS-TIMESTAMP",
+            reqwest::header::HeaderValue::from_str(timestamp)
+                .map_err(|_| Error::SignRequestFailed)?,
+        );
+        request_builder = request_builder.header(
+            "OK-ACCESS-SIGN",
+            HeaderValue::from_str(&signature).map_err(|_| Error::SignRequestFailed)?,
+        );
+
         let quote = util::http::roundtrip!(
             <dto::SwapResponse, dto::Error>;
-            request_builder,
-            |request| {
-                let timestamp = &chrono::Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true).to_string();
-                let signature = self.sign_request(request, timestamp);
-                request.headers_mut().insert(
-                    "OK-ACCESS-TIMESTAMP",
-                    // Safe to unwrap as timestamp in RFC3339 format is a valid HTTP header value.
-                    reqwest::header::HeaderValue::from_str(timestamp).unwrap(),
-                );
-                request.headers_mut().insert("OK-ACCESS-SIGN", HeaderValue::from_str(&signature)
-                    .expect("Request sign header value has invalid characters: {signature}"));
-            }
+            request_builder
         )
         .await?;
         Ok(quote)
@@ -206,6 +216,8 @@ pub enum CreationError {
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+    #[error("failed to sign the request")]
+    SignRequestFailed,
     #[error("unable to find a quote")]
     NotFound,
     #[error("quote does not specify an approval spender")]

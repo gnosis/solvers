@@ -20,10 +20,6 @@ use {
 /// the HTTP roundtripping is happening.
 macro_rules! roundtrip {
     (<$t:ty, $e:ty>; $request:expr) => {
-        $crate::util::http::roundtrip!(<$t, $e>; $request, |_|())
-    };
-    // Pass additional opeartion which will be executed on built request.
-    (<$t:ty, $e:ty>; $request:expr, $operation:expr) => {
         $crate::util::http::roundtrip_internal::<$t, $e>(
             $request,
             |method, url, body, message| {
@@ -36,7 +32,6 @@ macro_rules! roundtrip {
             |status, body, message| {
                 tracing::trace!(%status, %body, "{message}");
             },
-            $operation,
         )
     };
     ($request:expr) => {
@@ -51,7 +46,6 @@ pub async fn roundtrip_internal<T, E>(
     mut request: RequestBuilder,
     log_request: impl FnOnce(&Method, &Url, Option<&str>, &str),
     log_response: impl FnOnce(StatusCode, &str, &str),
-    mut operation: impl FnMut(&mut Request),
 ) -> Result<T, RoundtripError<E>>
 where
     T: DeserializeOwned,
@@ -61,9 +55,7 @@ where
         request = request.header("X-REQUEST-ID", id);
     }
     let (client, request) = request.build_split();
-    let mut request = request.map_err(Error::from)?;
-
-    operation(&mut request);
+    let request = request.map_err(Error::from)?;
 
     let body = request
         .body()
