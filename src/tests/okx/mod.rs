@@ -1,18 +1,13 @@
-#![allow(unreachable_code)]
-#![allow(unused_imports)]
 use {
     crate::{
         domain::{
             dex::*,
             eth::{self, *},
         },
-        infra::{config::dex::okx as okx_config, dex::okx as okx_dex},
-        tests::{self, mock, okx},
+        infra::dex::okx as okx_dex,
     },
-    bigdecimal::BigDecimal,
     ethereum_types::H160,
-    serde_json::json,
-    std::{default, env, num::NonZeroUsize, str::FromStr},
+    std::{env, str::FromStr},
 };
 
 #[ignore]
