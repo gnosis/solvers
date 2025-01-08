@@ -106,6 +106,17 @@ impl Okx {
         Ok(BASE64_STANDARD.encode(signature))
     }
 
+    /// Error codes: https://www.okx.com/en-au/web3/build/docs/waas/dex-error-code
+    fn handle_api_error(code: i64, message: &str) -> Result<(), Error> {
+        match code {
+            0 => Ok(()),
+            _ => Err(Error::Api {
+                code,
+                reason: message.to_string(),
+            }),
+        }
+    }
+
     pub async fn swap(
         &self,
         order: &dex::Order,
@@ -123,6 +134,7 @@ impl Okx {
                 .await?
         };
 
+        Self::handle_api_error(quote.code, &quote.msg)?;
         let quote_result = quote.data.first().ok_or(Error::NotFound)?;
 
         let (input, output, max_sell_amount) = match order.side {

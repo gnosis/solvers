@@ -149,7 +149,8 @@ impl SwapRequest {
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SwapResponse {
-    pub code: String,
+    #[serde_as(as = "serde_with::DisplayFromStr")]
+    pub code: i64,
 
     pub data: Vec<SwapResponseInner>,
 

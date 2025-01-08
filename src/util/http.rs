@@ -7,7 +7,7 @@
 
 use {
     crate::util,
-    reqwest::{Method, Request, RequestBuilder, StatusCode, Url},
+    reqwest::{Method, RequestBuilder, StatusCode, Url},
     serde::de::DeserializeOwned,
     std::str,
 };
