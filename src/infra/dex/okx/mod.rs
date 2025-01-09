@@ -142,6 +142,14 @@ impl Okx {
         Self::handle_api_error(quote.code, &quote.msg)?;
         let quote_result = quote.data.first().ok_or(Error::NotFound)?;
 
+        // Increasing returned gas by 50% according to the documentation:
+        // https://www.okx.com/en-au/web3/build/docs/waas/dex-swap (gas field description in Response param)
+        let gas = quote_result
+            .tx
+            .gas
+            .checked_add(quote_result.tx.gas >> 1)
+            .ok_or(Error::GasCalculationFailed)?;
+
         Ok(dex::Swap {
             call: dex::Call {
                 to: eth::ContractAddress(quote_result.tx.to),
@@ -167,7 +175,7 @@ impl Okx {
                 spender: eth::ContractAddress(quote_result.tx.to),
                 amount: dex::Amount::new(quote_result.router_result.from_token_amount),
             },
-            gas: eth::Gas(quote_result.tx.gas), // todo ms: increase by 50% according to docs?
+            gas: eth::Gas(gas),
         })
     }
 
@@ -231,6 +239,8 @@ pub enum Error {
     RateLimited,
     #[error("sell token or buy token are banned from trading")]
     UnavailableForLegalReasons,
+    #[error("calculating output gas failed")]
+    GasCalculationFailed,
     #[error("api error code {code}: {reason}")]
     Api { code: i64, reason: String },
     #[error(transparent)]

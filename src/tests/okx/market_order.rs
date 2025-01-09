@@ -186,7 +186,7 @@ async fn sell() {
         json!({
            "solutions":[
               {
-                 "gas":308891,
+                 "gas":410141,
                  "id":0,
                  "interactions":[
                     {
