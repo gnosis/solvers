@@ -133,29 +133,9 @@ impl Okx {
         Self::handle_api_error(quote.code, &quote.msg)?;
         let quote_result = quote.data.first().ok_or(Error::NotFound)?;
 
-        let (input, output, max_sell_amount) = match order.side {
-            order::Side::Buy => (
-                eth::Asset {
-                    token: order.buy,
-                    amount: quote_result.router_result.from_token_amount,
-                },
-                eth::Asset {
-                    token: order.sell,
-                    amount: quote_result.router_result.to_token_amount,
-                },
-                slippage.add(quote_result.router_result.from_token_amount),
-            ),
-            order::Side::Sell => (
-                eth::Asset {
-                    token: order.sell,
-                    amount: quote_result.router_result.from_token_amount,
-                },
-                eth::Asset {
-                    token: order.buy,
-                    amount: quote_result.router_result.to_token_amount,
-                },
-                quote_result.router_result.from_token_amount,
-            ),
+        let max_sell_amount = match order.side {
+            order::Side::Buy => slippage.add(quote_result.router_result.from_token_amount),
+            order::Side::Sell => quote_result.router_result.from_token_amount,
         };
 
         Ok(dex::Swap {
@@ -163,10 +143,24 @@ impl Okx {
                 to: eth::ContractAddress(quote_result.tx.to),
                 calldata: quote_result.tx.data.clone(),
             },
-            input,
-            output,
+            input: eth::Asset {
+                token: quote_result
+                    .router_result
+                    .from_token
+                    .token_contract_address
+                    .into(),
+                amount: quote_result.router_result.from_token_amount,
+            },
+            output: eth::Asset {
+                token: quote_result
+                    .router_result
+                    .to_token
+                    .token_contract_address
+                    .into(),
+                amount: quote_result.router_result.to_token_amount,
+            },
             allowance: dex::Allowance {
-                spender: eth::ContractAddress(quote_result.tx.from),
+                spender: eth::ContractAddress(quote_result.tx.to),
                 amount: dex::Amount::new(max_sell_amount),
             },
             gas: eth::Gas(quote_result.tx.gas), // todo ms: increase by 50% according to docs?

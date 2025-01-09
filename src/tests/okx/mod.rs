@@ -1,11 +1,7 @@
-use {
-    crate::tests,
-    std::net::SocketAddr,
-};
+use {crate::tests, std::net::SocketAddr};
 
 mod api_calls;
 mod market_order;
-
 
 /// Creates a temporary file containing the config of the given solver.
 pub fn config(solver_addr: &SocketAddr) -> tests::Config {

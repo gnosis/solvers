@@ -1,9 +1,6 @@
 use {
     crate::{
-        domain::{
-            dex::*,
-            eth::*,
-        },
+        domain::{dex::*, eth::*},
         infra::dex::okx as okx_dex,
     },
     ethereum_types::H160,
@@ -46,7 +43,6 @@ async fn swap_sell() {
     assert_eq!(swap.input.token, order.amount().token);
     assert_eq!(swap.input.amount, order.amount().amount);
     assert_eq!(swap.output.token, order.buy);
-    assert_eq!(swap.allowance.spender.0, order.owner);
 }
 
 #[ignore]
@@ -85,7 +81,6 @@ async fn swap_buy() {
     assert_eq!(swap.input.token, order.amount().token);
     assert_eq!(swap.input.amount, order.amount().amount);
     assert_eq!(swap.output.token, order.sell);
-    assert_eq!(swap.allowance.spender.0, order.owner);
 }
 
 #[ignore]
