@@ -2,6 +2,7 @@ use {crate::tests, std::net::SocketAddr};
 
 mod api_calls;
 mod market_order;
+mod not_found;
 
 /// Creates a temporary file containing the config of the given solver.
 pub fn config(solver_addr: &SocketAddr) -> tests::Config {
