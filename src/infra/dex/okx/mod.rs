@@ -37,20 +37,16 @@ pub struct Config {
 }
 
 pub struct OkxCredentialsConfig {
-    /// OKX project ID to use. Instruction on how to create project:
-    /// https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#create-project
+    /// OKX project ID to use.
     pub project_id: String,
 
-    /// OKX API key. Instruction on how to generate API key:
-    /// https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#generate-api-keys
+    /// OKX API key.
     pub api_key: String,
 
-    /// OKX API key additional security token. Instruction on how to get
-    /// security token: https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#view-the-secret-key
+    /// OKX API key additional security token.
     pub api_secret_key: String,
 
-    /// OKX API key passphrase used to encrypt secrety key. Instruction on how
-    /// to get passhprase: https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#generate-api-keys
+    /// OKX API key passphrase used to encrypt secrety key.
     pub api_passphrase: String,
 }
 

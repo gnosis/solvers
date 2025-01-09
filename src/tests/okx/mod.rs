@@ -14,7 +14,7 @@ endpoint = 'http://{solver_addr}'
 api-project-id = '1'
 api-key = '1234'
 api-secret-key = '1234567890123456'
-api-passphrase ='pass'
+api-passphrase = 'pass'
 ",
     ))
 }

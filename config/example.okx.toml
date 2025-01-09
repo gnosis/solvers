@@ -1,0 +1,28 @@
+node-url = "http://localhost:8545"
+
+[dex]
+# See here how to get a free key: https://0x.org/docs/introduction/getting-started
+api-key = "$YOUR_API_KEY"
+
+# Specify which chain to use, 1 for Ethereum.
+# More info here: https://www.okx.com/en-au/web3/build/docs/waas/walletapi-resources-supported-networks
+chain-id = "1"
+
+# Optionally specify a custom OKX Swap API endpoint
+# endpoint = "https://www.okx.com/api/v5/dex/aggregator/swap"
+
+# OKX Project ID. Instruction on how to create project:
+# https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#create-project
+api-project-id = "$OKX_PROJECT_ID"
+
+# OKX API Key. Instruction on how to generate API key:
+# https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#generate-api-keys
+api-key = "$OKX_API_KEY"
+
+# OKX Secret key used for signing request. Instruction on how to get security token:
+# https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#view-the-secret-key
+api-secret-key = "$OKX_SECRET_KEY"
+
+# OKX Secret key passphrase. Instruction on how to get passhprase:
+# https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#generate-api-keys
+api-passphrase = "$OKX_PASSPHRASE"

@@ -13,7 +13,7 @@ use {
 #[derive(Deserialize)]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 struct Config {
-    /// The versioned URL endpoint for the 0x swap API.
+    /// The versioned URL endpoint for the OKX swap API.
     #[serde(default = "default_endpoint")]
     #[serde_as(as = "serde_with::DisplayFromStr")]
     endpoint: reqwest::Url,
@@ -22,17 +22,42 @@ struct Config {
     #[serde_as(as = "serialize::ChainId")]
     chain_id: eth::ChainId,
 
-    /// OKX Project ID.
+    /// OKX API credentials
+    #[serde(flatten)]
+    okx_credentials: OkxCredentialsConfig,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+struct OkxCredentialsConfig {
+    /// OKX Project ID. Instruction on how to create project:
+    /// https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#create-project
     api_project_id: String,
 
-    /// OKX API Key.
+    /// OKX API Key. Instruction on how to generate API key:
+    /// https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#generate-api-keys
     api_key: String,
 
-    /// OKX Secret key used for signing request.
+    /// OKX Secret key used for signing request. Instruction on how to get
+    /// security token: https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#view-the-secret-key
     api_secret_key: String,
 
-    /// OKX Secret key passphrase.
+    /// OKX Secret key passphrase. Instruction on how
+    /// to get passhprase: https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#generate-api-keys
     api_passphrase: String,
+}
+
+// Implementing Into<> is enough as opposite conversion will never be used.
+#[allow(clippy::from_over_into)]
+impl Into<okx::OkxCredentialsConfig> for OkxCredentialsConfig {
+    fn into(self) -> okx::OkxCredentialsConfig {
+        okx::OkxCredentialsConfig {
+            project_id: self.api_project_id,
+            api_key: self.api_key,
+            api_secret_key: self.api_secret_key,
+            api_passphrase: self.api_passphrase,
+        }
+    }
 }
 
 fn default_endpoint() -> reqwest::Url {
@@ -53,12 +78,7 @@ pub async fn load(path: &Path) -> super::Config {
         okx: okx::Config {
             endpoint: config.endpoint,
             chain_id: config.chain_id,
-            okx_credentials: okx::OkxCredentialsConfig {
-                project_id: config.api_project_id,
-                api_key: config.api_key,
-                api_secret_key: config.api_secret_key,
-                api_passphrase: config.api_passphrase,
-            },
+            okx_credentials: config.okx_credentials.into(),
             block_stream: base.block_stream.clone(),
         },
         base,
