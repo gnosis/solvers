@@ -46,7 +46,7 @@ pub struct OkxCredentialsConfig {
     /// OKX API key additional security token.
     pub api_secret_key: String,
 
-    /// OKX API key passphrase used to encrypt secrety key.
+    /// OKX API key passphrase used to encrypt secret key.
     pub api_passphrase: String,
 }
 
@@ -107,7 +107,7 @@ impl Okx {
         Ok(BASE64_STANDARD.encode(signature))
     }
 
-    /// OKX Error codes: https://www.okx.com/en-au/web3/build/docs/waas/dex-error-code
+    /// OKX Error codes: [link](https://www.okx.com/en-au/web3/build/docs/waas/dex-error-code)
     fn handle_api_error(code: i64, message: &str) -> Result<(), Error> {
         Err(match code {
             0 => return Ok(()),
@@ -247,7 +247,7 @@ pub enum Error {
 impl From<util::http::RoundtripError<dto::Error>> for Error {
     // This function is only called when swap response body is not a valid json.
     // OKX is returning valid json for 4xx HTTP codes, and the errors are handled in
-    // dedicated funcion: handle_api_error().
+    // dedicated function: handle_api_error().
     fn from(err: util::http::RoundtripError<dto::Error>) -> Self {
         match err {
             util::http::RoundtripError::Http(err) => {

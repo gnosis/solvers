@@ -12,8 +12,8 @@ use {
     serde_with::serde_as,
 };
 
-/// A OKX API swap request parameters.
-/// Only sell orders are supported by OKX.
+/// A OKX API swap request parameters (only mandatory fields).
+/// OKX supports only sell orders.
 ///
 /// See [API](https://www.okx.com/en-au/web3/build/docs/waas/dex-swap)
 /// documentation for more detailed information on each parameter.
@@ -46,16 +46,6 @@ pub struct SwapRequest {
 #[derive(Clone, Debug, Default, Serialize)]
 pub struct Slippage(BigDecimal);
 
-/// A OKX gas level.
-#[derive(Clone, Debug, Default, Serialize)]
-#[serde(rename_all = "lowercase")]
-pub enum GasLevel {
-    #[default]
-    Average,
-    Fast,
-    Slow,
-}
-
 impl SwapRequest {
     pub fn with_domain(self, order: &dex::Order, slippage: &dex::Slippage) -> Option<Self> {
         // Buy orders are not supported on OKX
@@ -63,15 +53,10 @@ impl SwapRequest {
             return None;
         };
 
-        let (from_token_address, to_token_address, amount) = match order.side {
-            order::Side::Sell => (order.sell.0, order.buy.0, order.amount.get()),
-            order::Side::Buy => (order.buy.0, order.sell.0, order.amount.get()),
-        };
-
         Some(Self {
-            from_token_address,
-            to_token_address,
-            amount,
+            from_token_address: order.sell.0,
+            to_token_address: order.buy.0,
+            amount: order.amount.get(),
             slippage: Slippage(slippage.as_factor().clone()),
             user_wallet_address: order.owner,
             ..self
@@ -79,176 +64,91 @@ impl SwapRequest {
     }
 }
 
-/// A OKX API quote response.
+/// A OKX API swap response - generic wrapper for success and failure cases.
+///
+/// See [API](https://www.okx.com/en-au/web3/build/docs/waas/dex-swap)
+/// documentation for more detailed information on each parameter.
 #[serde_as]
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SwapResponse {
+    /// Error code, 0 for success, otherwise one of:
+    /// [error codes](https://www.okx.com/en-au/web3/build/docs/waas/dex-error-code)
     #[serde_as(as = "serde_with::DisplayFromStr")]
     pub code: i64,
 
+    /// Response data.
     pub data: Vec<SwapResponseInner>,
 
+    /// Error code text message.
     pub msg: String,
 }
 
+/// A OKX API swap response.
 #[serde_as]
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SwapResponseInner {
+    /// Quote execution path.
     pub router_result: SwapResponseRouterResult,
 
+    /// Contract related response.
     pub tx: SwapResponseTx,
 }
 
+/// A OKX API swap response - quote execution path.
+/// Deserializing fields which are only used by the implementation.
+/// For all possible fields look into the documentation:
+/// [API](https://www.okx.com/en-au/web3/build/docs/waas/dex-swap)
 #[serde_as]
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SwapResponseRouterResult {
-    #[serde_as(as = "serde_with::DisplayFromStr")]
-    pub chain_id: u64,
+    /// The information of a token to be sold.
+    pub from_token: SwapResponseFromToToken,
 
+    /// The information of a token to be bought.
+    pub to_token: SwapResponseFromToToken,
+
+    /// The input amount of a token to be sold.
     #[serde_as(as = "serialize::U256")]
     pub from_token_amount: U256,
 
+    /// The resulting amount of a token to be bought.
     #[serde_as(as = "serialize::U256")]
     pub to_token_amount: U256,
-
-    #[serde_as(as = "serde_with::DisplayFromStr")]
-    pub trade_fee: f64,
-
-    #[serde_as(as = "serialize::U256")]
-    pub estimate_gas_fee: U256,
-
-    pub dex_router_list: Vec<SwapResponseDexRouterList>,
-
-    pub quote_compare_list: Vec<SwapResponseQuoteCompareList>,
-
-    pub to_token: SwapResponseFromToToken,
-
-    pub from_token: SwapResponseFromToToken,
 }
 
-#[serde_as]
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct SwapResponseDexRouterList {
-    pub router: String,
-
-    #[serde_as(as = "serde_with::DisplayFromStr")]
-    pub router_percent: f64,
-
-    pub sub_router_list: Vec<SwapResponseDexSubRouterList>,
-}
-
-#[serde_as]
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct SwapResponseDexSubRouterList {
-    pub dex_protocol: Vec<SwapResponseDexProtocol>,
-
-    pub from_token: SwapResponseFromToToken,
-
-    pub to_token: SwapResponseFromToToken,
-}
-
-#[serde_as]
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct SwapResponseDexProtocol {
-    pub dex_name: String,
-
-    #[serde_as(as = "serde_with::DisplayFromStr")]
-    pub percent: f64,
-}
-
+/// A OKX API swap response - token information.
+/// Deserializing fields which are only used by the implementation.
+/// For all possible fields look into the documentation:
+/// [API](https://www.okx.com/en-au/web3/build/docs/waas/dex-swap)
 #[serde_as]
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SwapResponseFromToToken {
+    /// Address of the token smart contract.
     pub token_contract_address: H160,
-
-    pub token_symbol: String,
-
-    #[serde_as(as = "serde_with::DisplayFromStr")]
-    pub token_unit_price: f64,
-
-    #[serde_as(as = "serde_with::DisplayFromStr")]
-    pub decimal: u8,
-
-    pub is_honey_pot: bool,
-
-    #[serde_as(as = "serde_with::DisplayFromStr")]
-    pub tax_rate: f64,
 }
 
-#[serde_as]
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct SwapResponseQuoteCompareList {
-    pub dex_name: String,
-
-    pub dex_logo: String,
-
-    #[serde_as(as = "serde_with::DisplayFromStr")]
-    pub trade_fee: f64,
-
-    // todo: missing in docs?
-    #[serde_as(as = "serde_with::DisplayFromStr")]
-    pub amount_out: f64,
-    // todo: missing from response?
-    //#[serde_as(as = "serialize::U256")]
-    //pub receive_amount: U256,
-
-    // todo: missing from response?
-    //#[serde_as(as = "serde_with::DisplayFromStr")]
-    //pub price_impact_percentage: f64,
-}
-
+/// A OKX API swap response - contract related information.
+/// Deserializing fields which are only used by the implementation.
+/// For all possible fields look into the documentation:
+/// [API](https://www.okx.com/en-au/web3/build/docs/waas/dex-swap)
 #[serde_as]
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SwapResponseTx {
-    pub signature_data: Vec<String>,
-
-    pub from: H160,
-
+    /// Estimated amount of the gas limit.
     #[serde_as(as = "serialize::U256")]
     pub gas: U256,
 
-    #[serde_as(as = "serialize::U256")]
-    pub gas_price: U256,
-
-    #[serde_as(as = "serialize::U256")]
-    pub max_priority_fee_per_gas: U256,
-
+    /// The contract address of OKX DEX router.
     pub to: H160,
 
-    #[serde_as(as = "serialize::U256")]
-    pub value: U256,
-
-    #[serde_as(as = "serialize::U256")]
-    pub min_receive_amount: U256,
-
+    /// Call data.
     #[serde_as(as = "serialize::Hex")]
     pub data: Vec<u8>,
-}
-
-#[derive(Deserialize)]
-#[serde(untagged)]
-pub enum Response {
-    Ok(SwapResponse),
-    Err(Error),
-}
-
-impl Response {
-    /// Turns the API response into a [`std::result::Result`].
-    pub fn into_result(self) -> Result<SwapResponse, Error> {
-        match self {
-            Response::Ok(quote) => Ok(quote),
-            Response::Err(err) => Err(err),
-        }
-    }
 }
 
 #[derive(Deserialize)]

@@ -43,7 +43,7 @@ struct OkxCredentialsConfig {
     api_secret_key: String,
 
     /// OKX Secret key passphrase. Instruction on how
-    /// to get passhprase: https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#generate-api-keys
+    /// to get passphrase: https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#generate-api-keys
     api_passphrase: String,
 }
 

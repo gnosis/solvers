@@ -23,6 +23,6 @@ api-key = "$OKX_API_KEY"
 # https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#view-the-secret-key
 api-secret-key = "$OKX_SECRET_KEY"
 
-# OKX Secret key passphrase. Instruction on how to get passhprase:
+# OKX Secret key passphrase. Instruction on how to get passphrase:
 # https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#generate-api-keys
 api-passphrase = "$OKX_PASSPHRASE"
