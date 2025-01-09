@@ -13,6 +13,7 @@ use {
 };
 
 /// A OKX API swap request parameters.
+/// Only sell orders are supported by OKX.
 ///
 /// See [API](https://www.okx.com/en-au/web3/build/docs/waas/dex-swap)
 /// documentation for more detailed information on each parameter.
@@ -24,7 +25,7 @@ pub struct SwapRequest {
     #[serde_as(as = "serde_with::DisplayFromStr")]
     pub chain_id: u64,
 
-    /// Input amount of a token to be sold set in minimal divisible units
+    /// Input amount of a token to be sold set in minimal divisible units.
     #[serde_as(as = "serialize::U256")]
     pub amount: U256,
 
@@ -37,7 +38,7 @@ pub struct SwapRequest {
     /// Limit of price slippage you are willing to accept
     pub slippage: Slippage,
 
-    /// User's wallet address
+    /// User's wallet address. Where the sell tokens will be taken from.
     pub user_wallet_address: H160,
 
     /// The fromToken address that receives the commission.
@@ -128,20 +129,25 @@ pub enum GasLevel {
 }
 
 impl SwapRequest {
-    pub fn with_domain(self, order: &dex::Order, slippage: &dex::Slippage) -> Self {
+    pub fn with_domain(self, order: &dex::Order, slippage: &dex::Slippage) -> Option<Self> {
+        // Buy orders are not supported on OKX
+        if order.side == order::Side::Buy {
+            return None;
+        };
+
         let (from_token_address, to_token_address, amount) = match order.side {
             order::Side::Sell => (order.sell.0, order.buy.0, order.amount.get()),
             order::Side::Buy => (order.buy.0, order.sell.0, order.amount.get()),
         };
 
-        Self {
+        Some(Self {
             from_token_address,
             to_token_address,
             amount,
             slippage: Slippage(slippage.as_factor().clone()),
             user_wallet_address: order.owner,
             ..self
-        }
+        })
     }
 }
 

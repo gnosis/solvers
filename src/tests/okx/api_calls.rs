@@ -45,18 +45,15 @@ async fn swap_sell() {
     assert_eq!(swap.output.token, order.buy);
 }
 
-#[ignore]
 #[tokio::test]
-// To run this test set following environment variables accordingly to your OKX
-// setup:  OKX_PROJECT_ID, OKX_API_KEY, OKX_SECRET_KEY, OKX_PASSPHRASE
 async fn swap_buy() {
     let okx_config = okx_dex::Config {
         endpoint: reqwest::Url::parse("https://www.okx.com/api/v5/dex/aggregator/swap").unwrap(),
         chain_id: crate::domain::eth::ChainId::Mainnet,
-        project_id: env::var("OKX_PROJECT_ID").unwrap(),
-        api_key: env::var("OKX_API_KEY").unwrap(),
-        api_secret_key: env::var("OKX_SECRET_KEY").unwrap(),
-        api_passphrase: env::var("OKX_PASSPHRASE").unwrap(),
+        project_id: String::new(),
+        api_key: String::new(),
+        api_secret_key: String::new(),
+        api_passphrase: String::new(),
         block_stream: None,
     };
 
@@ -76,11 +73,10 @@ async fn swap_buy() {
 
     let okx = crate::infra::dex::okx::Okx::try_new(okx_config).unwrap();
     let swap_response = okx.swap(&order, &slippage).await;
-    let swap = swap_response.unwrap();
-
-    assert_eq!(swap.input.token, order.amount().token);
-    assert_eq!(swap.input.amount, order.amount().amount);
-    assert_eq!(swap.output.token, order.sell);
+    assert!(matches!(
+        swap_response.unwrap_err(),
+        crate::infra::dex::okx::Error::OrderNotSupported
+    ));
 }
 
 #[ignore]

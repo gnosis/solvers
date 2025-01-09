@@ -1,6 +1,6 @@
 use {
     crate::{
-        domain::{dex, eth, order},
+        domain::{dex, eth},
         util,
     },
     base64::prelude::*,
@@ -85,6 +85,9 @@ impl Okx {
         })
     }
 
+    /// OKX requires signature of the request to be added as dedicated HTTP
+    /// Header. More information on generating the signature can be found in
+    /// OKX documentation: https://www.okx.com/en-au/web3/build/docs/waas/rest-authentication#signature
     fn sign_request(&self, request: &reqwest::Request, timestamp: &str) -> Result<String, Error> {
         let mut data = String::new();
         data.push_str(timestamp);
@@ -102,7 +105,7 @@ impl Okx {
         Ok(BASE64_STANDARD.encode(signature))
     }
 
-    /// Error codes: https://www.okx.com/en-au/web3/build/docs/waas/dex-error-code
+    /// OKX Error codes: https://www.okx.com/en-au/web3/build/docs/waas/dex-error-code
     fn handle_api_error(code: i64, message: &str) -> Result<(), Error> {
         match code {
             0 => Ok(()),
@@ -118,7 +121,11 @@ impl Okx {
         order: &dex::Order,
         slippage: &dex::Slippage,
     ) -> Result<dex::Swap, Error> {
-        let query = self.defaults.clone().with_domain(order, slippage);
+        let query = self
+            .defaults
+            .clone()
+            .with_domain(order, slippage)
+            .ok_or(Error::OrderNotSupported)?;
         let quote = {
             // Set up a tracing span to make debugging of API requests easier.
             // Historically, debugging API requests to external DEXs was a bit
@@ -132,11 +139,6 @@ impl Okx {
 
         Self::handle_api_error(quote.code, &quote.msg)?;
         let quote_result = quote.data.first().ok_or(Error::NotFound)?;
-
-        let max_sell_amount = match order.side {
-            order::Side::Buy => slippage.add(quote_result.router_result.from_token_amount),
-            order::Side::Sell => quote_result.router_result.from_token_amount,
-        };
 
         Ok(dex::Swap {
             call: dex::Call {
@@ -161,7 +163,7 @@ impl Okx {
             },
             allowance: dex::Allowance {
                 spender: eth::ContractAddress(quote_result.tx.to),
-                amount: dex::Amount::new(max_sell_amount),
+                amount: dex::Amount::new(quote_result.router_result.from_token_amount),
             },
             gas: eth::Gas(quote_result.tx.gas), // todo ms: increase by 50% according to docs?
         })
@@ -219,6 +221,8 @@ pub enum Error {
     SignRequestFailed,
     #[error("unable to find a quote")]
     NotFound,
+    #[error("order type is not supported")]
+    OrderNotSupported,
     #[error("quote does not specify an approval spender")]
     MissingSpender,
     #[error("rate limited")]
