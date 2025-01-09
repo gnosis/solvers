@@ -15,10 +15,12 @@ async fn swap_sell() {
     let okx_config = okx_dex::Config {
         endpoint: reqwest::Url::parse("https://www.okx.com/api/v5/dex/aggregator/swap").unwrap(),
         chain_id: crate::domain::eth::ChainId::Mainnet,
-        project_id: env::var("OKX_PROJECT_ID").unwrap(),
-        api_key: env::var("OKX_API_KEY").unwrap(),
-        api_secret_key: env::var("OKX_SECRET_KEY").unwrap(),
-        api_passphrase: env::var("OKX_PASSPHRASE").unwrap(),
+        okx_credentials: okx_dex::OkxCredentialsConfig {
+            project_id: env::var("OKX_PROJECT_ID").unwrap(),
+            api_key: env::var("OKX_API_KEY").unwrap(),
+            api_secret_key: env::var("OKX_SECRET_KEY").unwrap(),
+            api_passphrase: env::var("OKX_PASSPHRASE").unwrap(),
+        },
         block_stream: None,
     };
 
@@ -50,10 +52,12 @@ async fn swap_buy() {
     let okx_config = okx_dex::Config {
         endpoint: reqwest::Url::parse("https://www.okx.com/api/v5/dex/aggregator/swap").unwrap(),
         chain_id: crate::domain::eth::ChainId::Mainnet,
-        project_id: String::new(),
-        api_key: String::new(),
-        api_secret_key: String::new(),
-        api_passphrase: String::new(),
+        okx_credentials: okx_dex::OkxCredentialsConfig {
+            project_id: String::new(),
+            api_key: String::new(),
+            api_secret_key: String::new(),
+            api_passphrase: String::new(),
+        },
         block_stream: None,
     };
 
@@ -87,10 +91,12 @@ async fn swap_api_error() {
     let okx_config = okx_dex::Config {
         endpoint: reqwest::Url::parse("https://www.okx.com/api/v5/dex/aggregator/swap").unwrap(),
         chain_id: crate::domain::eth::ChainId::Mainnet,
-        project_id: env::var("OKX_PROJECT_ID").unwrap(),
-        api_key: env::var("OKX_API_KEY").unwrap(),
-        api_secret_key: env::var("OKX_SECRET_KEY").unwrap(),
-        api_passphrase: env::var("OKX_PASSPHRASE").unwrap(),
+        okx_credentials: okx_dex::OkxCredentialsConfig {
+            project_id: env::var("OKX_PROJECT_ID").unwrap(),
+            api_key: env::var("OKX_API_KEY").unwrap(),
+            api_secret_key: env::var("OKX_SECRET_KEY").unwrap(),
+            api_passphrase: env::var("OKX_PASSPHRASE").unwrap(),
+        },
         block_stream: None,
     };
 

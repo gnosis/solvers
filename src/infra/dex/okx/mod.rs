@@ -24,11 +24,19 @@ pub struct Okx {
 }
 
 pub struct Config {
-    /// The base URL for the 0KX swap API.
+    /// The URL for the 0KX swap API.
     pub endpoint: reqwest::Url,
 
     pub chain_id: eth::ChainId,
 
+    /// Credentials used to access OKX API.
+    pub okx_credentials: OkxCredentialsConfig,
+
+    /// The stream that yields every new block.
+    pub block_stream: Option<CurrentBlockWatcher>,
+}
+
+pub struct OkxCredentialsConfig {
     /// OKX project ID to use. Instruction on how to create project:
     /// https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#create-project
     pub project_id: String,
@@ -44,24 +52,22 @@ pub struct Config {
     /// OKX API key passphrase used to encrypt secrety key. Instruction on how
     /// to get passhprase: https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#generate-api-keys
     pub api_passphrase: String,
-
-    /// The stream that yields every new block.
-    pub block_stream: Option<CurrentBlockWatcher>,
 }
 
 impl Okx {
     pub fn try_new(config: Config) -> Result<Self, CreationError> {
         let client = {
-            let mut api_key = reqwest::header::HeaderValue::from_str(&config.api_key)?;
+            let mut api_key =
+                reqwest::header::HeaderValue::from_str(&config.okx_credentials.api_key)?;
             api_key.set_sensitive(true);
             let mut api_passphrase =
-                reqwest::header::HeaderValue::from_str(&config.api_passphrase)?;
+                reqwest::header::HeaderValue::from_str(&config.okx_credentials.api_passphrase)?;
             api_passphrase.set_sensitive(true);
 
             let mut headers = reqwest::header::HeaderMap::new();
             headers.insert(
                 "OK-ACCESS-PROJECT",
-                reqwest::header::HeaderValue::from_str(&config.project_id)?,
+                reqwest::header::HeaderValue::from_str(&config.okx_credentials.project_id)?,
             );
             headers.insert("OK-ACCESS-KEY", api_key);
             headers.insert("OK-ACCESS-PASSPHRASE", api_passphrase);
@@ -80,7 +86,7 @@ impl Okx {
         Ok(Self {
             client,
             endpoint: config.endpoint,
-            api_secret_key: config.api_secret_key,
+            api_secret_key: config.okx_credentials.api_secret_key,
             defaults,
         })
     }

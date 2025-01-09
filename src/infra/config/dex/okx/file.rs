@@ -51,12 +51,14 @@ pub async fn load(path: &Path) -> super::Config {
 
     super::Config {
         okx: okx::Config {
-            chain_id: config.chain_id,
-            project_id: config.api_project_id,
-            api_key: config.api_key,
-            api_secret_key: config.api_secret_key,
-            api_passphrase: config.api_passphrase,
             endpoint: config.endpoint,
+            chain_id: config.chain_id,
+            okx_credentials: okx::OkxCredentialsConfig {
+                project_id: config.api_project_id,
+                api_key: config.api_key,
+                api_secret_key: config.api_secret_key,
+                api_passphrase: config.api_passphrase,
+            },
             block_stream: base.block_stream.clone(),
         },
         base,
