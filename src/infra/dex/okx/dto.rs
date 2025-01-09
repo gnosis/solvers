@@ -28,7 +28,7 @@ pub struct SwapRequest {
     #[serde_as(as = "serialize::U256")]
     pub amount: U256,
 
-    /// Contract address of a token to be send
+    /// Contract address of a token to be sent
     pub from_token_address: H160,
 
     /// Contract address of a token to be received
@@ -139,6 +139,7 @@ impl SwapRequest {
             to_token_address,
             amount,
             slippage: Slippage(slippage.as_factor().clone()),
+            user_wallet_address: order.owner,
             ..self
         }
     }

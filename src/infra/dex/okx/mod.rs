@@ -45,9 +45,6 @@ pub struct Config {
     /// to get passhprase: https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#generate-api-keys
     pub api_passphrase: String,
 
-    /// The address of the settlement contract.
-    pub settlement: eth::ContractAddress,
-
     /// The stream that yields every new block.
     pub block_stream: Option<CurrentBlockWatcher>,
 }
@@ -77,7 +74,6 @@ impl Okx {
 
         let defaults = dto::SwapRequest {
             chain_id: config.chain_id as u64,
-            user_wallet_address: config.settlement.0,
             ..Default::default()
         };
 
