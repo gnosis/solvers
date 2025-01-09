@@ -148,9 +148,9 @@ impl From<paraswap::Error> for Error {
 impl From<okx::Error> for Error {
     fn from(err: okx::Error) -> Self {
         match err {
+            okx::Error::OrderNotSupported => Self::OrderNotSupported,
             okx::Error::NotFound => Self::NotFound,
             okx::Error::RateLimited => Self::RateLimited,
-            okx::Error::UnavailableForLegalReasons => Self::UnavailableForLegalReasons,
             _ => Self::Other(Box::new(err)),
         }
     }

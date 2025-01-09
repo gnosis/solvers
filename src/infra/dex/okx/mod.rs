@@ -109,13 +109,14 @@ impl Okx {
 
     /// OKX Error codes: https://www.okx.com/en-au/web3/build/docs/waas/dex-error-code
     fn handle_api_error(code: i64, message: &str) -> Result<(), Error> {
-        match code {
-            0 => Ok(()),
-            _ => Err(Error::Api {
+        Err(match code {
+            0 => return Ok(()),
+            50011 => Error::RateLimited,
+            _ => Error::Api {
                 code,
                 reason: message.to_string(),
-            }),
-        }
+            },
+        })
     }
 
     pub async fn swap(
@@ -229,18 +230,14 @@ pub enum Error {
     RequestBuildFailed,
     #[error("failed to sign the request")]
     SignRequestFailed,
+    #[error("calculating output gas failed")]
+    GasCalculationFailed,
     #[error("unable to find a quote")]
     NotFound,
     #[error("order type is not supported")]
     OrderNotSupported,
-    #[error("quote does not specify an approval spender")]
-    MissingSpender,
     #[error("rate limited")]
     RateLimited,
-    #[error("sell token or buy token are banned from trading")]
-    UnavailableForLegalReasons,
-    #[error("calculating output gas failed")]
-    GasCalculationFailed,
     #[error("api error code {code}: {reason}")]
     Api { code: i64, reason: String },
     #[error(transparent)]
@@ -248,35 +245,28 @@ pub enum Error {
 }
 
 impl From<util::http::RoundtripError<dto::Error>> for Error {
+    // This function is only called when swap response body is not a valid json.
+    // OKX is returning valid json for 4xx HTTP codes, and the errors are handled in
+    // dedicated funcion: handle_api_error().
     fn from(err: util::http::RoundtripError<dto::Error>) -> Self {
         match err {
             util::http::RoundtripError::Http(err) => {
                 if let util::http::Error::Status(code, _) = err {
                     match code {
                         StatusCode::TOO_MANY_REQUESTS => Self::RateLimited,
-                        StatusCode::UNAVAILABLE_FOR_LEGAL_REASONS => {
-                            Self::UnavailableForLegalReasons
-                        }
                         _ => Self::Http(err),
                     }
                 } else {
                     Self::Http(err)
                 }
             }
-            util::http::RoundtripError::Api(err) => {
-                // Unfortunately, AFAIK these codes aren't documented anywhere. These
-                // based on empirical observations of what the API has returned in the
-                // past.
-                match err.code {
-                    100 => Self::NotFound,
-                    429 => Self::RateLimited,
-                    451 => Self::UnavailableForLegalReasons,
-                    _ => Self::Api {
-                        code: err.code,
-                        reason: err.reason,
-                    },
-                }
-            }
+            util::http::RoundtripError::Api(err) => match err.code {
+                429 => Self::RateLimited,
+                _ => Self::Api {
+                    code: err.code,
+                    reason: err.reason,
+                },
+            },
         }
     }
 }
