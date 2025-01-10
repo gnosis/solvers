@@ -90,7 +90,11 @@ impl Okx {
     /// OKX requires signature of the request to be added as dedicated HTTP
     /// Header. More information on generating the signature can be found in
     /// OKX documentation: https://www.okx.com/en-au/web3/build/docs/waas/rest-authentication#signature
-    fn sign_request(&self, request: &reqwest::Request, timestamp: &str) -> Result<String, Error> {
+    fn generate_signature(
+        &self,
+        request: &reqwest::Request,
+        timestamp: &str,
+    ) -> Result<String, Error> {
         let mut data = String::new();
         data.push_str(timestamp);
         data.push_str(request.method().as_str());
@@ -98,8 +102,7 @@ impl Okx {
         data.push('?');
         data.push_str(request.url().query().ok_or(Error::SignRequestFailed)?);
 
-        type HmacSha256 = Hmac<Sha256>;
-        let mut mac = HmacSha256::new_from_slice(self.api_secret_key.as_bytes())
+        let mut mac = Hmac::<Sha256>::new_from_slice(self.api_secret_key.as_bytes())
             .map_err(|_| Error::SignRequestFailed)?;
         mac.update(data.as_bytes());
         let signature = mac.finalize().into_bytes();
@@ -150,7 +153,7 @@ impl Okx {
         let gas = quote_result
             .tx
             .gas
-            .checked_add(quote_result.tx.gas >> 1)
+            .checked_add(quote_result.tx.gas / 2)
             .ok_or(Error::GasCalculationFailed)?;
 
         Ok(dex::Swap {
@@ -197,7 +200,7 @@ impl Okx {
         let timestamp = &chrono::Utc::now()
             .to_rfc3339_opts(SecondsFormat::Millis, true)
             .to_string();
-        let signature = self.sign_request(&request, timestamp)?;
+        let signature = self.generate_signature(&request, timestamp)?;
 
         request_builder = request_builder.header(
             "OK-ACCESS-TIMESTAMP",
