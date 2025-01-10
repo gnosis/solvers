@@ -38,6 +38,7 @@ macro_rules! roundtrip {
         $crate::util::http::roundtrip!(<_, _>; $request)
     };
 }
+
 pub(crate) use roundtrip;
 
 #[doc(hidden)]

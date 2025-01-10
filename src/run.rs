@@ -61,6 +61,15 @@ async fn run_with(args: cli::Args, bind: Option<oneshot::Sender<SocketAddr>>) {
                 config.base.clone(),
             ))
         }
+        cli::Command::Okx { config } => {
+            let config = config::dex::okx::file::load(&config).await;
+            Solver::Dex(solver::Dex::new(
+                dex::Dex::Okx(
+                    dex::okx::Okx::try_new(config.okx).expect("invalid OKX configuration"),
+                ),
+                config.base.clone(),
+            ))
+        }
     };
 
     crate::api::Api {

@@ -50,4 +50,9 @@ pub enum Command {
         #[clap(long, env)]
         config: PathBuf,
     },
+    /// solve individual orders using OKX API
+    Okx {
+        #[clap(long, env)]
+        config: PathBuf,
+    },
 }
