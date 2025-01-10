@@ -30,24 +30,23 @@ struct Config {
 #[derive(Deserialize)]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 struct OkxCredentialsConfig {
-    /// OKX Project ID. Instruction on how to create project:
+    /// OKX Project ID. Instruction on how to create a project:
     /// https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#create-project
     api_project_id: String,
 
-    /// OKX API Key. Instruction on how to generate API key:
+    /// OKX API Key. Instruction on how to generate an API key:
     /// https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#generate-api-keys
     api_key: String,
 
-    /// OKX Secret key used for signing request. Instruction on how to get
+    /// OKX Secret key used for signing request. Instruction on how to get a
     /// security token: https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#view-the-secret-key
     api_secret_key: String,
 
-    /// OKX Secret key passphrase. Instruction on how
-    /// to get passphrase: https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#generate-api-keys
+    /// OKX Secret key passphrase. Instruction on how to get a passphrase:
+    /// https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#generate-api-keys
     api_passphrase: String,
 }
 
-// Implementing Into<> is enough as opposite conversion will never be used.
 #[allow(clippy::from_over_into)]
 impl Into<okx::OkxCredentialsConfig> for OkxCredentialsConfig {
     fn into(self) -> okx::OkxCredentialsConfig {

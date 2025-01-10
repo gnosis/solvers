@@ -9,8 +9,8 @@ use {
 
 #[ignore]
 #[tokio::test]
-// To run this test set following environment variables accordingly to your OKX
-// setup:  OKX_PROJECT_ID, OKX_API_KEY, OKX_SECRET_KEY, OKX_PASSPHRASE
+// To run this test, set the following environment variables accordingly to your
+// OKX setup: OKX_PROJECT_ID, OKX_API_KEY, OKX_SECRET_KEY, OKX_PASSPHRASE
 async fn swap_sell() {
     let okx_config = okx_dex::Config {
         endpoint: reqwest::Url::parse("https://www.okx.com/api/v5/dex/aggregator/swap").unwrap(),
@@ -85,8 +85,8 @@ async fn swap_buy() {
 
 #[ignore]
 #[tokio::test]
-// To run this test set following environment variables accordingly to your OKX
-// setup:  OKX_PROJECT_ID, OKX_API_KEY, OKX_SECRET_KEY, OKX_PASSPHRASE
+// To run this test, set the following environment variables accordingly to your
+// OKX setup: OKX_PROJECT_ID, OKX_API_KEY, OKX_SECRET_KEY, OKX_PASSPHRASE
 async fn swap_api_error() {
     let okx_config = okx_dex::Config {
         endpoint: reqwest::Url::parse("https://www.okx.com/api/v5/dex/aggregator/swap").unwrap(),
@@ -125,8 +125,8 @@ async fn swap_api_error() {
 
 #[ignore]
 #[tokio::test]
-// To run this test set following environment variables accordingly to your OKX
-// setup:  OKX_PROJECT_ID, OKX_API_KEY, OKX_SECRET_KEY, OKX_PASSPHRASE
+// To run this test, set the following environment variables accordingly to your
+// OKX setup: OKX_PROJECT_ID, OKX_API_KEY, OKX_SECRET_KEY, OKX_PASSPHRASE
 async fn swap_sell_insufficient_liquidity() {
     let okx_config = okx_dex::Config {
         endpoint: reqwest::Url::parse("https://www.okx.com/api/v5/dex/aggregator/swap").unwrap(),
