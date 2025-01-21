@@ -155,6 +155,7 @@ impl Dex {
             self.dex
                 .swap(dex_order, &slippage, tokens)
                 .await
+                .inspect(|_| infra::metrics::request_sent())
                 .map_err(dex_err_handler)
         };
         self.rate_limiter
