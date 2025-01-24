@@ -64,31 +64,14 @@ impl SwapRequest {
     }
 }
 
-/// A OKX API swap response - generic wrapper for success and failure cases.
+/// A OKX API swap response.
 ///
 /// See [API](https://www.okx.com/en-au/web3/build/docs/waas/dex-swap)
 /// documentation for more detailed information on each parameter.
 #[serde_as]
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct SwapResponse {
-    /// Error code, 0 for success, otherwise one of:
-    /// [error codes](https://www.okx.com/en-au/web3/build/docs/waas/dex-error-code)
-    #[serde_as(as = "serde_with::DisplayFromStr")]
-    pub code: i64,
-
-    /// Response data.
-    pub data: Vec<SwapResponseInner>,
-
-    /// Error code text message.
-    pub msg: String,
-}
-
-/// A OKX API swap response.
-#[serde_as]
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct SwapResponseInner {
     /// Quote execution path.
     pub router_result: SwapResponseRouterResult,
 
@@ -101,7 +84,7 @@ pub struct SwapResponseInner {
 /// For all possible fields look into the documentation:
 /// [API](https://www.okx.com/en-au/web3/build/docs/waas/dex-swap)
 #[serde_as]
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct SwapResponseRouterResult {
     /// The information of a token to be sold.
@@ -124,7 +107,7 @@ pub struct SwapResponseRouterResult {
 /// For all possible fields look into the documentation:
 /// [API](https://www.okx.com/en-au/web3/build/docs/waas/dex-swap)
 #[serde_as]
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct SwapResponseFromToToken {
     /// Address of the token smart contract.
@@ -136,7 +119,7 @@ pub struct SwapResponseFromToToken {
 /// For all possible fields look into the documentation:
 /// [API](https://www.okx.com/en-au/web3/build/docs/waas/dex-swap)
 #[serde_as]
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct SwapResponseTx {
     /// Estimated amount of the gas limit.
@@ -149,6 +132,66 @@ pub struct SwapResponseTx {
     /// Call data.
     #[serde_as(as = "serialize::Hex")]
     pub data: Vec<u8>,
+}
+
+/// A OKX API approve transaction request.
+///
+/// See [API](https://www.okx.com/en-au/web3/build/docs/waas/dex-approve-transaction)
+/// documentation for more detailed information on each parameter.
+#[serde_as]
+#[derive(Clone, Default, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ApproveTransactionRequest {
+    /// Chain ID
+    #[serde_as(as = "serde_with::DisplayFromStr")]
+    pub chain_id: u64,
+
+    /// Contract address of a token to be permitted.
+    pub token_contract_address: H160,
+
+    /// The amount of token that needs to be permitted (in minimal divisible
+    /// units).
+    #[serde_as(as = "serialize::U256")]
+    pub approve_amount: U256,
+}
+
+impl ApproveTransactionRequest {
+    pub fn with_domain(chain_id: u64, order: &dex::Order) -> Self {
+        Self {
+            chain_id,
+            token_contract_address: order.sell.0,
+            approve_amount: order.amount.get(),
+        }
+    }
+}
+
+/// A OKX API approve transaction response.
+/// Deserializing fields which are only used by the implementation.
+/// See [API](https://www.okx.com/en-au/web3/build/docs/waas/dex-approve-transaction)
+/// documentation for more detailed information on each parameter.
+#[serde_as]
+#[derive(Clone, Default, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ApproveTransactionResponse {
+    /// The contract address of OKX DEX approve.
+    pub dex_contract_address: H160,
+}
+
+/// A OKX API response - generic wrapper for success and failure cases.
+#[serde_as]
+#[derive(Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct Response<T> {
+    /// Error code, 0 for success, otherwise one of:
+    /// [error codes](https://www.okx.com/en-au/web3/build/docs/waas/dex-error-code)
+    #[serde_as(as = "serde_with::DisplayFromStr")]
+    pub code: i64,
+
+    /// Response data.
+    pub data: Vec<T>,
+
+    /// Error code text message.
+    pub msg: String,
 }
 
 #[derive(Deserialize)]
