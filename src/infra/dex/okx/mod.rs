@@ -8,13 +8,23 @@ use {
     ethrpc::block_stream::CurrentBlockWatcher,
     hmac::{Hmac, Mac},
     hyper::{header::HeaderValue, StatusCode},
+    lru::LruCache,
     serde::{de::DeserializeOwned, Serialize},
     sha2::Sha256,
-    std::sync::atomic::{self, AtomicU64},
+    std::{
+        num::NonZeroUsize,
+        sync::{
+            atomic::{self, AtomicU64},
+            Arc,
+        },
+    },
+    tokio::sync::RwLock,
     tracing::Instrument,
 };
 
 mod dto;
+
+const DEFAULT_DEX_APPROVED_ADDRESSES_CACHE_SIZE: usize = 1000;
 
 /// Bindings to the OKX swap API.
 pub struct Okx {
@@ -22,6 +32,8 @@ pub struct Okx {
     endpoint: reqwest::Url,
     api_secret_key: String,
     defaults: dto::SwapRequest,
+    /// Cache to store map of Token Address to contract address of OKX DEX approve. 
+    dex_approved_addresses: Arc<RwLock<LruCache<eth::TokenAddress, eth::ContractAddress>>>,
 }
 
 pub struct Config {
@@ -85,6 +97,9 @@ impl Okx {
             endpoint: config.endpoint,
             api_secret_key: config.okx_credentials.api_secret_key,
             defaults,
+            dex_approved_addresses: Arc::new(RwLock::new(LruCache::new(
+                NonZeroUsize::new(DEFAULT_DEX_APPROVED_ADDRESSES_CACHE_SIZE).unwrap(),
+            ))),
         })
     }
 
@@ -98,9 +113,7 @@ impl Okx {
             .clone()
             .with_domain(order, slippage)
             .ok_or(Error::OrderNotSupported)?;
-        let query_approve_transaction =
-            dto::ApproveTransactionRequest::with_domain(self.defaults.chain_id, order);
-        let (quote_result, approve_result) = {
+        let (quote_result, dex_contract_address) = {
             // Set up a tracing span to make debugging of API requests easier.
             // Historically, debugging API requests to external DEXs was a bit
             // of a headache.
@@ -112,12 +125,36 @@ impl Okx {
                 .instrument(tracing::trace_span!("quote", id = %id))
                 .await?;
 
-            let approve_transaction: dto::ApproveTransactionResponse = self
-                .send("approve-transaction", &query_approve_transaction)
-                .instrument(tracing::trace_span!("approve_transaction", id = %id))
-                .await?;
+            let existing_dex_contract_address = self
+                .dex_approved_addresses
+                .write()
+                .await
+                .get(&order.sell)
+                .cloned();
 
-            (quote, approve_transaction)
+            let dex_contract_address = match existing_dex_contract_address {
+                Some(value) => value,
+                None => {
+                    let query_approve_transaction =
+                        dto::ApproveTransactionRequest::with_domain(self.defaults.chain_id, order);
+
+                    let approve_transaction: dto::ApproveTransactionResponse = self
+                        .send("approve-transaction", &query_approve_transaction)
+                        .instrument(tracing::trace_span!("approve_transaction", id = %id))
+                        .await?;
+
+                    let address = eth::ContractAddress(approve_transaction.dex_contract_address);
+
+                    self.dex_approved_addresses
+                        .write()
+                        .await
+                        .put(order.sell, address);
+
+                    address
+                }
+            };
+
+            (quote, dex_contract_address)
         };
 
         // Increasing returned gas by 50% according to the documentation:
@@ -150,7 +187,7 @@ impl Okx {
                 amount: quote_result.router_result.to_token_amount,
             },
             allowance: dex::Allowance {
-                spender: eth::ContractAddress(approve_result.dex_contract_address),
+                spender: dex_contract_address,
                 amount: dex::Amount::new(quote_result.router_result.from_token_amount),
             },
             gas: eth::Gas(gas),
