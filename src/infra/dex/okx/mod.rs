@@ -33,7 +33,7 @@ pub struct Okx {
     api_secret_key: String,
     defaults: dto::SwapRequest,
     /// Cache to store map of Token Address to contract address of OKX DEX
-    /// approve. 
+    /// approve.
     dex_approved_addresses: Arc<RwLock<LruCache<eth::TokenAddress, eth::ContractAddress>>>,
 }
 
