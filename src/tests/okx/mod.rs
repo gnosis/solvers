@@ -12,7 +12,7 @@ pub fn config(solver_addr: &SocketAddr) -> tests::Config {
 node-url = 'http://localhost:8545'
 [dex]
 chain-id = '1'
-endpoint = 'http://{solver_addr}'
+endpoint = 'http://{solver_addr}/'
 api-project-id = '1'
 api-key = '1234'
 api-secret-key = '1234567890123456'
