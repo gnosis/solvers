@@ -24,7 +24,7 @@ use {
 
 mod dto;
 
-const DEFAULT_DEX_APPROVED_ADDRESSES_CACHE_SIZE: usize = 1000;
+const DEFAULT_DEX_APPROVED_ADDRESSES_CACHE_SIZE: usize = 100;
 
 /// Bindings to the OKX swap API.
 pub struct Okx {
