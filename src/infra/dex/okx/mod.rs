@@ -16,9 +16,9 @@ use {
         sync::{
             atomic::{self, AtomicU64},
             Arc,
+            Mutex,
         },
     },
-    tokio::sync::RwLock,
     tracing::Instrument,
 };
 
@@ -34,7 +34,7 @@ pub struct Okx {
     defaults: dto::SwapRequest,
     /// Cache to store map of Token Address to contract address of OKX DEX
     /// approve.
-    dex_approved_addresses: Arc<RwLock<LruCache<eth::TokenAddress, eth::ContractAddress>>>,
+    dex_approved_addresses: Arc<Mutex<LruCache<eth::TokenAddress, eth::ContractAddress>>>,
 }
 
 pub struct Config {
@@ -98,7 +98,7 @@ impl Okx {
             endpoint: config.endpoint,
             api_secret_key: config.okx_credentials.api_secret_key,
             defaults,
-            dex_approved_addresses: Arc::new(RwLock::new(LruCache::new(
+            dex_approved_addresses: Arc::new(Mutex::new(LruCache::new(
                 NonZeroUsize::new(DEFAULT_DEX_APPROVED_ADDRESSES_CACHE_SIZE).unwrap(),
             ))),
         })
@@ -128,8 +128,8 @@ impl Okx {
 
             let existing_dex_contract_address = self
                 .dex_approved_addresses
-                .write()
-                .await
+                .lock()
+                .unwrap()
                 .get(&order.sell)
                 .cloned();
 
@@ -147,8 +147,8 @@ impl Okx {
                     let address = eth::ContractAddress(approve_transaction.dex_contract_address);
 
                     self.dex_approved_addresses
-                        .write()
-                        .await
+                        .lock()
+                        .unwrap()
                         .put(order.sell, address);
 
                     address
