@@ -122,7 +122,7 @@ impl Okx {
             let id = ID.fetch_add(1, atomic::Ordering::Relaxed);
 
             let quote: dto::SwapResponse = self
-                .send("swap", &query)
+                .send_get_request("swap", &query)
                 .instrument(tracing::trace_span!("quote", id = %id))
                 .await?;
 
@@ -140,7 +140,7 @@ impl Okx {
                         dto::ApproveTransactionRequest::with_domain(self.defaults.chain_id, order);
 
                     let approve_transaction: dto::ApproveTransactionResponse = self
-                        .send("approve-transaction", &query_approve_transaction)
+                        .send_get_request("approve-transaction", &query_approve_transaction)
                         .instrument(tracing::trace_span!("approve_transaction", id = %id))
                         .await?;
 
@@ -232,7 +232,7 @@ impl Okx {
         })
     }
 
-    async fn send<T, U>(&self, endpoint: &str, query: &T) -> Result<U, Error>
+    async fn send_get_request<T, U>(&self, endpoint: &str, query: &T) -> Result<U, Error>
     where
         T: Serialize,
         U: DeserializeOwned + Clone,
