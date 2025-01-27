@@ -44,6 +44,7 @@ tower = "0.4"
 tower-http = { version = "0.4", features = ["trace"] }
 tracing = "0.1"
 web3 = "0.19"
+lru = "0.12.5"
 
 contracts = { git = "https://github.com/cowprotocol/services.git", tag = "v2.294.0", package = "contracts" }
 ethrpc = { git = "https://github.com/cowprotocol/services.git", tag = "v2.294.0", package = "ethrpc" }

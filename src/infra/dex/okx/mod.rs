@@ -8,12 +8,23 @@ use {
     ethrpc::block_stream::CurrentBlockWatcher,
     hmac::{Hmac, Mac},
     hyper::{header::HeaderValue, StatusCode},
+    lru::LruCache,
+    serde::{de::DeserializeOwned, Serialize},
     sha2::Sha256,
-    std::sync::atomic::{self, AtomicU64},
+    std::{
+        num::NonZeroUsize,
+        sync::{
+            atomic::{self, AtomicU64},
+            Arc,
+            Mutex,
+        },
+    },
     tracing::Instrument,
 };
 
 mod dto;
+
+const DEFAULT_DEX_APPROVED_ADDRESSES_CACHE_SIZE: usize = 100;
 
 /// Bindings to the OKX swap API.
 pub struct Okx {
@@ -21,6 +32,9 @@ pub struct Okx {
     endpoint: reqwest::Url,
     api_secret_key: String,
     defaults: dto::SwapRequest,
+    /// Cache to store map of Token Address to contract address of OKX DEX
+    /// approve.
+    dex_approved_addresses: Arc<Mutex<LruCache<eth::TokenAddress, eth::ContractAddress>>>,
 }
 
 pub struct Config {
@@ -84,6 +98,100 @@ impl Okx {
             endpoint: config.endpoint,
             api_secret_key: config.okx_credentials.api_secret_key,
             defaults,
+            dex_approved_addresses: Arc::new(Mutex::new(LruCache::new(
+                NonZeroUsize::new(DEFAULT_DEX_APPROVED_ADDRESSES_CACHE_SIZE).unwrap(),
+            ))),
+        })
+    }
+
+    pub async fn swap(
+        &self,
+        order: &dex::Order,
+        slippage: &dex::Slippage,
+    ) -> Result<dex::Swap, Error> {
+        let query = self
+            .defaults
+            .clone()
+            .with_domain(order, slippage)
+            .ok_or(Error::OrderNotSupported)?;
+        let (quote_result, dex_contract_address) = {
+            // Set up a tracing span to make debugging of API requests easier.
+            // Historically, debugging API requests to external DEXs was a bit
+            // of a headache.
+            static ID: AtomicU64 = AtomicU64::new(0);
+            let id = ID.fetch_add(1, atomic::Ordering::Relaxed);
+
+            let quote: dto::SwapResponse = self
+                .send_get_request("swap", &query)
+                .instrument(tracing::trace_span!("quote", id = %id))
+                .await?;
+
+            let existing_dex_contract_address = self
+                .dex_approved_addresses
+                .lock()
+                .unwrap()
+                .get(&order.sell)
+                .cloned();
+
+            let dex_contract_address = match existing_dex_contract_address {
+                Some(value) => value,
+                None => {
+                    let query_approve_transaction =
+                        dto::ApproveTransactionRequest::with_domain(self.defaults.chain_id, order);
+
+                    let approve_transaction: dto::ApproveTransactionResponse = self
+                        .send_get_request("approve-transaction", &query_approve_transaction)
+                        .instrument(tracing::trace_span!("approve_transaction", id = %id))
+                        .await?;
+
+                    let address = eth::ContractAddress(approve_transaction.dex_contract_address);
+
+                    self.dex_approved_addresses
+                        .lock()
+                        .unwrap()
+                        .put(order.sell, address);
+
+                    address
+                }
+            };
+
+            (quote, dex_contract_address)
+        };
+
+        // Increasing returned gas by 50% according to the documentation:
+        // https://www.okx.com/en-au/web3/build/docs/waas/dex-swap (gas field description in Response param)
+        let gas = quote_result
+            .tx
+            .gas
+            .checked_add(quote_result.tx.gas / 2)
+            .ok_or(Error::GasCalculationFailed)?;
+
+        Ok(dex::Swap {
+            call: dex::Call {
+                to: eth::ContractAddress(quote_result.tx.to),
+                calldata: quote_result.tx.data.clone(),
+            },
+            input: eth::Asset {
+                token: quote_result
+                    .router_result
+                    .from_token
+                    .token_contract_address
+                    .into(),
+                amount: quote_result.router_result.from_token_amount,
+            },
+            output: eth::Asset {
+                token: quote_result
+                    .router_result
+                    .to_token
+                    .token_contract_address
+                    .into(),
+                amount: quote_result.router_result.to_token_amount,
+            },
+            allowance: dex::Allowance {
+                spender: dex_contract_address,
+                amount: dex::Amount::new(quote_result.router_result.from_token_amount),
+            },
+            gas: eth::Gas(gas),
         })
     }
 
@@ -124,71 +232,19 @@ impl Okx {
         })
     }
 
-    pub async fn swap(
-        &self,
-        order: &dex::Order,
-        slippage: &dex::Slippage,
-    ) -> Result<dex::Swap, Error> {
-        let query = self
-            .defaults
-            .clone()
-            .with_domain(order, slippage)
-            .ok_or(Error::OrderNotSupported)?;
-        let quote = {
-            // Set up a tracing span to make debugging of API requests easier.
-            // Historically, debugging API requests to external DEXs was a bit
-            // of a headache.
-            static ID: AtomicU64 = AtomicU64::new(0);
-            let id = ID.fetch_add(1, atomic::Ordering::Relaxed);
-            self.quote(&query)
-                .instrument(tracing::trace_span!("quote", id = %id))
-                .await?
-        };
-
-        Self::handle_api_error(quote.code, &quote.msg)?;
-        let quote_result = quote.data.first().ok_or(Error::NotFound)?;
-
-        // Increasing returned gas by 50% according to the documentation:
-        // https://www.okx.com/en-au/web3/build/docs/waas/dex-swap (gas field description in Response param)
-        let gas = quote_result
-            .tx
-            .gas
-            .checked_add(quote_result.tx.gas / 2)
-            .ok_or(Error::GasCalculationFailed)?;
-
-        Ok(dex::Swap {
-            call: dex::Call {
-                to: eth::ContractAddress(quote_result.tx.to),
-                calldata: quote_result.tx.data.clone(),
-            },
-            input: eth::Asset {
-                token: quote_result
-                    .router_result
-                    .from_token
-                    .token_contract_address
-                    .into(),
-                amount: quote_result.router_result.from_token_amount,
-            },
-            output: eth::Asset {
-                token: quote_result
-                    .router_result
-                    .to_token
-                    .token_contract_address
-                    .into(),
-                amount: quote_result.router_result.to_token_amount,
-            },
-            allowance: dex::Allowance {
-                spender: eth::ContractAddress(quote_result.tx.to),
-                amount: dex::Amount::new(quote_result.router_result.from_token_amount),
-            },
-            gas: eth::Gas(gas),
-        })
-    }
-
-    async fn quote(&self, query: &dto::SwapRequest) -> Result<dto::SwapResponse, Error> {
+    async fn send_get_request<T, U>(&self, endpoint: &str, query: &T) -> Result<U, Error>
+    where
+        T: Serialize,
+        U: DeserializeOwned + Clone,
+    {
         let mut request_builder = self
             .client
-            .request(reqwest::Method::GET, self.endpoint.clone())
+            .request(
+                reqwest::Method::GET,
+                self.endpoint
+                    .join(endpoint)
+                    .map_err(|_| Error::RequestBuildFailed)?,
+            )
             .query(query);
 
         let request = request_builder
@@ -212,12 +268,14 @@ impl Okx {
             HeaderValue::from_str(&signature).map_err(|_| Error::RequestBuildFailed)?,
         );
 
-        let quote = util::http::roundtrip!(
-            <dto::SwapResponse, dto::Error>;
+        let response = util::http::roundtrip!(
+            <dto::Response<U>, dto::Error>;
             request_builder
         )
         .await?;
-        Ok(quote)
+
+        Self::handle_api_error(response.code, &response.msg)?;
+        response.data.first().cloned().ok_or(Error::NotFound)
     }
 }
 

@@ -13,7 +13,7 @@ use {
 // OKX setup: OKX_PROJECT_ID, OKX_API_KEY, OKX_SECRET_KEY, OKX_PASSPHRASE
 async fn swap_sell() {
     let okx_config = okx_dex::Config {
-        endpoint: reqwest::Url::parse("https://www.okx.com/api/v5/dex/aggregator/swap").unwrap(),
+        endpoint: reqwest::Url::parse("https://www.okx.com/api/v5/dex/aggregator/").unwrap(),
         chain_id: crate::domain::eth::ChainId::Mainnet,
         okx_credentials: okx_dex::OkxCredentialsConfig {
             project_id: env::var("OKX_PROJECT_ID").unwrap(),
@@ -25,15 +25,15 @@ async fn swap_sell() {
     };
 
     let order = Order {
-        sell: TokenAddress::from(H160::from_slice(
-            &hex::decode("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee").unwrap(),
-        )),
-        buy: TokenAddress::from(H160::from_slice(
-            &hex::decode("a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48").unwrap(),
-        )),
+        sell: TokenAddress::from(
+            H160::from_str("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee").unwrap(),
+        ),
+        buy: TokenAddress::from(
+            H160::from_str("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48").unwrap(),
+        ),
         side: crate::domain::order::Side::Sell,
         amount: Amount::new(U256::from_dec_str("10000000000000").unwrap()),
-        owner: H160::from_slice(&hex::decode("6f9ffea7370310cd0f890dfde5e0e061059dcfb8").unwrap()),
+        owner: H160::from_str("0x6f9ffea7370310cd0f890dfde5e0e061059dcfb8").unwrap(),
     };
 
     let slippage = Slippage::one_percent();
@@ -45,6 +45,10 @@ async fn swap_sell() {
     assert_eq!(swap.input.token, order.amount().token);
     assert_eq!(swap.input.amount, order.amount().amount);
     assert_eq!(swap.output.token, order.buy);
+    assert_eq!(
+        swap.allowance.spender,
+        ContractAddress(H160::from_str("0x40aA958dd87FC8305b97f2BA922CDdCa374bcD7f").unwrap())
+    );
 }
 
 #[tokio::test]
@@ -62,15 +66,15 @@ async fn swap_buy() {
     };
 
     let order = Order {
-        buy: TokenAddress::from(H160::from_slice(
-            &hex::decode("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee").unwrap(),
-        )),
-        sell: TokenAddress::from(H160::from_slice(
-            &hex::decode("a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48").unwrap(),
-        )),
+        buy: TokenAddress::from(
+            H160::from_str("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee").unwrap(),
+        ),
+        sell: TokenAddress::from(
+            H160::from_str("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48").unwrap(),
+        ),
         side: crate::domain::order::Side::Buy,
         amount: Amount::new(U256::from_dec_str("10000000000000").unwrap()),
-        owner: H160::from_slice(&hex::decode("6f9ffea7370310cd0f890dfde5e0e061059dcfb8").unwrap()),
+        owner: H160::from_str("0x6f9ffea7370310cd0f890dfde5e0e061059dcfb8").unwrap(),
     };
 
     let slippage = Slippage::one_percent();
@@ -101,15 +105,15 @@ async fn swap_api_error() {
     };
 
     let order = Order {
-        sell: TokenAddress::from(H160::from_slice(
-            &hex::decode("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee").unwrap(),
-        )),
-        buy: TokenAddress::from(H160::from_slice(
-            &hex::decode("a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48").unwrap(),
-        )),
+        sell: TokenAddress::from(
+            H160::from_str("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee").unwrap(),
+        ),
+        buy: TokenAddress::from(
+            H160::from_str("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48").unwrap(),
+        ),
         side: crate::domain::order::Side::Sell,
         amount: Amount::new(U256::from_str("0").unwrap()),
-        owner: H160::from_slice(&hex::decode("6f9ffea7370310cd0f890dfde5e0e061059dcfb8").unwrap()),
+        owner: H160::from_str("6f9ffea7370310cd0f890dfde5e0e061059dcfb8").unwrap(),
     };
 
     let slippage = Slippage::one_percent();
@@ -141,15 +145,15 @@ async fn swap_sell_insufficient_liquidity() {
     };
 
     let order = Order {
-        sell: TokenAddress::from(H160::from_slice(
-            &hex::decode("C8CD2BE653759aed7B0996315821AAe71e1FEAdF").unwrap(),
-        )),
-        buy: TokenAddress::from(H160::from_slice(
-            &hex::decode("a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48").unwrap(),
-        )),
+        sell: TokenAddress::from(
+            H160::from_str("0xC8CD2BE653759aed7B0996315821AAe71e1FEAdF").unwrap(),
+        ),
+        buy: TokenAddress::from(
+            H160::from_str("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48").unwrap(),
+        ),
         side: crate::domain::order::Side::Sell,
         amount: Amount::new(U256::from_dec_str("10000000000000").unwrap()),
-        owner: H160::from_slice(&hex::decode("6f9ffea7370310cd0f890dfde5e0e061059dcfb8").unwrap()),
+        owner: H160::from_str("6f9ffea7370310cd0f890dfde5e0e061059dcfb8").unwrap(),
     };
 
     let slippage = Slippage::one_percent();

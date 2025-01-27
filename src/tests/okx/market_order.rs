@@ -11,7 +11,7 @@ async fn sell() {
     let api = mock::http::setup(vec![
         mock::http::Expectation::Get {
             path: mock::http::Path::exact(
-                "?chainId=1\
+                "swap?chainId=1\
                 &amount=1000000000000000000\
                 &fromTokenAddress=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2\
                 &toTokenAddress=0xe41d2489571d322189246dafa5ebde1f4699f498\
@@ -123,7 +123,21 @@ async fn sell() {
                 ],
                 "msg":""
              }),
-        }
+        },
+        mock::http::Expectation::Get {
+         path: mock::http::Path::exact(
+             "approve-transaction?chainId=1\
+             &tokenContractAddress=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2\
+             &approveAmount=1000000000000000000"
+         ),
+         res: json!(
+           {
+             "code":"0",
+             "data":[{"data":"0x095ea7b300000000000000000000000040aa958dd87fc8305b97f2ba922cddca374bcd7f000000000000000000000000000000000000000000000000000009184e72a000","dexContractAddress":"0x40aA958dd87FC8305b97f2BA922CDdCa374bcD7f","gasLimit":"70000","gasPrice":"7424402761"}],
+             "msg":""
+           }
+         )
+      },
     ])
     .await;
 
@@ -193,7 +207,7 @@ async fn sell() {
                        "allowances":[
                           {
                              "amount":"1000000000000000000",
-                             "spender":"0x7d0ccaa3fac1e5a943c5168b6ced828691b46b36",
+                             "spender":"0x40aa958dd87fc8305b97f2ba922cddca374bcd7f",
                              "token":"0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
                           }
                        ],
