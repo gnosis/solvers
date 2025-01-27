@@ -268,14 +268,14 @@ impl Okx {
             HeaderValue::from_str(&signature).map_err(|_| Error::RequestBuildFailed)?,
         );
 
-        let quote = util::http::roundtrip!(
+        let response = util::http::roundtrip!(
             <dto::Response<U>, dto::Error>;
             request_builder
         )
         .await?;
 
-        Self::handle_api_error(quote.code, &quote.msg)?;
-        quote.data.first().cloned().ok_or(Error::NotFound)
+        Self::handle_api_error(response.code, &response.msg)?;
+        response.data.first().cloned().ok_or(Error::NotFound)
     }
 }
 
