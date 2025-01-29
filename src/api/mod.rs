@@ -30,7 +30,7 @@ impl Api {
             .layer(DefaultBodyLimit::disable())
             .with_state(Arc::new(self.solver));
 
-        let make_svc = observe::make_service_with_task_local_storage!(app);
+        let make_svc = observe::make_service_with_request_tracing!(app);
 
         let server = axum::Server::bind(&self.addr).serve(make_svc);
         if let Some(bind) = bind {
