@@ -3,7 +3,6 @@ use {
         domain::{dex, eth, order},
         util,
     },
-    ethereum_types::H160,
     ethrpc::block_stream::CurrentBlockWatcher,
     hyper::StatusCode,
     std::sync::atomic::{self, AtomicU64},
@@ -20,6 +19,9 @@ pub struct ZeroEx {
 }
 
 pub struct Config {
+    /// The chain ID identifying the network to use for all requests.
+    pub chain_id: eth::ChainId,
+
     /// The base URL for the 0x swap API.
     pub endpoint: reqwest::Url,
 
@@ -30,20 +32,8 @@ pub struct Config {
     /// The list of excluded liquidity sources. Liquidity from these sources
     /// will not be considered when solving.
     pub excluded_sources: Vec<String>,
-
-    /// The affiliate address to use.
-    ///
-    /// This is used by 0x for tracking and analytic purposes.
-    pub affiliate: H160,
-
     /// The address of the settlement contract.
     pub settlement: eth::ContractAddress,
-
-    /// Wether or not to enable RFQ-T liquidity.
-    pub enable_rfqt: bool,
-
-    /// Whether or not to enable slippage protection.
-    pub enable_slippage_protection: bool,
 
     /// The stream that yields every new block.
     pub block_stream: Option<CurrentBlockWatcher>,
@@ -64,12 +54,9 @@ impl ZeroEx {
             super::Client::new(client, config.block_stream)
         };
         let defaults = dto::Query {
-            taker_address: Some(config.settlement.0),
+            taker: config.settlement.0,
             excluded_sources: config.excluded_sources,
-            skip_validation: true,
-            intent_on_filling: config.enable_rfqt,
-            affiliate_address: config.affiliate,
-            enable_slippage_protection: config.enable_slippage_protection,
+            chain_id: config.chain_id.value().as_u64(),
             ..Default::default()
         };
 
@@ -85,7 +72,11 @@ impl ZeroEx {
         order: &dex::Order,
         slippage: &dex::Slippage,
     ) -> Result<dex::Swap, Error> {
-        let query = self.defaults.clone().with_domain(order, slippage);
+        let query = self
+            .defaults
+            .clone()
+            .with_domain(order, slippage)
+            .ok_or(Error::OrderNotSupported)?;
         let quote = {
             // Set up a tracing span to make debugging of API requests easier.
             // Historically, debugging API requests to external DEXs was a bit
@@ -148,6 +139,8 @@ pub enum CreationError {
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+    #[error("order type is not supported")]
+    OrderNotSupported,
     #[error("unable to find a quote")]
     NotFound,
     #[error("quote does not specify an approval spender")]

@@ -6,7 +6,6 @@ use {
         domain::{dex, order},
         util::serialize,
     },
-    bigdecimal::BigDecimal,
     ethereum_types::{H160, U256},
     serde::{Deserialize, Serialize},
     serde_with::serde_as,
@@ -20,6 +19,9 @@ use {
 #[derive(Clone, Default, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Query {
+    /// The chain ID of the network the query is prepared for.
+    pub chain_id: u64,
+
     /// Contract address of a token to sell.
     pub sell_token: H160,
 
@@ -27,18 +29,12 @@ pub struct Query {
     pub buy_token: H160,
 
     /// Amount of a token to sell, set in atoms.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde_as(as = "Option<serialize::U256>")]
-    pub sell_amount: Option<U256>,
-
-    /// Amount of a token to sell, set in atoms.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde_as(as = "Option<serialize::U256>")]
-    pub buy_amount: Option<U256>,
+    #[serde_as(as = "serialize::U256")]
+    pub sell_amount: U256,
 
     /// Limit of price slippage you are willing to accept.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub slippage_percentage: Option<Slippage>,
+    pub slippage_bps: Option<Slippage>,
 
     /// The target gas price for the swap transaction.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -46,52 +42,32 @@ pub struct Query {
     pub gas_price: Option<U256>,
 
     /// The address which will fill the quote.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub taker_address: Option<H160>,
+    pub taker: H160,
 
     /// List of sources to exclude.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     #[serde_as(as = "serialize::CommaSeparated")]
     pub excluded_sources: Vec<String>,
-
-    /// Whether or not to skip quote validation.
-    pub skip_validation: bool,
-
-    /// Wether or not you intend to actually fill the quote. Setting this flag
-    /// enables RFQ-T liquidity.
-    ///
-    /// <https://docs.0x.org/market-makers/docs/introduction>
-    pub intent_on_filling: bool,
-
-    /// The affiliate address to use for tracking and analytics purposes.
-    pub affiliate_address: H160,
-
-    /// Requests trade routes which aim to protect against high slippage and MEV
-    /// attacks.
-    pub enable_slippage_protection: bool,
 }
 
 /// A 0x slippage amount.
 #[derive(Clone, Debug, Serialize)]
-pub struct Slippage(BigDecimal);
+pub struct Slippage(u16);
 
 impl Query {
-    pub fn with_domain(self, order: &dex::Order, slippage: &dex::Slippage) -> Self {
-        let (sell_amount, buy_amount) = match order.side {
-            order::Side::Buy => (None, Some(order.amount.get())),
-            order::Side::Sell => (Some(order.amount.get()), None),
+    pub fn with_domain(self, order: &dex::Order, slippage: &dex::Slippage) -> Option<Self> {
+        // Buy orders are not supported on 0x
+        if order.side == order::Side::Buy {
+            return None;
         };
 
-        Self {
+        Some(Self {
             sell_token: order.sell.0,
             buy_token: order.buy.0,
-            sell_amount,
-            buy_amount,
-            // Note that the API calls this "slippagePercentage", but it is **not** a
-            // percentage but a factor.
-            slippage_percentage: Some(Slippage(slippage.as_factor().clone())),
+            sell_amount: order.amount.get(),
+            slippage_bps: slippage.as_bps().map(Slippage),
             ..self
-        }
+        })
     }
 }
 
