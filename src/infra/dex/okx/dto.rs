@@ -40,6 +40,9 @@ pub struct SwapRequest {
 
     /// User's wallet address. Where the sell tokens will be taken from.
     pub user_wallet_address: H160,
+
+    /// Where the buy tokens get sent to.
+    pub swap_receiver_address: H160,
 }
 
 /// A OKX slippage amount.
@@ -58,7 +61,6 @@ impl SwapRequest {
             to_token_address: order.buy.0,
             amount: order.amount.get(),
             slippage: Slippage(slippage.as_factor().clone()),
-            user_wallet_address: order.owner,
             ..self
         })
     }

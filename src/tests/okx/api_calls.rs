@@ -21,6 +21,9 @@ async fn swap_sell() {
             api_secret_key: env::var("OKX_SECRET_KEY").unwrap(),
             api_passphrase: env::var("OKX_PASSPHRASE").unwrap(),
         },
+        settlement_contract: Address::from(
+            H160::from_str("0x9008d19f58aabd9ed0d60971565aa8510560ab41").unwrap(),
+        ),
         block_stream: None,
     };
 
@@ -62,6 +65,9 @@ async fn swap_buy() {
             api_secret_key: String::new(),
             api_passphrase: String::new(),
         },
+        settlement_contract: Address::from(
+            H160::from_str("0x9008d19f58aabd9ed0d60971565aa8510560ab41").unwrap(),
+        ),
         block_stream: None,
     };
 
@@ -101,6 +107,9 @@ async fn swap_api_error() {
             api_secret_key: env::var("OKX_SECRET_KEY").unwrap(),
             api_passphrase: env::var("OKX_PASSPHRASE").unwrap(),
         },
+        settlement_contract: Address::from(
+            H160::from_str("0x9008d19f58aabd9ed0d60971565aa8510560ab41").unwrap(),
+        ),
         block_stream: None,
     };
 
@@ -141,6 +150,9 @@ async fn swap_sell_insufficient_liquidity() {
             api_secret_key: env::var("OKX_SECRET_KEY").unwrap(),
             api_passphrase: env::var("OKX_PASSPHRASE").unwrap(),
         },
+        settlement_contract: Address::from(
+            H160::from_str("0x9008d19f58aabd9ed0d60971565aa8510560ab41").unwrap(),
+        ),
         block_stream: None,
     };
 
