@@ -76,6 +76,25 @@ impl Query {
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Quote {
+    /// The amount of sell token (in atoms) that would be sold in this swap.
+    #[serde_as(as = "serialize::U256")]
+    pub sell_amount: U256,
+
+    /// The amount of buy token (in atoms) that would be bought in this swap.
+    #[serde_as(as = "serialize::U256")]
+    pub buy_amount: U256,
+
+    /// The transaction details for the swap.
+    pub transaction: QuoteTransaction,
+
+    /// Issues containing the allowance data
+    pub issues: Issues,
+}
+
+#[serde_as]
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct QuoteTransaction {
     /// The address of the contract to call in order to execute the swap.
     pub to: H160,
 
@@ -85,38 +104,27 @@ pub struct Quote {
 
     /// The estimate for the amount of gas that will actually be used in the
     /// transaction.
-    #[serde_as(as = "serialize::U256")]
-    pub estimated_gas: U256,
-
-    /// The amount of sell token (in atoms) that would be sold in this swap.
-    #[serde_as(as = "serialize::U256")]
-    pub sell_amount: U256,
-
-    /// The amount of buy token (in atoms) that would be bought in this swap.
-    #[serde_as(as = "serialize::U256")]
-    pub buy_amount: U256,
-
-    /// The target contract address for which the user needs to have an
-    /// allowance in order to be able to complete the swap.
-    #[serde(with = "address_none_when_zero")]
-    pub allowance_target: Option<H160>,
+    #[serde_as(as = "Option<serialize::U256>")]
+    pub gas: Option<U256>,
 }
 
-/// The 0x API uses the 0-address to indicate that no approvals are needed for a
-/// swap. Use a custom deserializer to turn that into `None`.
-mod address_none_when_zero {
-    use {
-        ethereum_types::H160,
-        serde::{Deserialize, Deserializer},
-    };
+#[serde_as]
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Issues {
+    /// Allowance data for the sell token.
+    pub allowance: Option<Allowance>,
+}
 
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<H160>, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let value = H160::deserialize(deserializer)?;
-        Ok((!value.is_zero()).then_some(value))
-    }
+#[serde_as]
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Allowance {
+    /// The taker's current allowance of the spender
+    #[serde_as(as = "serialize::U256")]
+    pub actual: U256,
+    /// The address to set the allowance on
+    pub spender: H160,
 }
 
 #[derive(Deserialize)]

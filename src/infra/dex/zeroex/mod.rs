@@ -1,6 +1,6 @@
 use {
     crate::{
-        domain::{dex, eth, order},
+        domain::{dex, eth},
         util,
     },
     ethrpc::block_stream::CurrentBlockWatcher,
@@ -88,15 +88,10 @@ impl ZeroEx {
                 .await?
         };
 
-        let max_sell_amount = match order.side {
-            order::Side::Buy => slippage.add(quote.sell_amount),
-            order::Side::Sell => quote.sell_amount,
-        };
-
         Ok(dex::Swap {
             call: dex::Call {
-                to: eth::ContractAddress(quote.to),
-                calldata: quote.data,
+                to: eth::ContractAddress(quote.transaction.to),
+                calldata: quote.transaction.data,
             },
             input: eth::Asset {
                 token: order.sell,
@@ -108,12 +103,14 @@ impl ZeroEx {
             },
             allowance: dex::Allowance {
                 spender: quote
-                    .allowance_target
+                    .issues
+                    .allowance
+                    .map(|a| a.spender)
                     .ok_or(Error::MissingSpender)
                     .map(eth::ContractAddress)?,
-                amount: dex::Amount::new(max_sell_amount),
+                amount: dex::Amount::new(quote.sell_amount),
             },
-            gas: eth::Gas(quote.estimated_gas),
+            gas: eth::Gas(quote.transaction.gas.ok_or(Error::MissingGasEstimate)?),
         })
     }
 
@@ -141,6 +138,8 @@ pub enum CreationError {
 pub enum Error {
     #[error("order type is not supported")]
     OrderNotSupported,
+    #[error("gas estimate not available")]
+    MissingGasEstimate,
     #[error("unable to find a quote")]
     NotFound,
     #[error("quote does not specify an approval spender")]
