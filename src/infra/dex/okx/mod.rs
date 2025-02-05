@@ -5,6 +5,7 @@ use {
     },
     base64::prelude::*,
     chrono::SecondsFormat,
+    dto::SwapResponse,
     ethrpc::block_stream::CurrentBlockWatcher,
     hmac::{Hmac, Mac},
     hyper::{header::HeaderValue, StatusCode},
@@ -109,39 +110,86 @@ impl Okx {
         order: &dex::Order,
         slippage: &dex::Slippage,
     ) -> Result<dex::Swap, Error> {
+        // Set up a tracing span to make debugging of API requests easier.
+        // Historically, debugging API requests to external DEXs was a bit
+        // of a headache.
+        static ID: AtomicU64 = AtomicU64::new(0);
+        let id = ID.fetch_add(1, atomic::Ordering::Relaxed);
+
+        let (swap_result, dex_contract_address) = self
+            .handle_api_requests(order, slippage)
+            .instrument(tracing::trace_span!("swap", id = %id))
+            .await?;
+
+        // Increasing returned gas by 50% according to the documentation:
+        // https://www.okx.com/en-au/web3/build/docs/waas/dex-swap (gas field description in Response param)
+        let gas = swap_result
+            .tx
+            .gas
+            .checked_add(swap_result.tx.gas / 2)
+            .ok_or(Error::GasCalculationFailed)?;
+
+        Ok(dex::Swap {
+            call: dex::Call {
+                to: eth::ContractAddress(swap_result.tx.to),
+                calldata: swap_result.tx.data.clone(),
+            },
+            input: eth::Asset {
+                token: swap_result
+                    .router_result
+                    .from_token
+                    .token_contract_address
+                    .into(),
+                amount: swap_result.router_result.from_token_amount,
+            },
+            output: eth::Asset {
+                token: swap_result
+                    .router_result
+                    .to_token
+                    .token_contract_address
+                    .into(),
+                amount: swap_result.router_result.to_token_amount,
+            },
+            allowance: dex::Allowance {
+                spender: dex_contract_address,
+                amount: dex::Amount::new(swap_result.router_result.from_token_amount),
+            },
+            gas: eth::Gas(gas),
+        })
+    }
+
+    async fn handle_api_requests(
+        &self,
+        order: &dex::Order,
+        slippage: &dex::Slippage,
+    ) -> Result<(dto::SwapResponse, eth::ContractAddress), Error> {
         let query = self
             .defaults
             .clone()
             .with_domain(order, slippage)
             .ok_or(Error::OrderNotSupported)?;
-        let (quote_result, dex_contract_address) = {
-            // Set up a tracing span to make debugging of API requests easier.
-            // Historically, debugging API requests to external DEXs was a bit
-            // of a headache.
-            static ID: AtomicU64 = AtomicU64::new(0);
-            let id = ID.fetch_add(1, atomic::Ordering::Relaxed);
 
-            let quote: dto::SwapResponse = self
-                .send_get_request("swap", &query)
-                .instrument(tracing::trace_span!("quote", id = %id))
-                .await?;
+        let swap_request_future = async move {
+            self.send_get_request::<_, SwapResponse>("swap", &query)
+                .await
+        };
 
-            let existing_dex_contract_address = self
-                .dex_approved_addresses
-                .lock()
-                .unwrap()
-                .get(&order.sell)
-                .cloned();
+        let existing_dex_contract_address = self
+            .dex_approved_addresses
+            .lock()
+            .unwrap()
+            .get(&order.sell)
+            .cloned();
 
-            let dex_contract_address = match existing_dex_contract_address {
-                Some(value) => value,
+        let approve_request_future = async {
+            match existing_dex_contract_address {
+                Some(value) => Ok(value),
                 None => {
                     let query_approve_transaction =
                         dto::ApproveTransactionRequest::with_domain(self.defaults.chain_id, order);
 
                     let approve_transaction: dto::ApproveTransactionResponse = self
                         .send_get_request("approve-transaction", &query_approve_transaction)
-                        .instrument(tracing::trace_span!("approve_transaction", id = %id))
                         .await?;
 
                     let address = eth::ContractAddress(approve_transaction.dex_contract_address);
@@ -151,48 +199,12 @@ impl Okx {
                         .unwrap()
                         .put(order.sell, address);
 
-                    address
+                    Ok(address)
                 }
-            };
-
-            (quote, dex_contract_address)
+            }
         };
 
-        // Increasing returned gas by 50% according to the documentation:
-        // https://www.okx.com/en-au/web3/build/docs/waas/dex-swap (gas field description in Response param)
-        let gas = quote_result
-            .tx
-            .gas
-            .checked_add(quote_result.tx.gas / 2)
-            .ok_or(Error::GasCalculationFailed)?;
-
-        Ok(dex::Swap {
-            call: dex::Call {
-                to: eth::ContractAddress(quote_result.tx.to),
-                calldata: quote_result.tx.data.clone(),
-            },
-            input: eth::Asset {
-                token: quote_result
-                    .router_result
-                    .from_token
-                    .token_contract_address
-                    .into(),
-                amount: quote_result.router_result.from_token_amount,
-            },
-            output: eth::Asset {
-                token: quote_result
-                    .router_result
-                    .to_token
-                    .token_contract_address
-                    .into(),
-                amount: quote_result.router_result.to_token_amount,
-            },
-            allowance: dex::Allowance {
-                spender: dex_contract_address,
-                amount: dex::Amount::new(quote_result.router_result.from_token_amount),
-            },
-            gas: eth::Gas(gas),
-        })
+        tokio::try_join!(swap_request_future, approve_request_future)
     }
 
     /// OKX requires signature of the request to be added as dedicated HTTP
