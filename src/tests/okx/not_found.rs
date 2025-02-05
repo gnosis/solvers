@@ -13,7 +13,8 @@ async fn sell() {
             "swap?chainId=1&amount=1000000000000000000&\
              fromTokenAddress=0xc8cd2be653759aed7b0996315821aae71e1feadf&\
              toTokenAddress=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&slippage=0.01&\
-             userWalletAddress=0x2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a",
+             userWalletAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41&\
+             swapReceiverAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41"
         ),
         res: json!({"code":"82000","data":[],"msg":"Insufficient liquidity."}),
     }])
@@ -86,7 +87,8 @@ async fn sell_no_approve_transaction() {
                 &fromTokenAddress=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2\
                 &toTokenAddress=0xe41d2489571d322189246dafa5ebde1f4699f498\
                 &slippage=0.01\
-                &userWalletAddress=0x2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a"
+                &userWalletAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41\
+                &swapReceiverAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41"
             ),
             res: json!(
               {
