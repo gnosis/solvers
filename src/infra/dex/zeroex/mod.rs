@@ -47,6 +47,10 @@ impl ZeroEx {
 
             let mut headers = reqwest::header::HeaderMap::new();
             headers.insert("0x-api-key", key);
+            headers.insert(
+                "0x-version",
+                reqwest::header::HeaderValue::from_static("v2"),
+            );
 
             let client = reqwest::Client::builder()
                 .default_headers(headers)
