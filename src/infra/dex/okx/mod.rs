@@ -25,7 +25,7 @@ pub struct Okx {
     endpoint: reqwest::Url,
     api_secret_key: String,
     defaults: dto::SwapRequest,
-    /// Cache which stores a map of Token Address to contract address of 
+    /// Cache which stores a map of Token Address to contract address of
     /// OKX DEX approve contract.
     dex_approved_addresses: Cache<eth::TokenAddress, eth::ContractAddress>,
 }
