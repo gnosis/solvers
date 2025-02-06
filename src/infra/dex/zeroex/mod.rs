@@ -111,19 +111,16 @@ impl ZeroEx {
                 token: order.buy,
                 amount: quote.buy_amount,
             },
-            allowance: quote
-                .issues
-                .allowance
-                .map(|allowance| dex::Allowance {
-                    spender: eth::ContractAddress(allowance.spender),
-                    amount: dex::Amount::new(quote.sell_amount),
-                })
-                .unwrap_or(dex::Allowance {
-                    spender: eth::ContractAddress(
+            allowance: dex::Allowance {
+                spender: quote
+                    .issues
+                    .allowance
+                    .map(|allowance| eth::ContractAddress(allowance.spender))
+                    .unwrap_or(eth::ContractAddress(
                         ethereum_types::H160::from_str(DEFAULT_PERMIT2_ALLOWANCE_TARGET).unwrap(),
-                    ),
-                    amount: dex::Amount::new(0.into()),
-                }),
+                    )),
+                amount: dex::Amount::new(quote.sell_amount),
+            },
             gas: eth::Gas(quote.transaction.gas.ok_or(Error::MissingGasEstimate)?),
         })
     }
