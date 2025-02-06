@@ -6,6 +6,7 @@ use {
     base64::prelude::*,
     chrono::SecondsFormat,
     ethrpc::block_stream::CurrentBlockWatcher,
+    futures::TryFutureExt,
     hmac::{Hmac, Mac},
     hyper::{header::HeaderValue, StatusCode},
     moka::future::Cache,
@@ -170,29 +171,25 @@ impl Okx {
             self.send_get_request("swap", &swap_request).await
         };
 
-        let approve_request_future = async {
-            match self.dex_approved_addresses.get(&order.sell).await {
-                Some(value) => Ok(value),
-                None => {
-                    let approve_transaction_request =
-                        dto::ApproveTransactionRequest::with_domain(self.defaults.chain_id, order);
+        let approve_transaction_request_future = async {
+            let approve_transaction_request =
+                dto::ApproveTransactionRequest::with_domain(self.defaults.chain_id, order);
 
-                    let approve_transaction: dto::ApproveTransactionResponse = self
-                        .send_get_request("approve-transaction", &approve_transaction_request)
-                        .await?;
+            let approve_transaction: dto::ApproveTransactionResponse = self
+                .send_get_request("approve-transaction", &approve_transaction_request)
+                .await?;
 
-                    let address = eth::ContractAddress(approve_transaction.dex_contract_address);
-
-                    self.dex_approved_addresses
-                        .insert(order.sell, address)
-                        .await;
-
-                    Ok(address)
-                }
-            }
+            Ok(eth::ContractAddress(
+                approve_transaction.dex_contract_address,
+            ))
         };
 
-        tokio::try_join!(swap_request_future, approve_request_future)
+        tokio::try_join!(
+            swap_request_future,
+            self.dex_approved_addresses
+                .try_get_with(order.sell, approve_transaction_request_future)
+                .map_err(|_: std::sync::Arc<Error>| Error::CacheEvaluationFailed(order.sell))
+        )
     }
 
     /// OKX requires signature of the request to be added as dedicated HTTP
@@ -301,6 +298,8 @@ pub enum Error {
     OrderNotSupported,
     #[error("rate limited")]
     RateLimited,
+    #[error("error occured during cache key init future execution for token address: {0:?}")]
+    CacheEvaluationFailed(eth::TokenAddress),
     #[error("api error code {code}: {reason}")]
     Api { code: i64, reason: String },
     #[error(transparent)]
