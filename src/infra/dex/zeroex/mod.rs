@@ -22,7 +22,7 @@ pub struct ZeroEx {
 }
 
 /// https://0x.org/docs/introduction/0x-cheat-sheet#0x-contracts
-const DEFAULT_PERMIT2_ALLOWANCE_TARGET: &str = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
+const DEFAULT_ALLOWANCE_TARGET: &str = "0x0000000000001fF3684f28c67538d4D072C22734";
 
 pub struct Config {
     /// The chain ID identifying the network to use for all requests.
@@ -117,7 +117,7 @@ impl ZeroEx {
                     .allowance
                     .map(|allowance| eth::ContractAddress(allowance.spender))
                     .unwrap_or(eth::ContractAddress(
-                        ethereum_types::H160::from_str(DEFAULT_PERMIT2_ALLOWANCE_TARGET).unwrap(),
+                        ethereum_types::H160::from_str(DEFAULT_ALLOWANCE_TARGET).unwrap(),
                     )),
                 amount: dex::Amount::new(quote.sell_amount),
             },

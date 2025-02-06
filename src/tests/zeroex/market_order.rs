@@ -10,7 +10,7 @@ use {
 async fn sell() {
     let api = mock::http::setup(vec![mock::http::Expectation::Get {
         path: mock::http::Path::exact(
-            "swap/permit2/quote?chainId=1&buyToken=0xe41d2489571d322189246dafa5ebde1f4699f498&\
+            "swap/allowance-holder/quote?chainId=1&buyToken=0xe41d2489571d322189246dafa5ebde1f4699f498&\
              sellToken=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&sellAmount=1000000000000000000&\
              taker=0x9008d19f58aabd9ed0d60971565aa8510560ab41&slippageBps=100",
         ),

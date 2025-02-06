@@ -9,7 +9,7 @@ use {
 async fn test() {
     let api = mock::http::setup(vec![mock::http::Expectation::Get {
         path: mock::http::Path::exact(
-            "swap/permit2/quote?chainId=1&buyToken=0xe41d2489571d322189246dafa5ebde1f4699f498&\
+            "swap/allowance-holder/quote?chainId=1&buyToken=0xe41d2489571d322189246dafa5ebde1f4699f498&\
              sellToken=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&sellAmount=1000000000000000000&\
              taker=0x9008d19f58aabd9ed0d60971565aa8510560ab41&slippageBps=1000&\
              excludedSources=Uniswap_V2%2CBalancer_V2",
@@ -48,7 +48,7 @@ node-url = 'http://localhost:8545'
 relative-slippage = '0.1'
 [dex]
 chain-id = '1'
-endpoint = 'http://{}/swap/permit2/'
+endpoint = 'http://{}/swap/allowance-holder/'
 api-key = 'abc123'
 excluded-sources = ['Uniswap_V2', 'Balancer_V2']
         ",
