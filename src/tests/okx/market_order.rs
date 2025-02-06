@@ -108,7 +108,7 @@ async fn sell() {
                       },
                       "tx":{
                          "data":"0x0d5f0e3b00000000000000000001a0cf2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a0000000000000000000000000000000000000000000000000de0b6b3a764000000000000000000000000000000000000000000000000015fdc8278903f7f31c10000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000100000000000000000000000014424eeecbff345b38187d0b8b749e56faa68539",
-                         "from":"0x2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a",
+                         "from":"0x9008d19f58aabd9ed0d60971565aa8510560ab41",
                          "gas":"202500",
                          "gasPrice":"6756286873",
                          "maxPriorityFeePerGas":"1000000000",
@@ -320,7 +320,8 @@ async fn sell_twice() {
                 "swap?chainId=1&amount=1000000000000000000&\
                  fromTokenAddress=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&\
                  toTokenAddress=0xe41d2489571d322189246dafa5ebde1f4699f498&slippage=0.01&\
-                 userWalletAddress=0x2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a",
+                 userWalletAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41&\
+                 swapReceiverAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41",
             ),
             res: json!(
              {
@@ -411,7 +412,7 @@ async fn sell_twice() {
                      },
                      "tx":{
                         "data":"0x0d5f0e3b00000000000000000001a0cf2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a0000000000000000000000000000000000000000000000000de0b6b3a764000000000000000000000000000000000000000000000000015fdc8278903f7f31c10000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000100000000000000000000000014424eeecbff345b38187d0b8b749e56faa68539",
-                        "from":"0x2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a",
+                        "from":"0x9008d19f58aabd9ed0d60971565aa8510560ab41",
                         "gas":"202500",
                         "gasPrice":"6756286873",
                         "maxPriorityFeePerGas":"1000000000",
