@@ -156,8 +156,6 @@ pub enum Error {
     MissingGasEstimate,
     #[error("unable to find a quote")]
     NotFound,
-    #[error("quote does not specify an approval spender")]
-    MissingSpender,
     #[error("rate limited")]
     RateLimited,
     #[error("sell token or buy token are banned from trading")]
