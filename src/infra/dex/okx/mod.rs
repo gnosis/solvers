@@ -116,43 +116,43 @@ impl Okx {
         static ID: AtomicU64 = AtomicU64::new(0);
         let id = ID.fetch_add(1, atomic::Ordering::Relaxed);
 
-        let (swap_result, dex_contract_address) = self
+        let (swap_response, dex_contract_address) = self
             .handle_api_requests(order, slippage)
             .instrument(tracing::trace_span!("swap", id = %id))
             .await?;
 
         // Increasing returned gas by 50% according to the documentation:
         // https://www.okx.com/en-au/web3/build/docs/waas/dex-swap (gas field description in Response param)
-        let gas = swap_result
+        let gas = swap_response
             .tx
             .gas
-            .checked_add(swap_result.tx.gas / 2)
+            .checked_add(swap_response.tx.gas / 2)
             .ok_or(Error::GasCalculationFailed)?;
 
         Ok(dex::Swap {
             call: dex::Call {
-                to: eth::ContractAddress(swap_result.tx.to),
-                calldata: swap_result.tx.data.clone(),
+                to: eth::ContractAddress(swap_response.tx.to),
+                calldata: swap_response.tx.data.clone(),
             },
             input: eth::Asset {
-                token: swap_result
+                token: swap_response
                     .router_result
                     .from_token
                     .token_contract_address
                     .into(),
-                amount: swap_result.router_result.from_token_amount,
+                amount: swap_response.router_result.from_token_amount,
             },
             output: eth::Asset {
-                token: swap_result
+                token: swap_response
                     .router_result
                     .to_token
                     .token_contract_address
                     .into(),
-                amount: swap_result.router_result.to_token_amount,
+                amount: swap_response.router_result.to_token_amount,
             },
             allowance: dex::Allowance {
                 spender: dex_contract_address,
-                amount: dex::Amount::new(swap_result.router_result.from_token_amount),
+                amount: dex::Amount::new(swap_response.router_result.from_token_amount),
             },
             gas: eth::Gas(gas),
         })
@@ -163,14 +163,14 @@ impl Okx {
         order: &dex::Order,
         slippage: &dex::Slippage,
     ) -> Result<(dto::SwapResponse, eth::ContractAddress), Error> {
-        let query = self
+        let swap_request = self
             .defaults
             .clone()
             .with_domain(order, slippage)
             .ok_or(Error::OrderNotSupported)?;
 
         let swap_request_future = async move {
-            self.send_get_request::<_, SwapResponse>("swap", &query)
+            self.send_get_request::<_, SwapResponse>("swap", &swap_request)
                 .await
         };
 
