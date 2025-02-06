@@ -5,7 +5,10 @@ use {
     },
     ethrpc::block_stream::CurrentBlockWatcher,
     hyper::StatusCode,
-    std::sync::atomic::{self, AtomicU64},
+    std::{
+        str::FromStr,
+        sync::atomic::{self, AtomicU64},
+    },
     tracing::Instrument,
 };
 
@@ -17,6 +20,9 @@ pub struct ZeroEx {
     endpoint: reqwest::Url,
     defaults: dto::Query,
 }
+
+/// https://0x.org/docs/introduction/0x-cheat-sheet#0x-contracts
+const DEFAULT_PERMIT2_ALLOWANCE_TARGET: &str = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
 
 pub struct Config {
     /// The chain ID identifying the network to use for all requests.
@@ -105,15 +111,19 @@ impl ZeroEx {
                 token: order.buy,
                 amount: quote.buy_amount,
             },
-            allowance: dex::Allowance {
-                spender: quote
-                    .issues
-                    .allowance
-                    .map(|a| a.spender)
-                    .ok_or(Error::MissingSpender)
-                    .map(eth::ContractAddress)?,
-                amount: dex::Amount::new(quote.sell_amount),
-            },
+            allowance: quote
+                .issues
+                .allowance
+                .map(|allowance| dex::Allowance {
+                    spender: eth::ContractAddress(allowance.spender),
+                    amount: dex::Amount::new(quote.sell_amount),
+                })
+                .unwrap_or(dex::Allowance {
+                    spender: eth::ContractAddress(
+                        ethereum_types::H160::from_str(DEFAULT_PERMIT2_ALLOWANCE_TARGET).unwrap(),
+                    ),
+                    amount: dex::Amount::new(0.into()),
+                }),
             gas: eth::Gas(quote.transaction.gas.ok_or(Error::MissingGasEstimate)?),
         })
     }
