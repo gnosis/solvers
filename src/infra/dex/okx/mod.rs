@@ -192,7 +192,9 @@ impl Okx {
             swap_request_future,
             self.dex_approved_addresses
                 .try_get_with(order.sell, approve_transaction_request_future)
-                .map_err(|_: std::sync::Arc<Error>| Error::CacheEvaluationFailed(order.sell))
+                .map_err(
+                    |_: std::sync::Arc<Error>| Error::ApproveTransactionRequestFailed(order.sell)
+                )
         )
     }
 
@@ -302,8 +304,8 @@ pub enum Error {
     OrderNotSupported,
     #[error("rate limited")]
     RateLimited,
-    #[error("error occured during cache key init future execution for token address: {0:?}")]
-    CacheEvaluationFailed(eth::TokenAddress),
+    #[error("failed to get approve-transaction response for token address: {0:?}")]
+    ApproveTransactionRequestFailed(eth::TokenAddress),
     #[error("api error code {code}: {reason}")]
     Api { code: i64, reason: String },
     #[error(transparent)]
