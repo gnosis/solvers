@@ -36,6 +36,8 @@ pub struct Config {
 
     pub chain_id: eth::ChainId,
 
+    pub settlement_contract: eth::Address,
+
     /// Credentials used to access OKX API.
     pub okx_credentials: OkxCredentialsConfig,
 
@@ -83,6 +85,10 @@ impl Okx {
 
         let defaults = dto::SwapRequest {
             chain_id: config.chain_id as u64,
+            // Funds first get moved in and out of the settlement contract so we have use
+            // that address here to generate the correct calldata.
+            swap_receiver_address: config.settlement_contract.into(),
+            user_wallet_address: config.settlement_contract.into(),
             ..Default::default()
         };
 
