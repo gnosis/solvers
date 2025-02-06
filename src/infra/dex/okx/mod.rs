@@ -156,6 +156,10 @@ impl Okx {
     }
 
     /// Invokes /swap and /approve-transaction API requests in parallel.
+    ///
+    /// Returns a tuple of the /swap API response and dex contract address for
+    /// the sell token obtained from /approve-transaction API endpoint or an
+    /// error.
     async fn handle_api_requests(
         &self,
         order: &dex::Order,
