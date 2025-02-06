@@ -22,15 +22,18 @@ pub struct Query {
     /// The chain ID of the network the query is prepared for.
     pub chain_id: u64,
 
-    /// Contract address of a token to sell.
-    pub sell_token: H160,
-
     /// Contract address of a token to buy.
     pub buy_token: H160,
+
+    /// Contract address of a token to sell.
+    pub sell_token: H160,
 
     /// Amount of a token to sell, set in atoms.
     #[serde_as(as = "serialize::U256")]
     pub sell_amount: U256,
+
+    /// The address which will fill the quote.
+    pub taker: H160,
 
     /// Limit of price slippage you are willing to accept.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -40,9 +43,6 @@ pub struct Query {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde_as(as = "Option<serialize::U256>")]
     pub gas_price: Option<U256>,
-
-    /// The address which will fill the quote.
-    pub taker: H160,
 
     /// List of sources to exclude.
     #[serde(skip_serializing_if = "Vec::is_empty")]
