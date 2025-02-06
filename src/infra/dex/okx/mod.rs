@@ -5,27 +5,19 @@ use {
     },
     base64::prelude::*,
     chrono::SecondsFormat,
-    dto::SwapResponse,
     ethrpc::block_stream::CurrentBlockWatcher,
     hmac::{Hmac, Mac},
     hyper::{header::HeaderValue, StatusCode},
-    lru::LruCache,
+    moka::future::Cache,
     serde::{de::DeserializeOwned, Serialize},
     sha2::Sha256,
-    std::{
-        num::NonZeroUsize,
-        sync::{
-            atomic::{self, AtomicU64},
-            Arc,
-            Mutex,
-        },
-    },
+    std::sync::atomic::{self, AtomicU64},
     tracing::Instrument,
 };
 
 mod dto;
 
-const DEFAULT_DEX_APPROVED_ADDRESSES_CACHE_SIZE: usize = 100;
+const DEFAULT_DEX_APPROVED_ADDRESSES_CACHE_SIZE: u64 = 100;
 
 /// Bindings to the OKX swap API.
 pub struct Okx {
@@ -33,9 +25,9 @@ pub struct Okx {
     endpoint: reqwest::Url,
     api_secret_key: String,
     defaults: dto::SwapRequest,
-    /// Cache to store map of Token Address to contract address of OKX DEX
-    /// approve.
-    dex_approved_addresses: Arc<Mutex<LruCache<eth::TokenAddress, eth::ContractAddress>>>,
+    /// Cache which stores a map of Token Address to contract address of 
+    /// OKX DEX approve contract.
+    dex_approved_addresses: Cache<eth::TokenAddress, eth::ContractAddress>,
 }
 
 pub struct Config {
@@ -99,9 +91,7 @@ impl Okx {
             endpoint: config.endpoint,
             api_secret_key: config.okx_credentials.api_secret_key,
             defaults,
-            dex_approved_addresses: Arc::new(Mutex::new(LruCache::new(
-                NonZeroUsize::new(DEFAULT_DEX_APPROVED_ADDRESSES_CACHE_SIZE).unwrap(),
-            ))),
+            dex_approved_addresses: Cache::new(DEFAULT_DEX_APPROVED_ADDRESSES_CACHE_SIZE),
         })
     }
 
@@ -158,46 +148,38 @@ impl Okx {
         })
     }
 
+    /// Invokes /swap and /approve-transaction API requests in parallel.
     async fn handle_api_requests(
         &self,
         order: &dex::Order,
         slippage: &dex::Slippage,
     ) -> Result<(dto::SwapResponse, eth::ContractAddress), Error> {
-        let swap_request = self
-            .defaults
-            .clone()
-            .with_domain(order, slippage)
-            .ok_or(Error::OrderNotSupported)?;
+        let swap_request_future = async {
+            let swap_request = self
+                .defaults
+                .clone()
+                .with_domain(order, slippage)
+                .ok_or(Error::OrderNotSupported)?;
 
-        let swap_request_future = async move {
-            self.send_get_request::<_, SwapResponse>("swap", &swap_request)
-                .await
+            self.send_get_request("swap", &swap_request).await
         };
 
-        let existing_dex_contract_address = self
-            .dex_approved_addresses
-            .lock()
-            .unwrap()
-            .get(&order.sell)
-            .cloned();
-
         let approve_request_future = async {
-            match existing_dex_contract_address {
+            match self.dex_approved_addresses.get(&order.sell).await {
                 Some(value) => Ok(value),
                 None => {
-                    let query_approve_transaction =
+                    let approve_transaction_request =
                         dto::ApproveTransactionRequest::with_domain(self.defaults.chain_id, order);
 
                     let approve_transaction: dto::ApproveTransactionResponse = self
-                        .send_get_request("approve-transaction", &query_approve_transaction)
+                        .send_get_request("approve-transaction", &approve_transaction_request)
                         .await?;
 
                     let address = eth::ContractAddress(approve_transaction.dex_contract_address);
 
                     self.dex_approved_addresses
-                        .lock()
-                        .unwrap()
-                        .put(order.sell, address);
+                        .insert(order.sell, address)
+                        .await;
 
                     Ok(address)
                 }
