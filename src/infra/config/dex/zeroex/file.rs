@@ -34,7 +34,7 @@ struct Config {
 }
 
 fn default_endpoint() -> reqwest::Url {
-    "https://api.0x.org/swap/permit2/".parse().unwrap()
+    "https://api.0x.org/swap/allowance-holder/".parse().unwrap()
 }
 
 /// Load the 0x solver configuration from a TOML file.
