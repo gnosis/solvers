@@ -29,6 +29,7 @@ humantime = "2.1.0"
 humantime-serde = "1.1.1"
 hyper = "0.14"
 itertools = "0.11"
+moka = { version = "0.12", features = ["future"] }
 num = "0.4"
 prometheus = "0.13"
 prometheus-metric-storage = "0.5.0"
@@ -44,7 +45,6 @@ tower = "0.4"
 tower-http = { version = "0.4", features = ["trace"] }
 tracing = "0.1"
 web3 = "0.19"
-lru = "0.12.5"
 
 contracts = { git = "https://github.com/cowprotocol/services.git", tag = "v2.296.0", package = "contracts" }
 ethrpc = { git = "https://github.com/cowprotocol/services.git", tag = "v2.296.0", package = "ethrpc" }

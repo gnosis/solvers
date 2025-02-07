@@ -17,7 +17,22 @@ async fn sell() {
              swapReceiverAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41",
         ),
         res: json!({"code":"82000","data":[],"msg":"Insufficient liquidity."}),
-    }])
+    },
+    mock::http::Expectation::Get {
+        path: mock::http::Path::exact(
+            "approve-transaction?chainId=1\
+            &tokenContractAddress=0xc8cd2be653759aed7b0996315821aae71e1feadf\
+            &approveAmount=1000000000000000000"
+        ),
+        res: json!(
+          {
+            "code":"0",
+            "data":[{"data":"0x095ea7b300000000000000000000000040aa958dd87fc8305b97f2ba922cddca374bcd7f000000000000000000000000000000000000000000000000000009184e72a000","dexContractAddress":"0x40aA958dd87FC8305b97f2BA922CDdCa374bcD7f","gasLimit":"70000","gasPrice":"7424402761"}],
+            "msg":""
+          }
+        )
+     }
+    ])
     .await;
 
     let engine = tests::SolverEngine::new("okx", super::config(&api.address)).await;
