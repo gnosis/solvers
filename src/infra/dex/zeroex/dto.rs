@@ -55,13 +55,17 @@ pub struct Query {
 pub struct Slippage(u16);
 
 impl Query {
-    pub fn with_domain(self, order: &dex::Order, slippage: &dex::Slippage) -> Option<Self> {
+    pub fn try_with_domain(
+        self,
+        order: &dex::Order,
+        slippage: &dex::Slippage,
+    ) -> Result<Self, super::Error> {
         // Buy orders are not supported on 0x
         if order.side == order::Side::Buy {
-            return None;
+            return Err(super::Error::OrderNotSupported);
         };
 
-        Some(Self {
+        Ok(Self {
             sell_token: order.sell.0,
             buy_token: order.buy.0,
             sell_amount: order.amount.get(),

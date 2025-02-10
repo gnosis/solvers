@@ -109,11 +109,7 @@ impl Okx {
         order: &dex::Order,
         slippage: &dex::Slippage,
     ) -> Result<dex::Swap, Error> {
-        let query = self
-            .defaults
-            .clone()
-            .with_domain(order, slippage)
-            .ok_or(Error::OrderNotSupported)?;
+        let query = self.defaults.clone().try_with_domain(order, slippage)?;
         let (quote_result, dex_contract_address) = {
             // Set up a tracing span to make debugging of API requests easier.
             // Historically, debugging API requests to external DEXs was a bit

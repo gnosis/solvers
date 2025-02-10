@@ -45,8 +45,6 @@ fn default_endpoint() -> reqwest::Url {
 pub async fn load(path: &Path) -> super::Config {
     let (base, config) = file::load::<Config>(path).await;
 
-    // Note that we just assume Mainnet here - this is because this is the
-    // only chain that the 0x solver supports anyway.
     let settlement = contracts::Contracts::for_chain(config.chain_id).settlement;
 
     super::Config {
