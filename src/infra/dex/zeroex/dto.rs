@@ -35,7 +35,7 @@ pub struct Query {
     /// The address which will fill the quote.
     pub taker: H160,
 
-    /// Limit of price slippage you are willing to accept.
+    /// Limit of price slippage you are willing to accept. Values are in basis points [ 0 .. 10000 ].
     #[serde(skip_serializing_if = "Option::is_none")]
     pub slippage_bps: Option<Slippage>,
 
