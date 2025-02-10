@@ -6,25 +6,19 @@ use {
     base64::prelude::*,
     chrono::SecondsFormat,
     ethrpc::block_stream::CurrentBlockWatcher,
+    futures::TryFutureExt,
     hmac::{Hmac, Mac},
     hyper::{header::HeaderValue, StatusCode},
-    lru::LruCache,
+    moka::future::Cache,
     serde::{de::DeserializeOwned, Serialize},
     sha2::Sha256,
-    std::{
-        num::NonZeroUsize,
-        sync::{
-            atomic::{self, AtomicU64},
-            Arc,
-            Mutex,
-        },
-    },
+    std::sync::atomic::{self, AtomicU64},
     tracing::Instrument,
 };
 
 mod dto;
 
-const DEFAULT_DEX_APPROVED_ADDRESSES_CACHE_SIZE: usize = 100;
+const DEFAULT_DEX_APPROVED_ADDRESSES_CACHE_SIZE: u64 = 100;
 
 /// Bindings to the OKX swap API.
 pub struct Okx {
@@ -32,9 +26,9 @@ pub struct Okx {
     endpoint: reqwest::Url,
     api_secret_key: String,
     defaults: dto::SwapRequest,
-    /// Cache to store map of Token Address to contract address of OKX DEX
-    /// approve.
-    dex_approved_addresses: Arc<Mutex<LruCache<eth::TokenAddress, eth::ContractAddress>>>,
+    /// Cache which stores a map of Token Address to contract address of
+    /// OKX DEX approve contract.
+    dex_approved_addresses: Cache<eth::TokenAddress, eth::ContractAddress>,
 }
 
 pub struct Config {
@@ -42,6 +36,8 @@ pub struct Config {
     pub endpoint: reqwest::Url,
 
     pub chain_id: eth::ChainId,
+
+    pub settlement_contract: eth::Address,
 
     /// Credentials used to access OKX API.
     pub okx_credentials: OkxCredentialsConfig,
@@ -90,6 +86,10 @@ impl Okx {
 
         let defaults = dto::SwapRequest {
             chain_id: config.chain_id as u64,
+            // Funds first get moved in and out of the settlement contract so we have use
+            // that address here to generate the correct calldata.
+            swap_receiver_address: config.settlement_contract.into(),
+            user_wallet_address: config.settlement_contract.into(),
             ..Default::default()
         };
 
@@ -98,9 +98,7 @@ impl Okx {
             endpoint: config.endpoint,
             api_secret_key: config.okx_credentials.api_secret_key,
             defaults,
-            dex_approved_addresses: Arc::new(Mutex::new(LruCache::new(
-                NonZeroUsize::new(DEFAULT_DEX_APPROVED_ADDRESSES_CACHE_SIZE).unwrap(),
-            ))),
+            dex_approved_addresses: Cache::new(DEFAULT_DEX_APPROVED_ADDRESSES_CACHE_SIZE),
         })
     }
 
@@ -109,86 +107,90 @@ impl Okx {
         order: &dex::Order,
         slippage: &dex::Slippage,
     ) -> Result<dex::Swap, Error> {
-        let query = self.defaults.clone().try_with_domain(order, slippage)?;
-        let (quote_result, dex_contract_address) = {
-            // Set up a tracing span to make debugging of API requests easier.
-            // Historically, debugging API requests to external DEXs was a bit
-            // of a headache.
-            static ID: AtomicU64 = AtomicU64::new(0);
-            let id = ID.fetch_add(1, atomic::Ordering::Relaxed);
+        // Set up a tracing span to make debugging of API requests easier.
+        // Historically, debugging API requests to external DEXs was a bit
+        // of a headache.
+        static ID: AtomicU64 = AtomicU64::new(0);
+        let id = ID.fetch_add(1, atomic::Ordering::Relaxed);
 
-            let quote: dto::SwapResponse = self
-                .send_get_request("swap", &query)
-                .instrument(tracing::trace_span!("quote", id = %id))
-                .await?;
-
-            let existing_dex_contract_address = self
-                .dex_approved_addresses
-                .lock()
-                .unwrap()
-                .get(&order.sell)
-                .cloned();
-
-            let dex_contract_address = match existing_dex_contract_address {
-                Some(value) => value,
-                None => {
-                    let query_approve_transaction =
-                        dto::ApproveTransactionRequest::with_domain(self.defaults.chain_id, order);
-
-                    let approve_transaction: dto::ApproveTransactionResponse = self
-                        .send_get_request("approve-transaction", &query_approve_transaction)
-                        .instrument(tracing::trace_span!("approve_transaction", id = %id))
-                        .await?;
-
-                    let address = eth::ContractAddress(approve_transaction.dex_contract_address);
-
-                    self.dex_approved_addresses
-                        .lock()
-                        .unwrap()
-                        .put(order.sell, address);
-
-                    address
-                }
-            };
-
-            (quote, dex_contract_address)
-        };
+        let (swap_response, dex_contract_address) = self
+            .handle_api_requests(order, slippage)
+            .instrument(tracing::trace_span!("swap", id = %id))
+            .await?;
 
         // Increasing returned gas by 50% according to the documentation:
         // https://www.okx.com/en-au/web3/build/docs/waas/dex-swap (gas field description in Response param)
-        let gas = quote_result
+        let gas = swap_response
             .tx
             .gas
-            .checked_add(quote_result.tx.gas / 2)
+            .checked_add(swap_response.tx.gas / 2)
             .ok_or(Error::GasCalculationFailed)?;
 
         Ok(dex::Swap {
             call: dex::Call {
-                to: eth::ContractAddress(quote_result.tx.to),
-                calldata: quote_result.tx.data.clone(),
+                to: eth::ContractAddress(swap_response.tx.to),
+                calldata: swap_response.tx.data.clone(),
             },
             input: eth::Asset {
-                token: quote_result
+                token: swap_response
                     .router_result
                     .from_token
                     .token_contract_address
                     .into(),
-                amount: quote_result.router_result.from_token_amount,
+                amount: swap_response.router_result.from_token_amount,
             },
             output: eth::Asset {
-                token: quote_result
+                token: swap_response
                     .router_result
                     .to_token
                     .token_contract_address
                     .into(),
-                amount: quote_result.router_result.to_token_amount,
+                amount: swap_response.router_result.to_token_amount,
             },
             allowance: dex::Allowance {
                 spender: dex_contract_address,
-                amount: dex::Amount::new(quote_result.router_result.from_token_amount),
+                amount: dex::Amount::new(swap_response.router_result.from_token_amount),
             },
             gas: eth::Gas(gas),
         })
+    }
+
+    /// Invokes /swap and /approve-transaction API requests in parallel.
+    ///
+    /// Returns a tuple of the /swap API response and dex contract address for
+    /// the sell token obtained from /approve-transaction API endpoint or an
+    /// error.
+    async fn handle_api_requests(
+        &self,
+        order: &dex::Order,
+        slippage: &dex::Slippage,
+    ) -> Result<(dto::SwapResponse, eth::ContractAddress), Error> {
+        let swap_request_future = async {
+            let swap_request = self.defaults.clone().try_with_domain(order, slippage)?;
+            self.send_get_request("swap", &swap_request).await
+        };
+
+        let approve_transaction_request_future = async {
+            let approve_transaction_request =
+                dto::ApproveTransactionRequest::with_domain(self.defaults.chain_id, order);
+
+            let approve_transaction: dto::ApproveTransactionResponse = self
+                .send_get_request("approve-transaction", &approve_transaction_request)
+                .await?;
+
+            Ok(eth::ContractAddress(
+                approve_transaction.dex_contract_address,
+            ))
+        };
+
+        tokio::try_join!(
+            swap_request_future,
+            self.dex_approved_addresses
+                .try_get_with(order.sell, approve_transaction_request_future)
+                .map_err(
+                    |_: std::sync::Arc<Error>| Error::ApproveTransactionRequestFailed(order.sell)
+                )
+        )
     }
 
     /// OKX requires signature of the request to be added as dedicated HTTP
@@ -297,6 +299,8 @@ pub enum Error {
     OrderNotSupported,
     #[error("rate limited")]
     RateLimited,
+    #[error("failed to get approve-transaction response for token address: {0:?}")]
+    ApproveTransactionRequestFailed(eth::TokenAddress),
     #[error("api error code {code}: {reason}")]
     Api { code: i64, reason: String },
     #[error(transparent)]

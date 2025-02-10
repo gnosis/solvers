@@ -13,10 +13,26 @@ async fn sell() {
             "swap?chainId=1&amount=1000000000000000000&\
              fromTokenAddress=0xc8cd2be653759aed7b0996315821aae71e1feadf&\
              toTokenAddress=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&slippage=0.01&\
-             userWalletAddress=0x2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a",
+             userWalletAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41&\
+             swapReceiverAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41",
         ),
         res: json!({"code":"82000","data":[],"msg":"Insufficient liquidity."}),
-    }])
+    },
+    mock::http::Expectation::Get {
+        path: mock::http::Path::exact(
+            "approve-transaction?chainId=1\
+            &tokenContractAddress=0xc8cd2be653759aed7b0996315821aae71e1feadf\
+            &approveAmount=1000000000000000000"
+        ),
+        res: json!(
+          {
+            "code":"0",
+            "data":[{"data":"0x095ea7b300000000000000000000000040aa958dd87fc8305b97f2ba922cddca374bcd7f000000000000000000000000000000000000000000000000000009184e72a000","dexContractAddress":"0x40aA958dd87FC8305b97f2BA922CDdCa374bcD7f","gasLimit":"70000","gasPrice":"7424402761"}],
+            "msg":""
+          }
+        )
+     }
+    ])
     .await;
 
     let engine = tests::SolverEngine::new("okx", super::config(&api.address)).await;
@@ -86,7 +102,8 @@ async fn sell_no_approve_transaction() {
                 &fromTokenAddress=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2\
                 &toTokenAddress=0xe41d2489571d322189246dafa5ebde1f4699f498\
                 &slippage=0.01\
-                &userWalletAddress=0x2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a"
+                &userWalletAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41\
+                &swapReceiverAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41"
             ),
             res: json!(
               {
