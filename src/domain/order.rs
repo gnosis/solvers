@@ -33,7 +33,7 @@ impl Order {
 }
 
 /// A hint for the solver to use a flashloan for this order.
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct FlashloanHint {
     pub lender: eth::Address,
     pub borrower: eth::Address,
