@@ -203,7 +203,6 @@ impl Single {
             gas: Some(gas_offset + self.gas),
             flashloans: order
                 .flashloan_hint
-                .clone()
                 .map(|hint| Flashloan {
                     lender: hint.lender,
                     borrower: hint.borrower,
