@@ -91,10 +91,14 @@ pub struct Query {
 }
 
 impl Query {
-    pub fn with_domain(self, order: &dex::Order, slippage: &dex::Slippage) -> Option<Self> {
+    pub fn try_with_domain(
+        self,
+        order: &dex::Order,
+        slippage: &dex::Slippage,
+    ) -> Result<Self, super::Error> {
         // Buy orders are not supported on 1Inch
         if order.side == order::Side::Buy {
-            return None;
+            return Err(super::Error::OrderNotSupported);
         };
 
         // 1Inch checks `origin` for legal reasons.
@@ -107,7 +111,7 @@ impl Query {
             false => order.owner,
         };
 
-        Some(Self {
+        Ok(Self {
             from_token_address: order.sell.0,
             to_token_address: order.buy.0,
             amount: order.amount.get(),
