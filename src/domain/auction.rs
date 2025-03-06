@@ -82,6 +82,12 @@ impl Price {
     }
 }
 
+impl From<Price> for U256 {
+    fn from(value: Price) -> Self {
+        value.0 .0
+    }
+}
+
 /// The estimated effective gas price that will likely be used for executing the
 /// settlement transaction.
 #[derive(Clone, Copy, Debug)]
