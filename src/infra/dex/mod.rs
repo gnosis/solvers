@@ -130,6 +130,7 @@ impl From<zeroex::Error> for Error {
             zeroex::Error::NotFound => Self::NotFound,
             zeroex::Error::RateLimited => Self::RateLimited,
             zeroex::Error::UnavailableForLegalReasons => Self::UnavailableForLegalReasons,
+            zeroex::Error::OrderNotSupported => Self::OrderNotSupported,
             _ => Self::Other(Box::new(err)),
         }
     }

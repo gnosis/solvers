@@ -50,13 +50,17 @@ pub struct SwapRequest {
 pub struct Slippage(BigDecimal);
 
 impl SwapRequest {
-    pub fn with_domain(self, order: &dex::Order, slippage: &dex::Slippage) -> Option<Self> {
+    pub fn try_with_domain(
+        self,
+        order: &dex::Order,
+        slippage: &dex::Slippage,
+    ) -> Result<Self, super::Error> {
         // Buy orders are not supported on OKX
         if order.side == order::Side::Buy {
-            return None;
+            return Err(super::Error::OrderNotSupported);
         };
 
-        Some(Self {
+        Ok(Self {
             from_token_address: order.sell.0,
             to_token_address: order.buy.0,
             amount: order.amount.get(),

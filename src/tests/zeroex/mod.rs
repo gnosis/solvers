@@ -11,7 +11,8 @@ pub fn config(solver_addr: &SocketAddr) -> tests::Config {
         r"
 node-url = 'http://localhost:8545'
 [dex]
-endpoint = 'http://{solver_addr}/swap/v1/'
+chain-id = '1'
+endpoint = 'http://{solver_addr}/swap/allowance-holder/'
 api-key = 'SUPER_SECRET_API_KEY'
         ",
     ))

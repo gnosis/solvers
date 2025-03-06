@@ -166,12 +166,7 @@ impl Okx {
         slippage: &dex::Slippage,
     ) -> Result<(dto::SwapResponse, eth::ContractAddress), Error> {
         let swap_request_future = async {
-            let swap_request = self
-                .defaults
-                .clone()
-                .with_domain(order, slippage)
-                .ok_or(Error::OrderNotSupported)?;
-
+            let swap_request = self.defaults.clone().try_with_domain(order, slippage)?;
             self.send_get_request("swap", &swap_request).await
         };
 

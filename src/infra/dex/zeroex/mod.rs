@@ -1,12 +1,14 @@
 use {
     crate::{
-        domain::{dex, eth, order},
+        domain::{dex, eth},
         util,
     },
-    ethereum_types::H160,
     ethrpc::block_stream::CurrentBlockWatcher,
     hyper::StatusCode,
-    std::sync::atomic::{self, AtomicU64},
+    std::{
+        str::FromStr,
+        sync::atomic::{self, AtomicU64},
+    },
     tracing::Instrument,
 };
 
@@ -19,7 +21,13 @@ pub struct ZeroEx {
     defaults: dto::Query,
 }
 
+/// https://0x.org/docs/introduction/0x-cheat-sheet#0x-contracts
+const DEFAULT_ALLOWANCE_TARGET: &str = "0x0000000000001fF3684f28c67538d4D072C22734";
+
 pub struct Config {
+    /// The chain ID identifying the network to use for all requests.
+    pub chain_id: eth::ChainId,
+
     /// The base URL for the 0x swap API.
     pub endpoint: reqwest::Url,
 
@@ -30,20 +38,8 @@ pub struct Config {
     /// The list of excluded liquidity sources. Liquidity from these sources
     /// will not be considered when solving.
     pub excluded_sources: Vec<String>,
-
-    /// The affiliate address to use.
-    ///
-    /// This is used by 0x for tracking and analytic purposes.
-    pub affiliate: H160,
-
     /// The address of the settlement contract.
     pub settlement: eth::ContractAddress,
-
-    /// Wether or not to enable RFQ-T liquidity.
-    pub enable_rfqt: bool,
-
-    /// Whether or not to enable slippage protection.
-    pub enable_slippage_protection: bool,
 
     /// The stream that yields every new block.
     pub block_stream: Option<CurrentBlockWatcher>,
@@ -57,6 +53,10 @@ impl ZeroEx {
 
             let mut headers = reqwest::header::HeaderMap::new();
             headers.insert("0x-api-key", key);
+            headers.insert(
+                "0x-version",
+                reqwest::header::HeaderValue::from_static("v2"),
+            );
 
             let client = reqwest::Client::builder()
                 .default_headers(headers)
@@ -64,12 +64,9 @@ impl ZeroEx {
             super::Client::new(client, config.block_stream)
         };
         let defaults = dto::Query {
-            taker_address: Some(config.settlement.0),
+            taker: config.settlement.0,
             excluded_sources: config.excluded_sources,
-            skip_validation: true,
-            intent_on_filling: config.enable_rfqt,
-            affiliate_address: config.affiliate,
-            enable_slippage_protection: config.enable_slippage_protection,
+            chain_id: config.chain_id.value().as_u64(),
             ..Default::default()
         };
 
@@ -85,7 +82,7 @@ impl ZeroEx {
         order: &dex::Order,
         slippage: &dex::Slippage,
     ) -> Result<dex::Swap, Error> {
-        let query = self.defaults.clone().with_domain(order, slippage);
+        let query = self.defaults.clone().try_with_domain(order, slippage)?;
         let quote = {
             // Set up a tracing span to make debugging of API requests easier.
             // Historically, debugging API requests to external DEXs was a bit
@@ -97,15 +94,10 @@ impl ZeroEx {
                 .await?
         };
 
-        let max_sell_amount = match order.side {
-            order::Side::Buy => slippage.add(quote.sell_amount),
-            order::Side::Sell => quote.sell_amount,
-        };
-
         Ok(dex::Swap {
             call: dex::Call {
-                to: eth::ContractAddress(quote.to),
-                calldata: quote.data,
+                to: eth::ContractAddress(quote.transaction.to),
+                calldata: quote.transaction.data,
             },
             input: eth::Asset {
                 token: order.sell,
@@ -117,12 +109,15 @@ impl ZeroEx {
             },
             allowance: dex::Allowance {
                 spender: quote
-                    .allowance_target
-                    .ok_or(Error::MissingSpender)
-                    .map(eth::ContractAddress)?,
-                amount: dex::Amount::new(max_sell_amount),
+                    .issues
+                    .allowance
+                    .map(|allowance| eth::ContractAddress(allowance.spender))
+                    .unwrap_or(eth::ContractAddress(
+                        ethereum_types::H160::from_str(DEFAULT_ALLOWANCE_TARGET).unwrap(),
+                    )),
+                amount: dex::Amount::new(quote.sell_amount),
             },
-            gas: eth::Gas(quote.estimated_gas),
+            gas: eth::Gas(quote.transaction.gas.ok_or(Error::MissingGasEstimate)?),
         })
     }
 
@@ -148,10 +143,12 @@ pub enum CreationError {
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+    #[error("order type is not supported")]
+    OrderNotSupported,
+    #[error("gas estimate not available")]
+    MissingGasEstimate,
     #[error("unable to find a quote")]
     NotFound,
-    #[error("quote does not specify an approval spender")]
-    MissingSpender,
     #[error("rate limited")]
     RateLimited,
     #[error("sell token or buy token are banned from trading")]
