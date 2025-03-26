@@ -18,7 +18,7 @@ chain-id = '1'
 
 // Copy from src/infra/dex/balancer/dto.rs
 pub const SWAP_QUERY: &str = r#"
-query sorGetSwapPaths($callDataInput: GqlSwapCallDataInput!, $chain: GqlChain!, $queryBatchSwap: Boolean!, $swapAmount: AmountHumanReadable!, $swapType: GqlSorSwapType!, $tokenIn: String!, $tokenOut: String!, $useProtocolVersion: Int) {
+query sorGetSwapPaths($callDataInput: GqlSwapCallDataInput!, $chain: GqlChain!, $queryBatchSwap: Boolean!, $swapAmount: AmountHumanReadable!, $swapType: GqlSorSwapType!, $tokenIn: String!, $tokenOut: String!) {
     sorGetSwapPaths(
         callDataInput: $callDataInput,
         chain: $chain,
@@ -27,7 +27,6 @@ query sorGetSwapPaths($callDataInput: GqlSwapCallDataInput!, $chain: GqlChain!, 
         swapType: $swapType,
         tokenIn: $tokenIn,
         tokenOut: $tokenOut,
-        useProtocolVersion: $useProtocolVersion
     ) {
         tokenAddresses
         swaps {
