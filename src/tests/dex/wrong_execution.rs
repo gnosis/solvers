@@ -69,7 +69,6 @@ async fn test() {
                         },
                         "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
                         "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-                        "useProtocolVersion": 2
                     }
                 }),
                 vec!["variables.callDataInput.deadline"],
