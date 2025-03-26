@@ -56,6 +56,7 @@ pub fn from_domain(solutions: &[solution::Solution]) -> super::Solutions {
                                     buy_token_balance: BuyTokenBalance::Erc20,
                                     signing_scheme,
                                     signature,
+                                    partially_fillable: trade.order.partially_fillable,
                                 },
                                 executed_amount: trade.executed,
                                 fee: Some(0.into()),
