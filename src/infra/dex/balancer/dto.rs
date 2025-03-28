@@ -13,7 +13,7 @@ use {
 
 /// Get swap quote from the SOR v2 for the V2 vault.
 const QUERY: &str = r#"
-query sorGetSwapPaths($callDataInput: GqlSwapCallDataInput!, $chain: GqlChain!, $queryBatchSwap: Boolean!, $swapAmount: AmountHumanReadable!, $swapType: GqlSorSwapType!, $tokenIn: String!, $tokenOut: String!) {
+query sorGetSwapPaths($callDataInput: GqlSwapCallDataInput!, $chain: GqlChain!, $queryBatchSwap: Boolean!, $swapAmount: AmountHumanReadable!, $swapType: GqlSorSwapType!, $tokenIn: String!, $tokenOut: String!, $useProtocolVersion: Int) {
     sorGetSwapPaths(
         callDataInput: $callDataInput,
         chain: $chain,
@@ -22,6 +22,7 @@ query sorGetSwapPaths($callDataInput: GqlSwapCallDataInput!, $chain: GqlChain!, 
         swapType: $swapType,
         tokenIn: $tokenIn,
         tokenOut: $tokenOut,
+        useProtocolVersion: $useProtocolVersion
     ) {
         tokenAddresses
         swaps {
@@ -77,6 +78,7 @@ impl Query<'_> {
             swap_type: SwapType::from_domain(order.side),
             token_in: order.sell.0,
             token_out: order.buy.0,
+            use_protocol_version: Some(ProtocolVersion::V2.into()),
         };
         Ok(Self {
             query: QUERY,
@@ -141,6 +143,9 @@ struct Variables {
     token_in: H160,
     /// Token address of the tokenOut.
     token_out: H160,
+    /// Which vault version to use. If none provided, will chose the better
+    /// return from either version.
+    use_protocol_version: Option<u8>,
 }
 
 /// Inputs for the call data to create the swap transaction. If this input is
@@ -203,6 +208,17 @@ impl SwapType {
             order::Side::Buy => Self::ExactOut,
             order::Side::Sell => Self::ExactIn,
         }
+    }
+}
+
+#[repr(u8)]
+enum ProtocolVersion {
+    V2 = 2,
+}
+
+impl From<ProtocolVersion> for u8 {
+    fn from(value: ProtocolVersion) -> Self {
+        value as u8
     }
 }
 
@@ -401,6 +417,7 @@ mod tests {
                 "swapType": "EXACT_OUT",
                 "tokenIn": "0x2170ed0880ac9a755fd29b2688956bd959f933f8",
                 "tokenOut": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+                "useProtocolVersion": 2
             }
         });
 
