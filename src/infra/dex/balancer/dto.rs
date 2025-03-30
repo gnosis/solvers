@@ -35,6 +35,17 @@ query sorGetSwapPaths($callDataInput: GqlSwapCallDataInput!, $chain: GqlChain!, 
         returnAmountRaw
         tokenIn
         tokenOut
+        protocolVersion
+        paths {
+            inputAmountRaw
+            isBuffer
+            outputAmountRaw
+            pools
+            protocolVersion
+            tokens {
+              address
+            }
+        }
     }
 }
 "#;
@@ -231,6 +242,9 @@ pub struct Quote {
     pub token_addresses: Vec<H160>,
     /// The swap route.
     pub swaps: Vec<Swap>,
+    /// The swap route (different representation than `swaps` suitable for
+    /// the v3 BatchRouter).
+    pub paths: Vec<Path>,
     /// The swapped token amount.
     ///
     /// In sell token for sell orders or buy token for buy orders.
@@ -247,6 +261,16 @@ pub struct Quote {
     /// The output (buy) token.
     #[serde(with = "address_default_when_empty")]
     pub token_out: H160,
+    /// Which balancer version the trade needs to be routed through.
+    pub protocol_version: ProtocolVersion,
+}
+
+#[derive(Deserialize, PartialEq, Eq, Default, Debug)]
+#[repr(u8)]
+pub enum ProtocolVersion {
+    #[default]
+    V2 = 2,
+    V3 = 3,
 }
 
 impl Quote {
@@ -278,6 +302,20 @@ pub struct Swap {
     /// Additional user data to pass to the pool.
     #[serde_as(as = "serialize::Hex")]
     pub user_data: Vec<u8>,
+}
+
+/// Models a single swap path consisting of multiple steps.
+#[serde_as]
+#[derive(Debug, Default, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Path {
+    #[serde_as(as = "serialize::U256")]
+    pub input_amount_raw: U256,
+    #[serde_as(as = "serialize::U256")]
+    pub output_amount_raw: U256,
+    pub is_buffer: Vec<bool>,
+    pub pools: Vec<H160>,
+    pub tokens: Vec<H160>,
 }
 
 /// Balancer SOR responds with `address: ""` on error cases.

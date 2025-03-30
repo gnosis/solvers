@@ -6,6 +6,7 @@ pub struct Contracts {
     pub settlement: eth::ContractAddress,
     pub authenticator: eth::ContractAddress,
     pub balancer_vault: eth::ContractAddress,
+    pub balancer_v3_batch_router: eth::ContractAddress,
 }
 
 impl Contracts {
@@ -24,6 +25,7 @@ impl Contracts {
             settlement: a(contracts::GPv2Settlement::raw_contract()),
             authenticator: a(contracts::GPv2AllowListAuthentication::raw_contract()),
             balancer_vault: a(contracts::BalancerV2Vault::raw_contract()),
+            balancer_v3_batch_router: a(contracts::BalancerV3BatchRouter::raw_contract()),
         }
     }
 }
