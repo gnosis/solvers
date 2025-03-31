@@ -990,6 +990,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "contracts"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?branch=balancer-v3-batch-router-bindings#cf38459ea80cf7a26e2a6be1397f91322141b18a"
+dependencies = [
+ "anyhow",
+ "ethcontract",
+ "ethcontract-generate",
+ "serde",
+]
+
+[[package]]
 name = "convert_case"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1492,7 +1503,7 @@ source = "git+https://github.com/cowprotocol/services.git?tag=v2.303.1#725a0fcbe
 dependencies = [
  "anyhow",
  "async-trait",
- "contracts",
+ "contracts 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.303.1)",
  "ethcontract",
  "futures",
  "hex",
@@ -2914,7 +2925,7 @@ name = "order-validation"
 version = "0.1.0"
 source = "git+https://github.com/cowprotocol/services.git?tag=v2.303.1#725a0fcbeca05235a87f42a32f3b71fdcef3cdac"
 dependencies = [
- "contracts",
+ "contracts 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.303.1)",
  "ethcontract",
  "thiserror",
  "tokio",
@@ -3900,7 +3911,7 @@ dependencies = [
  "chain",
  "chrono",
  "clap",
- "contracts",
+ "contracts 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.303.1)",
  "dashmap",
  "database",
  "derivative",
@@ -4017,7 +4028,7 @@ dependencies = [
  "bigdecimal",
  "chrono",
  "clap",
- "contracts",
+ "contracts 0.1.0 (git+https://github.com/cowprotocol/services.git?branch=balancer-v3-batch-router-bindings)",
  "ethereum-types",
  "ethrpc",
  "futures",
