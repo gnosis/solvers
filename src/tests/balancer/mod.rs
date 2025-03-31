@@ -40,6 +40,17 @@ query sorGetSwapPaths($callDataInput: GqlSwapCallDataInput!, $chain: GqlChain!, 
         returnAmountRaw
         tokenIn
         tokenOut
+        protocolVersion
+        paths {
+            inputAmountRaw
+            isBuffer
+            outputAmountRaw
+            pools
+            protocolVersion
+            tokens {
+              address
+            }
+        }
     }
 }
 "#;

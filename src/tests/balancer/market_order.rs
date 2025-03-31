@@ -51,6 +51,8 @@ async fn sell() {
                     "returnAmountRaw": "227598784442065388110",
                     "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
                     "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                    "protocolVersion": 2,
+                    "paths": [],
                 }
             }
         }),
@@ -228,6 +230,8 @@ async fn buy() {
                     "returnAmountRaw": "439470293178110675",
                     "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
                     "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                    "protocolVersion": 2,
+                    "paths": [],
                 }
             }
         }),

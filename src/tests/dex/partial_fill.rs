@@ -47,6 +47,8 @@ async fn tested_amounts_adjust_depending_on_response() {
                 "returnAmountRaw": "0",
                 "tokenIn": "0x0000000000000000000000000000000000000000",
                 "tokenOut": "0x0000000000000000000000000000000000000000",
+                "protocolVersion": 2,
+                "paths": [],
             }
         }
     });
@@ -73,6 +75,8 @@ async fn tested_amounts_adjust_depending_on_response() {
                     "returnAmountRaw": "1",
                     "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
                     "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                    "protocolVersion": 2,
+                    "paths": [],
                 }
             }
         })
@@ -123,6 +127,8 @@ async fn tested_amounts_adjust_depending_on_response() {
                         "returnAmountRaw": "227598784442065388110",
                         "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
                         "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                        "protocolVersion": 2,
+                        "paths": [],
                     }
                 }
             }),
@@ -367,6 +373,8 @@ async fn tested_amounts_wrap_around() {
                     "returnAmountConsideringFees": "1",
                     "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
                     "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                    "protocolVersion": 2,
+                    "paths": [],
                 }
             }
         }),
@@ -482,6 +490,8 @@ async fn moves_surplus_fee_to_buy_token() {
                         "returnAmountRaw": "0",
                         "tokenIn": "0x0000000000000000000000000000000000000000",
                         "tokenOut": "0x0000000000000000000000000000000000000000",
+                        "protocolVersion": 2,
+                        "paths": [],
                     }
                 }
             }),
@@ -528,6 +538,8 @@ async fn moves_surplus_fee_to_buy_token() {
                         "returnAmountRaw": "227598784442065388110",
                         "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
                         "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                        "protocolVersion": 2,
+                        "paths": [],
                     }
                 }
             }),
@@ -754,6 +766,8 @@ async fn insufficient_room_for_surplus_fee() {
                     "returnAmountRaw": "227598784442065388110",
                     "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
                     "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                    "protocolVersion": 2,
+                    "paths": [],
                 }
             }
         }),
@@ -879,6 +893,8 @@ async fn market() {
                     "returnAmountRaw": "227598784442065388110",
                     "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
                     "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                    "protocolVersion": 2,
+                    "paths": [],
                 }
             }
         }),

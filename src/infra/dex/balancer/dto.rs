@@ -265,7 +265,8 @@ pub struct Quote {
     pub protocol_version: ProtocolVersion,
 }
 
-#[derive(Deserialize, PartialEq, Eq, Default, Debug)]
+#[derive(serde_repr::Deserialize_repr, PartialEq, Eq, Default, Debug)]
+#[serde(untagged)]
 #[repr(u8)]
 pub enum ProtocolVersion {
     #[default]
