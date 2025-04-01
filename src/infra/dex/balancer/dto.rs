@@ -290,7 +290,7 @@ impl Quote {
 #[serde(rename_all = "camelCase")]
 pub struct Swap {
     /// The ID of the pool swapping in this step.
-    pub pool_id: H256,
+    pub pool_id: PoolId,
     /// The index in `token_addresses` for the input token.
     #[serde(with = "value_or_string")]
     pub asset_in_index: usize,
@@ -305,6 +305,38 @@ pub struct Swap {
     pub user_data: Vec<u8>,
 }
 
+#[serde_as]
+#[derive(Debug, PartialEq, Deserialize)]
+#[serde(untagged)]
+pub enum PoolId {
+    V2(H256),
+    V3(H160),
+}
+
+impl PoolId {
+    pub fn as_v2(&self) -> Result<H256, Error> {
+        if let Self::V2(h256) = self {
+            Ok(*h256)
+        } else {
+            Err(Error::InvalidPoolIdFormat)
+        }
+    }
+
+    pub fn as_v3(&self) -> Result<H160, Error> {
+        if let Self::V3(h160) = self {
+            Ok(*h160)
+        } else {
+            Err(Error::InvalidPoolIdFormat)
+        }
+    }
+}
+
+impl Default for PoolId {
+    fn default() -> Self {
+        Self::V2(H256::default())
+    }
+}
+
 /// Models a single swap path consisting of multiple steps.
 #[serde_as]
 #[derive(Debug, Default, PartialEq, Deserialize)]
@@ -315,8 +347,15 @@ pub struct Path {
     #[serde_as(as = "serialize::U256")]
     pub output_amount_raw: U256,
     pub is_buffer: Vec<bool>,
-    pub pools: Vec<H160>,
-    pub tokens: Vec<H160>,
+    pub pools: Vec<PoolId>,
+    pub tokens: Vec<PathToken>,
+}
+
+#[serde_as]
+#[derive(Debug, Default, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PathToken {
+    pub address: H160,
 }
 
 /// Balancer SOR responds with `address: ""` on error cases.

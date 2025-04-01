@@ -127,11 +127,11 @@ impl Sor {
         let (spender, call) = match quote.protocol_version {
             dto::ProtocolVersion::V2 => (
                 self.vault.address(),
-                self.encode_v2_swap(order, &quote, max_input, min_output),
+                self.encode_v2_swap(order, &quote, max_input, min_output)?,
             ),
             dto::ProtocolVersion::V3 => (
                 self.v3_batch_router.address(),
-                self.encode_v3_swap(order, &quote),
+                self.encode_v3_swap(order, &quote)?,
             ),
         };
 
@@ -159,7 +159,7 @@ impl Sor {
         quote: &dto::Quote,
         max_input: U256,
         min_output: U256,
-    ) -> dex::Call {
+    ) -> Result<dex::Call, Error> {
         let kind = match order.side {
             order::Side::Sell => vault::SwapKind::GivenIn,
             order::Side::Buy => vault::SwapKind::GivenOut,
@@ -167,14 +167,16 @@ impl Sor {
         let swaps = quote
             .swaps
             .iter()
-            .map(|swap| vault::Swap {
-                pool_id: swap.pool_id,
-                asset_in_index: swap.asset_in_index.into(),
-                asset_out_index: swap.asset_out_index.into(),
-                amount: swap.amount,
-                user_data: swap.user_data.clone(),
+            .map(|swap| {
+                Ok(vault::SwapV2 {
+                    pool_id: swap.pool_id.as_v2()?,
+                    asset_in_index: swap.asset_in_index.into(),
+                    asset_out_index: swap.asset_out_index.into(),
+                    amount: swap.amount,
+                    user_data: swap.user_data.clone(),
+                })
             })
-            .collect();
+            .collect::<Result<_, Error>>()?;
         let assets = quote.token_addresses.clone();
         let funds = vault::Funds {
             sender: self.settlement.0,
@@ -201,41 +203,43 @@ impl Sor {
             })
             .collect();
 
-        self.vault.batch_swap(kind, swaps, assets, funds, limits)
+        Ok(self.vault.batch_swap_v2(kind, swaps, assets, funds, limits))
     }
 
-    fn encode_v3_swap(&self, order: &dex::Order, quote: &dto::Quote) -> dex::Call {
+    fn encode_v3_swap(&self, order: &dex::Order, quote: &dto::Quote) -> Result<dex::Call, Error> {
         let paths = quote
             .paths
             .iter()
-            .map(|p| batch_router::SwapPath {
-                token_in: p.tokens[0],
-                input_amount_raw: p.input_amount_raw,
-                output_amount_raw: p.output_amount_raw,
-                // A path step consists of 1 item of 3 different arrays at the correct
-                // index. `tokens` contains 1 item more where the first one needs
-                // to be skipped.
-                steps: p
-                    .tokens
-                    .iter()
-                    .skip(1)
-                    .zip(p.is_buffer.iter())
-                    .zip(p.pools.iter())
-                    .map(
-                        |((token_out, is_buffer), pool)| batch_router::SwapPathStep {
-                            pool: *pool,
-                            token_out: *token_out,
-                            is_buffer: *is_buffer,
-                        },
-                    )
-                    .collect(),
+            .map(|p| {
+                Ok(batch_router::SwapPath {
+                    token_in: p.tokens[0].address,
+                    input_amount_raw: p.input_amount_raw,
+                    output_amount_raw: p.output_amount_raw,
+                    // A path step consists of 1 item of 3 different arrays at the correct
+                    // index. `tokens` contains 1 item more where the first one needs
+                    // to be skipped.
+                    steps: p
+                        .tokens
+                        .iter()
+                        .skip(1)
+                        .zip(p.is_buffer.iter())
+                        .zip(p.pools.iter())
+                        .map(|((token_out, is_buffer), pool)| {
+                            Ok(batch_router::SwapPathStep {
+                                pool: pool.as_v3()?,
+                                token_out: token_out.address,
+                                is_buffer: *is_buffer,
+                            })
+                        })
+                        .collect::<Result<_, Error>>()?,
+                })
             })
-            .collect();
+            .collect::<Result<_, Error>>()?;
 
-        match order.side {
+        Ok(match order.side {
             Side::Buy => self.v3_batch_router.swap_exact_amount_out(paths),
             Side::Sell => self.v3_batch_router.swap_exact_amount_in(paths),
-        }
+        })
     }
 
     async fn quote(&self, query: &dto::Query<'_>) -> Result<dto::Quote, Error> {
@@ -262,6 +266,8 @@ pub enum Error {
     UnsupportedChainId(eth::ChainId),
     #[error("decimals are missing for the swapped token: {0:?}")]
     MissingDecimals(TokenAddress),
+    #[error("invalid pool id format")]
+    InvalidPoolIdFormat,
 }
 
 impl From<util::http::RoundtripError<util::serialize::Never>> for Error {
