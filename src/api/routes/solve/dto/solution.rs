@@ -56,6 +56,7 @@ pub fn from_domain(solutions: &[solution::Solution]) -> super::Solutions {
                                     buy_token_balance: BuyTokenBalance::Erc20,
                                     signing_scheme,
                                     signature,
+                                    partially_fillable: trade.order.partially_fillable,
                                 },
                                 executed_amount: trade.executed,
                                 fee: Some(0.into()),
@@ -115,6 +116,16 @@ pub fn from_domain(solutions: &[solution::Solution]) -> super::Solutions {
                     })
                     .collect(),
                 gas: solution.gas.map(|gas| gas.0.as_u64()),
+                flashloans: solution
+                    .flashloans
+                    .iter()
+                    .map(|loan| Flashloan {
+                        lender: loan.lender.0,
+                        borrower: loan.borrower.0,
+                        token: loan.token.0,
+                        amount: loan.amount,
+                    })
+                    .collect(),
             })
             .collect(),
     }
