@@ -118,17 +118,19 @@ impl Sor {
             order::Side::Sell => (quote.swap_amount_raw, quote.return_amount_raw),
         };
 
-        let (max_input, min_output) = match order.side {
+        let (max_input, _min_output) = match order.side {
             order::Side::Buy => (slippage.add(input), output),
             order::Side::Sell => (input, slippage.sub(output)),
         };
 
         let gas = U256::from(quote.swaps.len()) * Self::GAS_PER_SWAP;
         let (spender, call) = match quote.protocol_version {
+            /*
             dto::ProtocolVersion::V2 => (
                 self.vault.address(),
                 self.encode_v2_swap(order, &quote, max_input, min_output)?,
             ),
+            */
             dto::ProtocolVersion::V3 => (
                 self.v3_batch_router.address(),
                 self.encode_v3_swap(order, &quote)?,
