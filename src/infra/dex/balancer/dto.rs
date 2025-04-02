@@ -272,6 +272,7 @@ pub struct Quote {
 #[serde(untagged)]
 #[repr(u8)]
 pub enum ProtocolVersion {
+    V2 = 2,
     #[default]
     V3 = 3,
 }
