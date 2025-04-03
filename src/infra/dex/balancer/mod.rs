@@ -135,7 +135,8 @@ impl Sor {
                 self.encode_v2_swap(order, &quote, max_input, min_output)?,
             ),
             dto::ProtocolVersion::V3 => (
-                self.v3_batch_router.address(),
+                //self.v3_batch_router.address(),
+                eth::ContractAddress(<eth::H160 as std::str::FromStr>::from_str("0xaD89051bEd8d96f045E8912aE1672c6C0bF8a85E").unwrap()),
                 self.encode_v3_swap(order, &quote)?,
             ),
         };
