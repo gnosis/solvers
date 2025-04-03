@@ -98,7 +98,7 @@ impl Sor {
                 .timestamp()
                 .to_u64(),
         )?;
-        tracing::info!(
+        tracing::warn!(
             "query: {query:?}"
         );
         let quote = {
@@ -111,7 +111,7 @@ impl Sor {
                 .instrument(tracing::trace_span!("quote", id = %id))
                 .await?
         };
-        tracing::info!(
+        tracing::warn!(
             "quote: {query:?}"
         );
         if quote.is_empty() {
@@ -139,6 +139,7 @@ impl Sor {
                 self.encode_v3_swap(order, &quote)?,
             ),
         };
+        tracing::warn!("v3_batch_router: ${:?}", self.v3_batch_router.address());
 
         Ok(dex::Swap {
             call,
@@ -165,7 +166,7 @@ impl Sor {
         max_input: U256,
         min_output: U256,
     ) -> Result<dex::Call, Error> {
-        tracing::info!(
+        tracing::warn!(
             "encode_v2_swap: {quote:?}"
         );
         let kind = match order.side {
@@ -215,7 +216,7 @@ impl Sor {
     }
 
     fn encode_v3_swap(&self, order: &dex::Order, quote: &dto::Quote) -> Result<dex::Call, Error> {
-        tracing::info!(
+        tracing::warn!(
             "encode_v3_swap: {quote:?}"
         );
         let paths = quote
