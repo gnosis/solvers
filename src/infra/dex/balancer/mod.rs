@@ -160,6 +160,9 @@ impl Sor {
         max_input: U256,
         min_output: U256,
     ) -> Result<dex::Call, Error> {
+        tracing::info!(
+            "encode_v2_swap: {quote:?}"
+        );
         let kind = match order.side {
             order::Side::Sell => vault::SwapKind::GivenIn,
             order::Side::Buy => vault::SwapKind::GivenOut,
@@ -207,6 +210,9 @@ impl Sor {
     }
 
     fn encode_v3_swap(&self, order: &dex::Order, quote: &dto::Quote) -> Result<dex::Call, Error> {
+        tracing::info!(
+            "encode_v3_swap: {quote:?}"
+        );
         let paths = quote
             .paths
             .iter()
