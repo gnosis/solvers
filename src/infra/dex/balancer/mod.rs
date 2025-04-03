@@ -136,10 +136,11 @@ impl Sor {
             ),
             dto::ProtocolVersion::V3 => (
                 //self.v3_batch_router.address(),
-                eth::ContractAddress(<eth::H160 as std::str::FromStr>::from_str("0xaD89051bEd8d96f045E8912aE1672c6C0bF8a85E").unwrap()),
+                eth::ContractAddress(<eth::H160 as std::str::FromStr>::from_str("0xba1333333333a1ba1108e8412f11850a5c319ba9").unwrap()),
                 self.encode_v3_swap(order, &quote)?,
             ),
         };
+        tracing::warn!("v3_vault: 0xba1333333333a1ba1108e8412f11850a5c319ba9");
         tracing::warn!("v3_batch_router: ${:?}", self.v3_batch_router.address());
 
         Ok(dex::Swap {
