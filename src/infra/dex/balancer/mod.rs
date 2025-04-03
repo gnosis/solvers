@@ -98,6 +98,9 @@ impl Sor {
                 .timestamp()
                 .to_u64(),
         )?;
+        tracing::info!(
+            "query: {query:?}"
+        );
         let quote = {
             // Set up a tracing span to make debugging of API requests easier.
             // Historically, debugging API requests to external DEXs was a bit
@@ -108,7 +111,9 @@ impl Sor {
                 .instrument(tracing::trace_span!("quote", id = %id))
                 .await?
         };
-
+        tracing::info!(
+            "quote: {query:?}"
+        );
         if quote.is_empty() {
             return Err(Error::NotFound);
         }

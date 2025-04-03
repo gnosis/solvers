@@ -51,7 +51,7 @@ query sorGetSwapPaths($callDataInput: GqlSwapCallDataInput!, $chain: GqlChain!, 
 }
 "#;
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Query<'a> {
     query: &'a str,
@@ -137,7 +137,7 @@ impl Serialize for HumanReadableAmount {
 }
 
 #[serde_as]
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 struct Variables {
     call_data_input: CallDataInput,
@@ -159,7 +159,7 @@ struct Variables {
 
 /// Inputs for the call data to create the swap transaction. If this input is
 /// given, call data is added to the response.
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct CallDataInput {
     /// How long the swap should be valid, provide a timestamp. `999999999` for
@@ -175,7 +175,7 @@ struct CallDataInput {
 }
 
 /// Balancer SOR API supported chains.
-#[derive(Serialize, Clone, Copy)]
+#[derive(Serialize, Clone, Copy, Debug)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub(super) enum Chain {
     Arbitrum,
@@ -204,7 +204,7 @@ impl Chain {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 enum SwapType {
     ExactIn,
