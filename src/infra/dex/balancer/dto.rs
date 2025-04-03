@@ -309,7 +309,7 @@ mod address_default_when_empty {
         D: Deserializer<'de>,
     {
         let value = Cow::<str>::deserialize(deserializer)?;
-        if value == "" {
+        if value.is_empty() {
             return Ok(H160::default());
         }
         value.parse().map_err(de::Error::custom)
