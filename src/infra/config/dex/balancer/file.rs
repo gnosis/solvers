@@ -63,7 +63,7 @@ pub async fn load(path: &Path) -> super::Config {
             v3_vault: config
                 .v3_vault
                 .map(eth::ContractAddress)
-                .unwrap_or(contracts.balancer_v3_batch_router),
+                .unwrap_or(contracts.balancer_v3_vault),
             settlement: base.contracts.settlement,
             block_stream: base.block_stream.clone(),
             chain_id: config.chain_id,
