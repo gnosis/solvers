@@ -992,7 +992,7 @@ dependencies = [
 [[package]]
 name = "contracts"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?branch=balancer-v3-batch-router-bindings#cf38459ea80cf7a26e2a6be1397f91322141b18a"
+source = "git+https://github.com/cowprotocol/services.git?branch=balancer-v3-vault-bindings#461b408d779d69643d5ad32b0667434eed2386c2"
 dependencies = [
  "anyhow",
  "ethcontract",
@@ -4039,7 +4039,7 @@ dependencies = [
  "bigdecimal",
  "chrono",
  "clap",
- "contracts 0.1.0 (git+https://github.com/cowprotocol/services.git?branch=balancer-v3-batch-router-bindings)",
+ "contracts 0.1.0 (git+https://github.com/cowprotocol/services.git?branch=balancer-v3-vault-bindings)",
  "ethereum-types",
  "ethrpc",
  "futures",

@@ -26,6 +26,10 @@ struct Config {
     /// default contract address will be used.
     v3_batch_router: Option<H160>,
 
+    /// Optional Balancer V3 Vault contract address. If not specified, the
+    /// default contract address will be used.
+    v3_vault: Option<H160>,
+
     /// Chain ID used to automatically determine contract addresses and send to
     /// the SOR API.
     #[serde_as(as = "serialize::ChainId")]
@@ -51,9 +55,13 @@ pub async fn load(path: &Path) -> super::Config {
             vault: config
                 .vault
                 .map(eth::ContractAddress)
-                .unwrap_or(contracts.balancer_vault),
+                .unwrap_or(contracts.balancer_v2_vault),
             v3_batch_router: config
                 .v3_batch_router
+                .map(eth::ContractAddress)
+                .unwrap_or(contracts.balancer_v3_batch_router),
+            v3_vault: config
+                .v3_vault
                 .map(eth::ContractAddress)
                 .unwrap_or(contracts.balancer_v3_batch_router),
             settlement: base.contracts.settlement,

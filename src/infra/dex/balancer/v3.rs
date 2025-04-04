@@ -4,9 +4,21 @@
 
 use {
     crate::domain::{dex, eth},
-    contracts::{ethcontract::Bytes, BalancerV3BatchRouter},
+    contracts::{ethcontract::Bytes, BalancerV3BatchRouter, BalancerV3Vault},
     ethereum_types::{H160, U256},
 };
+
+pub struct Vault(BalancerV3Vault);
+
+impl Vault {
+    pub fn new(address: eth::ContractAddress) -> Self {
+        Self(contracts::dummy_contract!(BalancerV3Vault, address.0))
+    }
+
+    pub fn address(&self) -> eth::ContractAddress {
+        eth::ContractAddress(self.0.address())
+    }
+}
 
 pub struct Router(BalancerV3BatchRouter);
 

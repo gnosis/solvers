@@ -21,16 +21,17 @@ use {
     tracing::Instrument,
 };
 
-mod batch_router;
 mod dto;
-mod vault;
+mod v2;
+mod v3;
 
 /// Bindings to the Balancer Smart Order Router (SOR) API.
 pub struct Sor {
     client: super::Client,
     endpoint: reqwest::Url,
-    vault: vault::Vault,
-    v3_batch_router: batch_router::Router,
+    v2_vault: v2::Vault,
+    v3_batch_router: v3::Router,
+    v3_vault: v3::Vault,
     settlement: eth::ContractAddress,
     chain_id: Chain,
     query_batch_swap: bool,
@@ -43,11 +44,16 @@ pub struct Config {
     /// The URL for the Balancer SOR API.
     pub endpoint: reqwest::Url,
 
-    /// The address of the Balancer Vault contract.
+    /// The address of the Balancer V2 Vault contract. For V2, it's used as both
+    /// the spender and router.
     pub vault: eth::ContractAddress,
 
     /// The address of the Balancer V3 BatchRouter contract.
     pub v3_batch_router: eth::ContractAddress,
+
+    /// The address of the Balancer V3 Vault contract. Used as the spender in
+    /// V3.
+    pub v3_vault: eth::ContractAddress,
 
     /// The address of the Settlement contract.
     pub settlement: eth::ContractAddress,
@@ -71,8 +77,9 @@ impl Sor {
         Ok(Self {
             client: super::Client::new(Default::default(), config.block_stream),
             endpoint: config.endpoint,
-            vault: vault::Vault::new(config.vault),
-            v3_batch_router: batch_router::Router::new(config.v3_batch_router),
+            v2_vault: v2::Vault::new(config.vault),
+            v3_batch_router: v3::Router::new(config.v3_batch_router),
+            v3_vault: v3::Vault::new(config.v3_vault),
             settlement: config.settlement,
             chain_id: Chain::from_domain(config.chain_id)?,
             query_batch_swap: config.query_batch_swap,
@@ -126,13 +133,12 @@ impl Sor {
         let gas = U256::from(quote.swaps.len()) * Self::GAS_PER_SWAP;
         let (spender, call) = match quote.protocol_version {
             dto::ProtocolVersion::V2 => (
-                self.vault.address(),
+                self.v2_vault.address(),
                 self.encode_v2_swap(order, &quote, max_input, min_output)?,
             ),
-            dto::ProtocolVersion::V3 => (
-                self.v3_batch_router.address(),
-                self.encode_v3_swap(order, &quote)?,
-            ),
+            dto::ProtocolVersion::V3 => {
+                (self.v3_vault.address(), self.encode_v3_swap(order, &quote)?)
+            }
         };
 
         Ok(dex::Swap {
@@ -161,14 +167,14 @@ impl Sor {
         min_output: U256,
     ) -> Result<dex::Call, Error> {
         let kind = match order.side {
-            order::Side::Sell => vault::SwapKind::GivenIn,
-            order::Side::Buy => vault::SwapKind::GivenOut,
+            order::Side::Sell => v2::SwapKind::GivenIn,
+            order::Side::Buy => v2::SwapKind::GivenOut,
         } as _;
         let swaps = quote
             .swaps
             .iter()
             .map(|swap| {
-                Ok(vault::SwapV2 {
+                Ok(v2::SwapV2 {
                     pool_id: swap.pool_id.as_v2()?,
                     asset_in_index: swap.asset_in_index.into(),
                     asset_out_index: swap.asset_out_index.into(),
@@ -178,7 +184,7 @@ impl Sor {
             })
             .collect::<Result<_, Error>>()?;
         let assets = quote.token_addresses.clone();
-        let funds = vault::Funds {
+        let funds = v2::Funds {
             sender: self.settlement.0,
             from_internal_balance: false,
             recipient: self.settlement.0,
@@ -203,7 +209,9 @@ impl Sor {
             })
             .collect();
 
-        Ok(self.vault.batch_swap_v2(kind, swaps, assets, funds, limits))
+        Ok(self
+            .v2_vault
+            .batch_swap_v2(kind, swaps, assets, funds, limits))
     }
 
     fn encode_v3_swap(&self, order: &dex::Order, quote: &dto::Quote) -> Result<dex::Call, Error> {
@@ -211,7 +219,7 @@ impl Sor {
             .paths
             .iter()
             .map(|p| {
-                Ok(batch_router::SwapPath {
+                Ok(v3::SwapPath {
                     token_in: p.tokens[0].address,
                     input_amount_raw: p.input_amount_raw,
                     output_amount_raw: p.output_amount_raw,
@@ -225,7 +233,7 @@ impl Sor {
                         .zip(p.is_buffer.iter())
                         .zip(p.pools.iter())
                         .map(|((token_out, is_buffer), pool)| {
-                            Ok(batch_router::SwapPathStep {
+                            Ok(v3::SwapPathStep {
                                 pool: pool.as_v3()?,
                                 token_out: token_out.address,
                                 is_buffer: *is_buffer,
