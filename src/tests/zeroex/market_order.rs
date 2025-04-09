@@ -16,6 +16,7 @@ async fn sell() {
              taker=0x9008d19f58aabd9ed0d60971565aa8510560ab41&slippageBps=100",
         ),
         res: json!({
+            "liquidityAvailable": true,
             "sellAmount": "1000000000000000000",
             "buyAmount": "5876422636675954000000",
             "transaction": {

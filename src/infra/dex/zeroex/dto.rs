@@ -1,5 +1,5 @@
 //! DTOs for the 0x swap API. Full documentation for the API can be found
-//! [here](https://docs.0x.org/0x-api-swap/api-references/get-swap-v1-quote).
+//! [here](https://0x.org/docs/api#tag/Swap/operation/swap::allowanceHolder::getQuote).
 
 use {
     crate::{
@@ -13,7 +13,7 @@ use {
 
 /// A 0x API quote query parameters.
 ///
-/// See [API](https://docs.0x.org/0x-api-swap/api-references/get-swap-v1-quote)
+/// See [API](https://0x.org/docs/api#tag/Swap/operation/swap::allowanceHolder::getQuote)
 /// documentation for more detailed information on each parameter.
 #[serde_as]
 #[derive(Clone, Default, Serialize)]
@@ -81,19 +81,41 @@ impl Query {
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Quote {
+    /// Whether the quote is valid. If not valid, all other fields are missing.
+    pub liquidity_available: bool,
     /// The amount of sell token (in atoms) that would be sold in this swap.
-    #[serde_as(as = "serialize::U256")]
-    pub sell_amount: U256,
-
+    #[serde_as(as = "Option<serialize::U256>")]
+    pub sell_amount: Option<U256>,
     /// The amount of buy token (in atoms) that would be bought in this swap.
-    #[serde_as(as = "serialize::U256")]
+    #[serde_as(as = "Option<serialize::U256>")]
+    pub buy_amount: Option<U256>,
+    pub transaction: Option<QuoteTransaction>,
+    pub issues: Option<Issues>,
+}
+
+/// A valid quote response, with liquidity available.
+pub struct ValidQuote {
+    /// The amount of sell token (in atoms) that would be sold in this swap.
+    pub sell_amount: U256,
+    /// The amount of buy token (in atoms) that would be bought in this swap.
     pub buy_amount: U256,
-
-    /// The transaction details for the swap.
     pub transaction: QuoteTransaction,
-
-    /// Issues containing the allowance data
     pub issues: Issues,
+}
+
+impl From<Quote> for Option<ValidQuote> {
+    fn from(raw: Quote) -> Self {
+        if !raw.liquidity_available {
+            return None;
+        }
+
+        Some(ValidQuote {
+            sell_amount: raw.sell_amount?,
+            buy_amount: raw.buy_amount?,
+            transaction: raw.transaction?,
+            issues: raw.issues?,
+        })
+    }
 }
 
 #[serde_as]
@@ -134,6 +156,7 @@ pub struct Allowance {
 
 #[derive(Deserialize)]
 #[serde(untagged)]
+#[allow(clippy::large_enum_variant)]
 pub enum Response {
     Ok(Quote),
     Err(Error),
@@ -153,4 +176,39 @@ impl Response {
 pub struct Error {
     pub code: i64,
     pub reason: String,
+}
+
+mod tests {
+    #[test]
+    fn test_quote_deserialization() {
+        let json = r#"{
+            "liquidityAvailable": true,
+            "sellAmount": "1000000000000000000",
+            "buyAmount": "1000000000000000000",
+            "transaction": {
+                "to": "0x1234567890123456789012345678901234567890",
+                "data": "0xabcdef",
+                "gas": "21000"
+            },
+            "issues": {
+                "allowance": {
+                    "actual": "1000000000000000000",
+                    "spender": "0x1234567890123456789012345678901234567890"
+                }
+            }
+        }"#;
+
+        let quote: super::Quote = serde_json::from_str(json).unwrap();
+        assert!(quote.liquidity_available);
+    }
+
+    #[test]
+    fn test_quote_no_liquidity_deserialization() {
+        let json = r#"{
+            "liquidityAvailable": false
+        }"#;
+
+        let quote: super::Quote = serde_json::from_str(json).unwrap();
+        assert!(!quote.liquidity_available);
+    }
 }
