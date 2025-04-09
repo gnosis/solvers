@@ -199,7 +199,7 @@ mod tests {
         }"#;
 
         let quote: super::Quote = serde_json::from_str(json).unwrap();
-        assert_eq!(quote.liquidity_available, true);
+        assert!(quote.liquidity_available);
     }
 
     #[test]
@@ -209,6 +209,6 @@ mod tests {
         }"#;
 
         let quote: super::Quote = serde_json::from_str(json).unwrap();
-        assert_eq!(quote.liquidity_available, false);
+        assert!(!quote.liquidity_available);
     }
 }
