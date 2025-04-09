@@ -79,26 +79,43 @@ impl Query {
 /// A Ox API quote response.
 #[serde_as]
 #[derive(Deserialize)]
-#[serde(tag = "liquidityAvailable")]
 #[serde(rename_all = "camelCase")]
-#[allow(clippy::large_enum_variant)]
-pub enum Quote {
-    #[serde(rename = "false")]
-    NoLiquidity,
+pub struct Quote {
+    /// Whether the quote is valid. If not valid, all other fields are missing.
+    pub liquidity_available: bool,
+    /// The amount of sell token (in atoms) that would be sold in this swap.
+    #[serde_as(as = "Option<serialize::U256>")]
+    pub sell_amount: Option<U256>,
+    /// The amount of buy token (in atoms) that would be bought in this swap.
+    #[serde_as(as = "Option<serialize::U256>")]
+    pub buy_amount: Option<U256>,
+    pub transaction: Option<QuoteTransaction>,
+    pub issues: Option<Issues>,
+}
 
-    #[serde(rename = "true")]
-    #[serde(rename_all = "camelCase")]
-    WithLiquidity {
-        #[serde_as(as = "serialize::U256")]
-        sell_amount: U256,
+/// A valid quote response, with liquidity available.
+pub struct ValidQuote {
+    /// The amount of sell token (in atoms) that would be sold in this swap.
+    pub sell_amount: U256,
+    /// The amount of buy token (in atoms) that would be bought in this swap.
+    pub buy_amount: U256,
+    pub transaction: QuoteTransaction,
+    pub issues: Issues,
+}
 
-        #[serde_as(as = "serialize::U256")]
-        buy_amount: U256,
+impl From<Quote> for Option<ValidQuote> {
+    fn from(raw: Quote) -> Self {
+        if !raw.liquidity_available {
+            return None;
+        }
 
-        transaction: QuoteTransaction,
-
-        issues: Issues,
-    },
+        Some(ValidQuote {
+            sell_amount: raw.sell_amount?,
+            buy_amount: raw.buy_amount?,
+            transaction: raw.transaction?,
+            issues: raw.issues?,
+        })
+    }
 }
 
 #[serde_as]
@@ -139,6 +156,7 @@ pub struct Allowance {
 
 #[derive(Deserialize)]
 #[serde(untagged)]
+#[allow(clippy::large_enum_variant)]
 pub enum Response {
     Ok(Quote),
     Err(Error),
@@ -164,7 +182,7 @@ mod tests {
     #[test]
     fn test_quote_deserialization() {
         let json = r#"{
-            "liquidityAvailable": "true",
+            "liquidityAvailable": true,
             "sellAmount": "1000000000000000000",
             "buyAmount": "1000000000000000000",
             "transaction": {
@@ -181,16 +199,16 @@ mod tests {
         }"#;
 
         let quote: super::Quote = serde_json::from_str(json).unwrap();
-        assert!(matches!(quote, super::Quote::WithLiquidity { .. }));
+        assert_eq!(quote.liquidity_available, true);
     }
 
     #[test]
     fn test_quote_no_liquidity_deserialization() {
         let json = r#"{
-            "liquidityAvailable": "false"
+            "liquidityAvailable": false
         }"#;
 
         let quote: super::Quote = serde_json::from_str(json).unwrap();
-        assert!(matches!(quote, super::Quote::NoLiquidity));
+        assert_eq!(quote.liquidity_available, false);
     }
 }

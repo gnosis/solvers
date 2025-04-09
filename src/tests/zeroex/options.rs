@@ -16,6 +16,7 @@ async fn test() {
              excludedSources=Uniswap_V2%2CBalancer_V2",
         ),
         res: json!({
+            "liquidityAvailable": true,
             "sellAmount": "1000000000000000000",
             "buyAmount": "5876422636675954000000",
             "transaction": {

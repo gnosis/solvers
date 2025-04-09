@@ -94,51 +94,45 @@ impl ZeroEx {
                 .await?
         };
 
-        let (sell_amount, buy_amount, transaction, issues) = match quote {
-            dto::Quote::WithLiquidity {
-                sell_amount,
-                buy_amount,
-                transaction,
-                issues,
-            } => (sell_amount, buy_amount, transaction, issues),
-            dto::Quote::NoLiquidity => return Err(Error::NotFound),
-        };
-
         Ok(dex::Swap {
             call: dex::Call {
-                to: eth::ContractAddress(transaction.to),
-                calldata: transaction.data,
+                to: eth::ContractAddress(quote.transaction.to),
+                calldata: quote.transaction.data,
             },
             input: eth::Asset {
                 token: order.sell,
-                amount: sell_amount,
+                amount: quote.sell_amount,
             },
             output: eth::Asset {
                 token: order.buy,
-                amount: buy_amount,
+                amount: quote.buy_amount,
             },
             allowance: dex::Allowance {
-                spender: issues
+                spender: quote
+                    .issues
                     .allowance
                     .map(|allowance| eth::ContractAddress(allowance.spender))
                     .unwrap_or(eth::ContractAddress(
                         ethereum_types::H160::from_str(DEFAULT_ALLOWANCE_TARGET).unwrap(),
                     )),
-                amount: dex::Amount::new(sell_amount),
+                amount: dex::Amount::new(quote.sell_amount),
             },
-            gas: eth::Gas(transaction.gas.ok_or(Error::MissingGasEstimate)?),
+            gas: eth::Gas(quote.transaction.gas.ok_or(Error::MissingGasEstimate)?),
         })
     }
 
-    async fn quote(&self, query: &dto::Query) -> Result<dto::Quote, Error> {
-        let quote = util::http::roundtrip!(
-            <dto::Quote, dto::Error>;
-            self.client
-                .request(reqwest::Method::GET, util::url::join(&self.endpoint, "quote"))
-                .query(query)
-        )
-        .await?;
-        Ok(quote)
+    async fn quote(&self, query: &dto::Query) -> Result<dto::ValidQuote, Error> {
+        let quote = Into::<Option<dto::ValidQuote>>::into(
+            util::http::roundtrip!(
+                <dto::Quote, dto::Error>;
+                self.client
+                    .request(reqwest::Method::GET, util::url::join(&self.endpoint, "quote"))
+                    .query(query)
+            )
+            .await?,
+        );
+
+        quote.ok_or(Error::NotFound)
     }
 }
 
