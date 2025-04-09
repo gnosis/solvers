@@ -1,5 +1,5 @@
 //! DTOs for the 0x swap API. Full documentation for the API can be found
-//! [here](https://docs.0x.org/0x-api-swap/api-references/get-swap-v1-quote).
+//! [here](https://0x.org/docs/api#tag/Swap/operation/swap::allowanceHolder::getQuote).
 
 use {
     crate::{
@@ -13,7 +13,7 @@ use {
 
 /// A 0x API quote query parameters.
 ///
-/// See [API](https://docs.0x.org/0x-api-swap/api-references/get-swap-v1-quote)
+/// See [API](https://0x.org/docs/api#tag/Swap/operation/swap::allowanceHolder::getQuote)
 /// documentation for more detailed information on each parameter.
 #[serde_as]
 #[derive(Clone, Default, Serialize)]
