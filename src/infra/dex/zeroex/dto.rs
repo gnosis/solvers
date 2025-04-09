@@ -82,8 +82,8 @@ impl Query {
 #[serde(rename_all = "camelCase")]
 pub struct Quote {
     /// The amount of sell token (in atoms) that would be sold in this swap.
-    #[serde_as(as = "serialize::U256")]
-    pub sell_amount: U256,
+    #[serde_as(as = "Option<serialize::U256>")]
+    pub sell_amount: Option<U256>,
 
     /// The amount of buy token (in atoms) that would be bought in this swap.
     #[serde_as(as = "serialize::U256")]

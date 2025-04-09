@@ -101,7 +101,7 @@ impl ZeroEx {
             },
             input: eth::Asset {
                 token: order.sell,
-                amount: quote.sell_amount,
+                amount: quote.sell_amount.ok_or(Error::NotFound)?,
             },
             output: eth::Asset {
                 token: order.buy,
@@ -115,7 +115,7 @@ impl ZeroEx {
                     .unwrap_or(eth::ContractAddress(
                         ethereum_types::H160::from_str(DEFAULT_ALLOWANCE_TARGET).unwrap(),
                     )),
-                amount: dex::Amount::new(quote.sell_amount),
+                amount: dex::Amount::new(quote.sell_amount.ok_or(Error::NotFound)?),
             },
             gas: eth::Gas(quote.transaction.gas.ok_or(Error::MissingGasEstimate)?),
         })
@@ -169,6 +169,7 @@ impl From<util::http::RoundtripError<dto::Error>> for Error {
                         StatusCode::UNAVAILABLE_FOR_LEGAL_REASONS => {
                             Self::UnavailableForLegalReasons
                         }
+                        StatusCode::UNPROCESSABLE_ENTITY => Self::UnavailableForLegalReasons,
                         _ => Self::Http(err),
                     }
                 } else {
@@ -182,6 +183,7 @@ impl From<util::http::RoundtripError<dto::Error>> for Error {
                 match err.code {
                     100 => Self::NotFound,
                     429 => Self::RateLimited,
+                    422 => Self::UnavailableForLegalReasons,
                     451 => Self::UnavailableForLegalReasons,
                     _ => Self::Api {
                         code: err.code,
