@@ -79,21 +79,26 @@ impl Query {
 /// A Ox API quote response.
 #[serde_as]
 #[derive(Deserialize)]
+#[serde(tag = "liquidityAvailable")]
 #[serde(rename_all = "camelCase")]
-pub struct Quote {
-    /// The amount of sell token (in atoms) that would be sold in this swap.
-    #[serde_as(as = "Option<serialize::U256>")]
-    pub sell_amount: Option<U256>,
+#[allow(clippy::large_enum_variant)]
+pub enum Quote {
+    #[serde(rename = "false")]
+    NoLiquidity,
 
-    /// The amount of buy token (in atoms) that would be bought in this swap.
-    #[serde_as(as = "serialize::U256")]
-    pub buy_amount: U256,
+    #[serde(rename = "true")]
+    #[serde(rename_all = "camelCase")]
+    WithLiquidity {
+        #[serde_as(as = "serialize::U256")]
+        sell_amount: U256,
 
-    /// The transaction details for the swap.
-    pub transaction: QuoteTransaction,
+        #[serde_as(as = "serialize::U256")]
+        buy_amount: U256,
 
-    /// Issues containing the allowance data
-    pub issues: Issues,
+        transaction: QuoteTransaction,
+
+        issues: Issues,
+    },
 }
 
 #[serde_as]
@@ -153,4 +158,39 @@ impl Response {
 pub struct Error {
     pub code: i64,
     pub reason: String,
+}
+
+mod tests {
+    #[test]
+    fn test_quote_deserialization() {
+        let json = r#"{
+            "liquidityAvailable": "true",
+            "sellAmount": "1000000000000000000",
+            "buyAmount": "1000000000000000000",
+            "transaction": {
+                "to": "0x1234567890123456789012345678901234567890",
+                "data": "0xabcdef",
+                "gas": "21000"
+            },
+            "issues": {
+                "allowance": {
+                    "actual": "1000000000000000000",
+                    "spender": "0x1234567890123456789012345678901234567890"
+                }
+            }
+        }"#;
+
+        let quote: super::Quote = serde_json::from_str(json).unwrap();
+        assert!(matches!(quote, super::Quote::WithLiquidity { .. }));
+    }
+
+    #[test]
+    fn test_quote_no_liquidity_deserialization() {
+        let json = r#"{
+            "liquidityAvailable": "false"
+        }"#;
+
+        let quote: super::Quote = serde_json::from_str(json).unwrap();
+        assert!(matches!(quote, super::Quote::NoLiquidity));
+    }
 }

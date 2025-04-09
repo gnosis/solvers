@@ -94,30 +94,39 @@ impl ZeroEx {
                 .await?
         };
 
+        let (sell_amount, buy_amount, transaction, issues) = match quote {
+            dto::Quote::WithLiquidity {
+                sell_amount,
+                buy_amount,
+                transaction,
+                issues,
+            } => (sell_amount, buy_amount, transaction, issues),
+            dto::Quote::NoLiquidity => return Err(Error::NotFound),
+        };
+
         Ok(dex::Swap {
             call: dex::Call {
-                to: eth::ContractAddress(quote.transaction.to),
-                calldata: quote.transaction.data,
+                to: eth::ContractAddress(transaction.to),
+                calldata: transaction.data,
             },
             input: eth::Asset {
                 token: order.sell,
-                amount: quote.sell_amount.ok_or(Error::NotFound)?,
+                amount: sell_amount,
             },
             output: eth::Asset {
                 token: order.buy,
-                amount: quote.buy_amount,
+                amount: buy_amount,
             },
             allowance: dex::Allowance {
-                spender: quote
-                    .issues
+                spender: issues
                     .allowance
                     .map(|allowance| eth::ContractAddress(allowance.spender))
                     .unwrap_or(eth::ContractAddress(
                         ethereum_types::H160::from_str(DEFAULT_ALLOWANCE_TARGET).unwrap(),
                     )),
-                amount: dex::Amount::new(quote.sell_amount.ok_or(Error::NotFound)?),
+                amount: dex::Amount::new(sell_amount),
             },
-            gas: eth::Gas(quote.transaction.gas.ok_or(Error::MissingGasEstimate)?),
+            gas: eth::Gas(transaction.gas.ok_or(Error::MissingGasEstimate)?),
         })
     }
 
