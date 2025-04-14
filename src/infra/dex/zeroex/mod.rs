@@ -121,15 +121,18 @@ impl ZeroEx {
         })
     }
 
-    async fn quote(&self, query: &dto::Query) -> Result<dto::Quote, Error> {
-        let quote = util::http::roundtrip!(
-            <dto::Quote, dto::Error>;
-            self.client
-                .request(reqwest::Method::GET, util::url::join(&self.endpoint, "quote"))
-                .query(query)
-        )
-        .await?;
-        Ok(quote)
+    async fn quote(&self, query: &dto::Query) -> Result<dto::ValidQuote, Error> {
+        let quote = Into::<Option<dto::ValidQuote>>::into(
+            util::http::roundtrip!(
+                <dto::Quote, dto::Error>;
+                self.client
+                    .request(reqwest::Method::GET, util::url::join(&self.endpoint, "quote"))
+                    .query(query)
+            )
+            .await?,
+        );
+
+        quote.ok_or(Error::NotFound)
     }
 }
 
@@ -169,6 +172,7 @@ impl From<util::http::RoundtripError<dto::Error>> for Error {
                         StatusCode::UNAVAILABLE_FOR_LEGAL_REASONS => {
                             Self::UnavailableForLegalReasons
                         }
+                        StatusCode::UNPROCESSABLE_ENTITY => Self::UnavailableForLegalReasons,
                         _ => Self::Http(err),
                     }
                 } else {
@@ -182,6 +186,7 @@ impl From<util::http::RoundtripError<dto::Error>> for Error {
                 match err.code {
                     100 => Self::NotFound,
                     429 => Self::RateLimited,
+                    422 => Self::UnavailableForLegalReasons,
                     451 => Self::UnavailableForLegalReasons,
                     _ => Self::Api {
                         code: err.code,
