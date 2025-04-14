@@ -30,6 +30,10 @@ struct Config {
     /// default contract address will be used.
     v3_vault: Option<H160>,
 
+    /// Optional Permit2 contract address. If not specified, the
+    /// default contract address will be used.
+    permit2: Option<H160>,
+
     /// Chain ID used to automatically determine contract addresses and send to
     /// the SOR API.
     #[serde_as(as = "serialize::ChainId")]
@@ -64,6 +68,10 @@ pub async fn load(path: &Path) -> super::Config {
                 .v3_vault
                 .map(eth::ContractAddress)
                 .unwrap_or(contracts.balancer_v3_vault),
+            permit2: config
+                .permit2
+                .map(eth::ContractAddress)
+                .unwrap_or(contracts.permit2),
             settlement: base.contracts.settlement,
             block_stream: base.block_stream.clone(),
             chain_id: config.chain_id,

@@ -8,6 +8,7 @@ pub struct Contracts {
     pub balancer_v2_vault: eth::ContractAddress,
     pub balancer_v3_batch_router: eth::ContractAddress,
     pub balancer_v3_vault: eth::ContractAddress,
+    pub permit2: eth::ContractAddress,
 }
 
 impl Contracts {
@@ -28,6 +29,7 @@ impl Contracts {
             balancer_v2_vault: a(contracts::BalancerV2Vault::raw_contract()),
             balancer_v3_batch_router: a(contracts::BalancerV3BatchRouter::raw_contract()),
             balancer_v3_vault: a(contracts::BalancerV3Vault::raw_contract()),
+            permit2: a(contracts::Permit2::raw_contract())
         }
     }
 }

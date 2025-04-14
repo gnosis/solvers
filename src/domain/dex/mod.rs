@@ -74,8 +74,8 @@ impl Debug for Call {
 /// A DEX swap.
 #[derive(Debug)]
 pub struct Swap {
-    /// The Ethereum call for executing the swap.
-    pub call: Call,
+    /// The Ethereum calls for executing the swap.
+    pub calls: Vec<Call>,
     /// The expected input asset for the swap. The executed input may end up
     /// being different because of slippage.
     pub input: eth::Asset,
@@ -128,16 +128,21 @@ impl Swap {
         };
 
         let allowance = self.allowance();
-        let interactions = vec![solution::Interaction::Custom(solution::CustomInteraction {
-            target: self.call.to.0,
-            value: eth::Ether::default(),
-            calldata: self.call.calldata,
-            inputs: vec![self.input],
-            outputs: vec![self.output],
-            internalize: false,
-            allowances: vec![allowance],
-        })];
-
+        let interactions = self.calls
+            .into_iter()
+            .map(|call|
+                solution::Interaction::Custom(solution::CustomInteraction {
+                    target: call.to.0,
+                    value: eth::Ether::default(),
+                    calldata: call.calldata,
+                    inputs: vec![self.input],
+                    outputs: vec![self.output],
+                    internalize: false,
+                    allowances: vec![allowance.clone()],
+                })
+            )
+            .collect();
+        
         solution::Single {
             order,
             input: self.input,

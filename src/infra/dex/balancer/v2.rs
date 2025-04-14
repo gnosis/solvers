@@ -50,8 +50,8 @@ impl Vault {
         assets: Vec<H160>,
         funds: Funds,
         limits: Vec<I256>,
-    ) -> dex::Call {
-        dex::Call {
+    ) -> Vec<dex::Call> {
+        vec![dex::Call {
             to: self.address(),
             calldata: self
                 .0
@@ -86,6 +86,6 @@ impl Vault {
                 .data
                 .expect("calldata")
                 .0,
-        }
+        }]
     }
 }

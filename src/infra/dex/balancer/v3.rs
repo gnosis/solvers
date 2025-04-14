@@ -4,8 +4,8 @@
 
 use {
     crate::domain::{dex, eth},
-    contracts::{ethcontract::Bytes, BalancerV3BatchRouter, BalancerV3Vault},
-    ethereum_types::{H160, U256},
+    contracts::{ethcontract::Bytes, BalancerV3BatchRouter, BalancerV3Vault, Permit2 as Permit2Contract},
+    ethereum_types::{H160, U256}, std::u64,
 };
 
 pub struct Vault(BalancerV3Vault);
@@ -13,6 +13,18 @@ pub struct Vault(BalancerV3Vault);
 impl Vault {
     pub fn new(address: eth::ContractAddress) -> Self {
         Self(contracts::dummy_contract!(BalancerV3Vault, address.0))
+    }
+
+    pub fn address(&self) -> eth::ContractAddress {
+        eth::ContractAddress(self.0.address())
+    }
+}
+
+pub struct Permit2(Permit2Contract);
+
+impl Permit2 {
+    pub fn new(address: eth::ContractAddress) -> Self {
+        Self(contracts::dummy_contract!(Permit2Contract, address.0))
     }
 
     pub fn address(&self) -> eth::ContractAddress {
@@ -46,30 +58,57 @@ impl Router {
         eth::ContractAddress(self.0.address())
     }
 
-    pub fn swap_exact_amount_in(&self, paths: Vec<SwapPath>) -> dex::Call {
-        let call = self.0.swap_exact_in(
+    pub fn swap_exact_amount_in(&self, paths: Vec<SwapPath>, permit2: &Permit2, v3_vault: &Vault) -> Vec<dex::Call> {
+        let permit2_approval_call = Self::permit2_approval(&paths, permit2, v3_vault);
+
+        let swap_call = self.0.swap_exact_in(
             Self::encode_paths(paths),
             Self::deadline(),
             Self::weth_is_eth(),
             Self::user_data(),
         );
 
-        dex::Call {
-            to: self.address(),
-            calldata: call.tx.data.unwrap().0,
-        }
+        vec![
+            permit2_approval_call,
+            dex::Call {
+                to: self.address(),
+                calldata: swap_call.tx.data.unwrap().0,
+            }
+        ]
     }
 
-    pub fn swap_exact_amount_out(&self, paths: Vec<SwapPath>) -> dex::Call {
-        let call = self.0.swap_exact_out(
+    pub fn swap_exact_amount_out(&self, paths: Vec<SwapPath>, permit2: &Permit2, v3_vault: &Vault) -> Vec<dex::Call> {
+        let permit2_approval_call = Self::permit2_approval(&paths, permit2, v3_vault);
+
+        let swap_call = self.0.swap_exact_out(
             Self::encode_paths(paths),
             Self::deadline(),
             Self::weth_is_eth(),
             Self::user_data(),
         );
 
+        vec![
+            permit2_approval_call,
+            dex::Call {
+                to: self.address(),
+                calldata: swap_call.tx.data.unwrap().0,
+            }
+        ]
+    }
+
+    fn permit2_approval(paths: &[SwapPath], permit2: &Permit2, v3_vault: &Vault) -> dex::Call {
+        let to = permit2.address();
+
+        let SwapPath {token_in, input_amount_raw, ..} = paths.first().unwrap();
+        let spender = v3_vault.address().0;
+
+        // TODO: use order expiration?
+        let expiration = u64::MAX;
+
+        let call = permit2.0.approve(*token_in, spender, *input_amount_raw, expiration);
+
         dex::Call {
-            to: self.address(),
+            to,
             calldata: call.tx.data.unwrap().0,
         }
     }

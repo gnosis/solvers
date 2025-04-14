@@ -2,11 +2,7 @@ use {
     crate::{
         domain::{dex, eth},
         infra::blockchain,
-    },
-    contracts::ethcontract::{self, web3},
-    ethereum_types::{Address, U256},
-    ethrpc::extensions::EthExt,
-    std::collections::HashMap,
+    }, contracts::ethcontract::{self, web3}, ethereum_types::{Address, U256}, ethrpc::extensions::EthExt, futures::future::join_all, std::collections::HashMap
 };
 
 /// A DEX swap simulator.
@@ -35,12 +31,32 @@ impl Simulator {
     ///
     /// This will return a `None` if the gas simulation is unavailable.
     pub async fn gas(&self, owner: Address, swap: &dex::Swap) -> Result<eth::Gas, Error> {
+        // TODO: use multicall instead
+        // Start simulating the gas for each call in the swap
+        let call_gas_futures = swap.calls.iter().map(|call| {
+            self.call_gas(owner, swap, &call)
+        });
+
+        // Wait for all futures to complete
+        let call_gas_results: Vec<_> = join_all(call_gas_futures).await
+            .into_iter()
+            .collect::<Result<_, _>>()?;
+
+        // Sum up all the gas costs for each call
+        let gas_sum = call_gas_results
+            .into_iter()
+            .fold(U256::zero(), |acc, gas| acc + gas.0);
+        Ok(eth::Gas(gas_sum))
+    }
+
+    async fn call_gas(&self, owner: Address, swap: &dex::Swap, call: &dex::Call) -> Result<eth::Gas, Error> {
         if owner == self.settlement.0 {
             // we can't have both the settlement and swapper contracts at the same address
             return Err(Error::SettlementContractIsOwner);
         }
 
         let swapper = contracts::support::Swapper::at(&self.web3, owner);
+        
         let tx = swapper
             .methods()
             .swap(
@@ -49,9 +65,9 @@ impl Simulator {
                 (swap.output.token.0, swap.output.amount),
                 (swap.allowance.spender.0, swap.allowance.amount.get()),
                 (
-                    swap.call.to.0,
+                    call.to.0,
                     U256::zero(),
-                    ethcontract::Bytes(swap.call.calldata.clone()),
+                    ethcontract::Bytes(call.calldata.clone()),
                 ),
             )
             .tx;
