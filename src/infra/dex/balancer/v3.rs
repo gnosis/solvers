@@ -4,15 +4,15 @@
 
 use {
     crate::domain::{dex, eth},
-    contracts::{ethcontract::Bytes, BalancerV3BatchRouter, BalancerV3Vault},
+    contracts::{ethcontract::Bytes, BalancerV3BatchRouter, Permit2 as Permit2Contract},
     ethereum_types::{H160, U256},
 };
 
-pub struct Vault(BalancerV3Vault);
+pub struct Permit2(Permit2Contract);
 
-impl Vault {
+impl Permit2 {
     pub fn new(address: eth::ContractAddress) -> Self {
-        Self(contracts::dummy_contract!(BalancerV3Vault, address.0))
+        Self(contracts::dummy_contract!(Permit2Contract, address.0))
     }
 
     pub fn address(&self) -> eth::ContractAddress {
@@ -46,32 +46,88 @@ impl Router {
         eth::ContractAddress(self.0.address())
     }
 
-    pub fn swap_exact_amount_in(&self, paths: Vec<SwapPath>) -> dex::Call {
-        let call = self.0.swap_exact_in(
+    pub fn swap_exact_amount_in(
+        &self,
+        paths: Vec<SwapPath>,
+        permit2: &Permit2,
+        v3_batch_router: &Router,
+    ) -> Vec<dex::Call> {
+        let permit2_approval_call = Self::permit2_approval(&paths, permit2, v3_batch_router);
+
+        let swap_call = self.0.swap_exact_in(
             Self::encode_paths(paths),
             Self::deadline(),
             Self::weth_is_eth(),
             Self::user_data(),
         );
 
-        dex::Call {
-            to: self.address(),
-            calldata: call.tx.data.unwrap().0,
-        }
+        vec![
+            permit2_approval_call,
+            dex::Call {
+                to: self.address(),
+                calldata: swap_call.tx.data.unwrap().0,
+            },
+        ]
     }
 
-    pub fn swap_exact_amount_out(&self, paths: Vec<SwapPath>) -> dex::Call {
-        let call = self.0.swap_exact_out(
+    pub fn swap_exact_amount_out(
+        &self,
+        paths: Vec<SwapPath>,
+        permit2: &Permit2,
+        v3_batch_router: &Router,
+    ) -> Vec<dex::Call> {
+        let permit2_approval_call = Self::permit2_approval(&paths, permit2, v3_batch_router);
+
+        let swap_call = self.0.swap_exact_out(
             Self::encode_paths(paths),
             Self::deadline(),
             Self::weth_is_eth(),
             Self::user_data(),
         );
 
-        dex::Call {
-            to: self.address(),
-            calldata: call.tx.data.unwrap().0,
-        }
+        vec![
+            permit2_approval_call,
+            dex::Call {
+                to: self.address(),
+                calldata: swap_call.tx.data.unwrap().0,
+            },
+        ]
+    }
+
+    fn permit2_approval(
+        paths: &[SwapPath],
+        permit2: &Permit2,
+        v3_batch_router: &Router,
+    ) -> dex::Call {
+        let to = permit2.address();
+
+        let SwapPath {
+            token_in,
+            input_amount_raw,
+            ..
+        } = paths.first().unwrap();
+        let spender = v3_batch_router.address().0;
+
+        // TODO: use order expiration?
+        // Expiration is a uint48 but ethercontract-rs does not seem to encode this
+        // correctly, so we manually encode the uint48 as the bigendian bytes of
+        // a U256
+        let expiration: u64 = 8_000_000_000;
+        let mut expiration_bytes = [0u8; 32];
+        expiration_bytes[0..8].copy_from_slice(&num::traits::ToBytes::to_be_bytes(&expiration));
+
+        // Transfers are done via Permit2, so we
+        let call = permit2
+            .0
+            .approve(*token_in, spender, *input_amount_raw, expiration);
+
+        // Again, as ethercontract-rs encodes the expiration as a u64,
+        // we need to replace it for a properly encoded uint48 padded into a U256
+        let mut calldata = call.tx.data.unwrap().0;
+        calldata.truncate(calldata.len() - 8);
+        calldata.extend_from_slice(&expiration_bytes);
+
+        dex::Call { to, calldata }
     }
 
     /// Converts rust struct with readable fields into tuple arguments used by

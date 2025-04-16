@@ -31,7 +31,7 @@ pub struct Sor {
     endpoint: reqwest::Url,
     v2_vault: v2::Vault,
     v3_batch_router: v3::Router,
-    v3_vault: v3::Vault,
+    permit2: v3::Permit2,
     settlement: eth::ContractAddress,
     chain_id: Chain,
     query_batch_swap: bool,
@@ -51,9 +51,8 @@ pub struct Config {
     /// The address of the Balancer V3 BatchRouter contract.
     pub v3_batch_router: eth::ContractAddress,
 
-    /// The address of the Balancer V3 Vault contract. Used as the spender in
-    /// V3.
-    pub v3_vault: eth::ContractAddress,
+    /// The address of the Permit2 contract.
+    pub permit2: eth::ContractAddress,
 
     /// The address of the Settlement contract.
     pub settlement: eth::ContractAddress,
@@ -79,7 +78,7 @@ impl Sor {
             endpoint: config.endpoint,
             v2_vault: v2::Vault::new(config.vault),
             v3_batch_router: v3::Router::new(config.v3_batch_router),
-            v3_vault: v3::Vault::new(config.v3_vault),
+            permit2: v3::Permit2::new(config.permit2),
             settlement: config.settlement,
             chain_id: Chain::from_domain(config.chain_id)?,
             query_batch_swap: config.query_batch_swap,
@@ -131,18 +130,20 @@ impl Sor {
         };
 
         let gas = U256::from(quote.swaps.len()) * Self::GAS_PER_SWAP;
-        let (spender, call) = match quote.protocol_version {
+        let (spender, calls) = match quote.protocol_version {
             dto::ProtocolVersion::V2 => (
                 self.v2_vault.address(),
                 self.encode_v2_swap(order, &quote, max_input, min_output)?,
             ),
             dto::ProtocolVersion::V3 => {
-                (self.v3_vault.address(), self.encode_v3_swap(order, &quote)?)
+                // In Balancer v3, the spender must be the Permit2 contract, as it's the one
+                // doing the transfer of funds from the settlement
+                (self.permit2.address(), self.encode_v3_swap(order, &quote)?)
             }
         };
 
         Ok(dex::Swap {
-            call,
+            calls,
             input: eth::Asset {
                 token: eth::TokenAddress(quote.token_in),
                 amount: input,
@@ -165,7 +166,7 @@ impl Sor {
         quote: &dto::Quote,
         max_input: U256,
         min_output: U256,
-    ) -> Result<dex::Call, Error> {
+    ) -> Result<Vec<dex::Call>, Error> {
         let kind = match order.side {
             order::Side::Sell => v2::SwapKind::GivenIn,
             order::Side::Buy => v2::SwapKind::GivenOut,
@@ -214,7 +215,11 @@ impl Sor {
             .batch_swap_v2(kind, swaps, assets, funds, limits))
     }
 
-    fn encode_v3_swap(&self, order: &dex::Order, quote: &dto::Quote) -> Result<dex::Call, Error> {
+    fn encode_v3_swap(
+        &self,
+        order: &dex::Order,
+        quote: &dto::Quote,
+    ) -> Result<Vec<dex::Call>, Error> {
         let paths = quote
             .paths
             .iter()
@@ -245,8 +250,16 @@ impl Sor {
             .collect::<Result<_, Error>>()?;
 
         Ok(match order.side {
-            Side::Buy => self.v3_batch_router.swap_exact_amount_out(paths),
-            Side::Sell => self.v3_batch_router.swap_exact_amount_in(paths),
+            Side::Buy => self.v3_batch_router.swap_exact_amount_out(
+                paths,
+                &self.permit2,
+                &self.v3_batch_router,
+            ),
+            Side::Sell => self.v3_batch_router.swap_exact_amount_in(
+                paths,
+                &self.permit2,
+                &self.v3_batch_router,
+            ),
         })
     }
 

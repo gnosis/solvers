@@ -127,10 +127,10 @@ impl Okx {
             .ok_or(Error::GasCalculationFailed)?;
 
         Ok(dex::Swap {
-            call: dex::Call {
+            calls: vec![dex::Call {
                 to: eth::ContractAddress(swap_response.tx.to),
                 calldata: swap_response.tx.data.clone(),
-            },
+            }],
             input: eth::Asset {
                 token: swap_response
                     .router_result

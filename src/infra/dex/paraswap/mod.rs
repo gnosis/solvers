@@ -80,10 +80,10 @@ impl ParaSwap {
         )
         .await?;
         Ok(dex::Swap {
-            call: dex::Call {
+            calls: vec![dex::Call {
                 to: eth::ContractAddress(swap.tx_params.to),
                 calldata: swap.tx_params.data,
-            },
+            }],
             input: eth::Asset {
                 token: order.sell,
                 amount: swap.price_route.src_amount,
