@@ -51,8 +51,11 @@ impl Router {
         paths: Vec<SwapPath>,
         permit2: &Permit2,
         v3_batch_router: &Router,
+        token_in: H160,
+        max_input: U256,
     ) -> Vec<dex::Call> {
-        let permit2_approval_call = Self::permit2_approval(&paths, permit2, v3_batch_router);
+        let permit2_approval_call =
+            Self::permit2_approval(permit2, v3_batch_router, token_in, max_input);
 
         let swap_call = self.0.swap_exact_in(
             Self::encode_paths(paths),
@@ -75,8 +78,11 @@ impl Router {
         paths: Vec<SwapPath>,
         permit2: &Permit2,
         v3_batch_router: &Router,
+        token_in: H160,
+        max_input: U256,
     ) -> Vec<dex::Call> {
-        let permit2_approval_call = Self::permit2_approval(&paths, permit2, v3_batch_router);
+        let permit2_approval_call =
+            Self::permit2_approval(permit2, v3_batch_router, token_in, max_input);
 
         let swap_call = self.0.swap_exact_out(
             Self::encode_paths(paths),
@@ -94,38 +100,29 @@ impl Router {
         ]
     }
 
+    // Transfers are done via Permit2, so we approve the balancer v3 router to spend
+    // the input tokens
     fn permit2_approval(
-        paths: &[SwapPath],
         permit2: &Permit2,
         v3_batch_router: &Router,
+        token_in: H160,
+        max_input: U256,
     ) -> dex::Call {
         let to = permit2.address();
-
-        let SwapPath {
-            token_in,
-            input_amount_raw,
-            ..
-        } = paths.first().unwrap();
         let spender = v3_batch_router.address().0;
+        // expiration = 0 in permit2 means that the tokens are allowed to be spent on
+        // the same block as the approval, this is enough for a settlement
+        let expiration = 0;
 
-        // TODO: use order expiration?
-        // Expiration is a uint48 but ethercontract-rs does not seem to encode this
-        // correctly, so we manually encode the uint48 as the bigendian bytes of
-        // a U256
-        let expiration: u64 = 8_000_000_000;
-        let mut expiration_bytes = [0u8; 32];
-        expiration_bytes[0..8].copy_from_slice(&num::traits::ToBytes::to_be_bytes(&expiration));
+        // Transfers are done via Permit2, so we approve the balancer v3 router to spend
+        // the input tokens We set expiration as 0
+        let call = permit2.0.approve(token_in, spender, max_input, expiration);
 
-        // Transfers are done via Permit2, so we
-        let call = permit2
-            .0
-            .approve(*token_in, spender, *input_amount_raw, expiration);
-
-        // Again, as ethercontract-rs encodes the expiration as a u64,
-        // we need to replace it for a properly encoded uint48 padded into a U256
+        // As ethercontract-rs encodes the last argument (expiration) as a u64,
+        // we need to add 24 bytes to pad it into a u256 (which is the expected for EVM
+        // arguments) TODO: use another library to avoid manually adding bytes
         let mut calldata = call.tx.data.unwrap().0;
-        calldata.truncate(calldata.len() - 8);
-        calldata.extend_from_slice(&expiration_bytes);
+        calldata.extend_from_slice(&[0u8; 24]);
 
         dex::Call { to, calldata }
     }

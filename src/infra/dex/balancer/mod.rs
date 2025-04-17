@@ -138,7 +138,10 @@ impl Sor {
             dto::ProtocolVersion::V3 => {
                 // In Balancer v3, the spender must be the Permit2 contract, as it's the one
                 // doing the transfer of funds from the settlement
-                (self.permit2.address(), self.encode_v3_swap(order, &quote)?)
+                (
+                    self.permit2.address(),
+                    self.encode_v3_swap(order, &quote, max_input)?,
+                )
             }
         };
 
@@ -219,6 +222,7 @@ impl Sor {
         &self,
         order: &dex::Order,
         quote: &dto::Quote,
+        max_input: U256,
     ) -> Result<Vec<dex::Call>, Error> {
         let paths = quote
             .paths
@@ -254,11 +258,15 @@ impl Sor {
                 paths,
                 &self.permit2,
                 &self.v3_batch_router,
+                quote.token_in,
+                max_input,
             ),
             Side::Sell => self.v3_batch_router.swap_exact_amount_in(
                 paths,
                 &self.permit2,
                 &self.v3_batch_router,
+                quote.token_in,
+                max_input,
             ),
         })
     }
