@@ -19,7 +19,7 @@ pub enum SwapKind {
     GivenOut = 1,
 }
 
-pub struct Swap {
+pub struct SwapV2 {
     pub pool_id: H256,
     pub asset_in_index: U256,
     pub asset_out_index: U256,
@@ -43,16 +43,15 @@ impl Vault {
         eth::ContractAddress(self.0.address())
     }
 
-    pub fn batch_swap(
+    pub fn batch_swap_v2(
         &self,
         kind: SwapKind,
-        swaps: Vec<Swap>,
+        swaps: Vec<SwapV2>,
         assets: Vec<H160>,
         funds: Funds,
         limits: Vec<I256>,
-        deadline: U256,
-    ) -> dex::Call {
-        dex::Call {
+    ) -> Vec<dex::Call> {
+        vec![dex::Call {
             to: self.address(),
             calldata: self
                 .0
@@ -79,12 +78,14 @@ impl Vault {
                         funds.to_internal_balance,
                     ),
                     limits,
-                    deadline,
+                    // `deadline`: Sufficiently large value with as many 0's as possible for some
+                    // small gas savings.
+                    U256::one() << 255,
                 )
                 .tx
                 .data
                 .expect("calldata")
                 .0,
-        }
+        }]
     }
 }
