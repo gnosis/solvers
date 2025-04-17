@@ -339,6 +339,32 @@ async fn sell_v3() {
                 "postInteractions": [],
                 "interactions": [
                     {
+                        "allowances": [
+                          {
+                            "amount": "1000000000000000000",
+                            "spender": "0x000000000022d473030f116ddee9f6b43ac78ba3",
+                            "token": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+                          }
+                        ],
+                        "callData": "0x87517c45000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000136f1efcc3f8f88516b9e94110d56fdbfb1778d10000000000000000000000000000000000000000000000000de0b6b3a764000000000000000000000000000000000000000000000000000000000001dcd65000000000000000000000000000000000000000000000000000",
+                        "inputs": [
+                          {
+                            "amount": "1000000000000000000",
+                            "token": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+                          }
+                        ],
+                        "internalize": false,
+                        "kind": "custom",
+                        "outputs": [
+                          {
+                            "amount": "227598784442065388110",
+                            "token": "0xb0415d55f2c87b7f99285848bd341c367feac1ea"
+                          }
+                        ],
+                        "target": "0x000000000022d473030f116ddee9f6b43ac78ba3",
+                        "value": "0"
+                    },
+                    {
                         "kind": "custom",
                         "internalize": false,
                         "target": "0x136f1efcc3f8f88516b9e94110d56fdbfb1778d1",
@@ -347,7 +373,7 @@ async fn sell_v3() {
                         "allowances": [
                             {
                                 "token": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                                "spender": "0xba1333333333a1ba1108e8412f11850a5c319ba9",
+                                "spender": "0x000000000022d473030f116ddee9f6b43ac78ba3",
                                 "amount": "1000000000000000000",
                             },
                         ],
