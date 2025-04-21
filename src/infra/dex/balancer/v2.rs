@@ -19,7 +19,7 @@ pub enum SwapKind {
     GivenOut = 1,
 }
 
-pub struct SwapV2 {
+pub struct Swap {
     pub pool_id: H256,
     pub asset_in_index: U256,
     pub asset_out_index: U256,
@@ -43,10 +43,10 @@ impl Vault {
         eth::ContractAddress(self.0.address())
     }
 
-    pub fn batch_swap_v2(
+    pub fn batch_swap(
         &self,
         kind: SwapKind,
-        swaps: Vec<SwapV2>,
+        swaps: Vec<Swap>,
         assets: Vec<H160>,
         funds: Funds,
         limits: Vec<I256>,

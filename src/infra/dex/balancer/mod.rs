@@ -178,7 +178,7 @@ impl Sor {
             .swaps
             .iter()
             .map(|swap| {
-                Ok(v2::SwapV2 {
+                Ok(v2::Swap {
                     pool_id: swap.pool_id.as_v2()?,
                     asset_in_index: swap.asset_in_index.into(),
                     asset_out_index: swap.asset_out_index.into(),
@@ -213,9 +213,7 @@ impl Sor {
             })
             .collect();
 
-        Ok(self
-            .v2_vault
-            .batch_swap_v2(kind, swaps, assets, funds, limits))
+        Ok(self.v2_vault.batch_swap(kind, swaps, assets, funds, limits))
     }
 
     fn encode_v3_swap(
@@ -229,7 +227,11 @@ impl Sor {
             .iter()
             .map(|p| {
                 Ok(v3::SwapPath {
-                    token_in: p.tokens[0].address,
+                    token_in: p
+                        .tokens
+                        .first()
+                        .map(|t| t.address)
+                        .ok_or_else(|| Error::InvalidPath)?,
                     input_amount_raw: p.input_amount_raw,
                     output_amount_raw: p.output_amount_raw,
                     // A path step consists of 1 item of 3 different arrays at the correct
@@ -297,6 +299,8 @@ pub enum Error {
     MissingDecimals(TokenAddress),
     #[error("invalid pool id format")]
     InvalidPoolIdFormat,
+    #[error("invalid path")]
+    InvalidPath,
 }
 
 impl From<util::http::RoundtripError<util::serialize::Never>> for Error {

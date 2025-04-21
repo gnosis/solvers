@@ -115,7 +115,7 @@ impl Router {
         let expiration = 0;
 
         // Transfers are done via Permit2, so we approve the balancer v3 router to spend
-        // the input tokens We set expiration as 0
+        // the input tokens
         let call = permit2.0.approve(token_in, spender, max_input, expiration);
 
         // As ethercontract-rs encodes the last argument (expiration) as a u64,
