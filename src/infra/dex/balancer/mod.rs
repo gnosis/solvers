@@ -173,7 +173,7 @@ impl Sor {
         let kind = match order.side {
             order::Side::Sell => v2::SwapKind::GivenIn,
             order::Side::Buy => v2::SwapKind::GivenOut,
-        } as _;
+        };
         let swaps = quote
             .swaps
             .iter()
@@ -259,14 +259,12 @@ impl Sor {
             Side::Buy => self.v3_batch_router.swap_exact_amount_out(
                 paths,
                 &self.permit2,
-                &self.v3_batch_router,
                 quote.token_in,
                 max_input,
             ),
             Side::Sell => self.v3_batch_router.swap_exact_amount_in(
                 paths,
                 &self.permit2,
-                &self.v3_batch_router,
                 quote.token_in,
                 max_input,
             ),

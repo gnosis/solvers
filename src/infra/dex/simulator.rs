@@ -41,7 +41,6 @@ impl Simulator {
         }
 
         let swapper = contracts::support::Swapper::at(&self.web3, owner);
-        // In the Swapper contract, a dex swap may consist of multiple interactions
         let swapper_calls_arg = swap
             .calls
             .iter()

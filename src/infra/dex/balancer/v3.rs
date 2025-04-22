@@ -18,6 +18,34 @@ impl Permit2 {
     pub fn address(&self) -> eth::ContractAddress {
         eth::ContractAddress(self.0.address())
     }
+
+    // Creates a interaction call to approve an addresss
+    // Needed because in Balancer V3 transfers are done via Permit2, so we approve
+    // the balancer v3 router to spend the input tokens
+    pub fn create_approval_call(
+        &self,
+        spender: H160,
+        token_in: H160,
+        max_input: U256,
+    ) -> dex::Call {
+        let to = self.address();
+
+        // expiration = 0 in permit2 means that the tokens are allowed to be spent on
+        // the same block as the approval, this is enough for a settlement
+        let expiration = 0;
+
+        // Transfers are done via Permit2, so we approve the balancer v3 router to spend
+        // the input tokens
+        let call = self.0.approve(token_in, spender, max_input, expiration);
+
+        // As ethercontract-rs encodes the last argument (expiration) as a u64,
+        // we need to add 24 bytes to pad it into a u256 (which is the expected for EVM
+        // arguments) TODO: use another library to avoid manually adding bytes
+        let mut calldata = call.tx.data.unwrap().0;
+        calldata.extend_from_slice(&[0u8; 24]);
+
+        dex::Call { to, calldata }
+    }
 }
 
 pub struct Router(BalancerV3BatchRouter);
@@ -50,12 +78,11 @@ impl Router {
         &self,
         paths: Vec<SwapPath>,
         permit2: &Permit2,
-        v3_batch_router: &Router,
         token_in: H160,
         max_input: U256,
     ) -> Vec<dex::Call> {
         let permit2_approval_call =
-            Self::permit2_approval(permit2, v3_batch_router, token_in, max_input);
+            permit2.create_approval_call(self.address().0, token_in, max_input);
 
         let swap_call = self.0.swap_exact_in(
             Self::encode_paths(paths),
@@ -77,12 +104,11 @@ impl Router {
         &self,
         paths: Vec<SwapPath>,
         permit2: &Permit2,
-        v3_batch_router: &Router,
         token_in: H160,
         max_input: U256,
     ) -> Vec<dex::Call> {
         let permit2_approval_call =
-            Self::permit2_approval(permit2, v3_batch_router, token_in, max_input);
+            permit2.create_approval_call(self.address().0, token_in, max_input);
 
         let swap_call = self.0.swap_exact_out(
             Self::encode_paths(paths),
@@ -98,33 +124,6 @@ impl Router {
                 calldata: swap_call.tx.data.unwrap().0,
             },
         ]
-    }
-
-    // Transfers are done via Permit2, so we approve the balancer v3 router to spend
-    // the input tokens
-    fn permit2_approval(
-        permit2: &Permit2,
-        v3_batch_router: &Router,
-        token_in: H160,
-        max_input: U256,
-    ) -> dex::Call {
-        let to = permit2.address();
-        let spender = v3_batch_router.address().0;
-        // expiration = 0 in permit2 means that the tokens are allowed to be spent on
-        // the same block as the approval, this is enough for a settlement
-        let expiration = 0;
-
-        // Transfers are done via Permit2, so we approve the balancer v3 router to spend
-        // the input tokens
-        let call = permit2.0.approve(token_in, spender, max_input, expiration);
-
-        // As ethercontract-rs encodes the last argument (expiration) as a u64,
-        // we need to add 24 bytes to pad it into a u256 (which is the expected for EVM
-        // arguments) TODO: use another library to avoid manually adding bytes
-        let mut calldata = call.tx.data.unwrap().0;
-        calldata.extend_from_slice(&[0u8; 24]);
-
-        dex::Call { to, calldata }
     }
 
     /// Converts rust struct with readable fields into tuple arguments used by
