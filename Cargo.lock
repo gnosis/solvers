@@ -990,6 +990,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "contracts"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?branch=main#7de04a67d64c6ac3144a8c446c8f8b2615993123"
+dependencies = [
+ "anyhow",
+ "ethcontract",
+ "ethcontract-generate",
+ "serde",
+]
+
+[[package]]
 name = "convert_case"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1492,7 +1503,7 @@ source = "git+https://github.com/cowprotocol/services.git?tag=v2.306.0#7d857d003
 dependencies = [
  "anyhow",
  "async-trait",
- "contracts",
+ "contracts 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.306.0)",
  "ethcontract",
  "futures",
  "hex",
@@ -2914,7 +2925,7 @@ name = "order-validation"
 version = "0.1.0"
 source = "git+https://github.com/cowprotocol/services.git?tag=v2.306.0#7d857d0039fcc4fb80ce690a3dd5dc458afc0023"
 dependencies = [
- "contracts",
+ "contracts 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.306.0)",
  "ethcontract",
  "thiserror",
  "tokio",
@@ -3782,6 +3793,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde_repr"
+version = "0.1.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "175ee3e80ae9982737ca543e96133087cbd9a485eecc3bc4de9c1a37b47ea59c"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.66",
+]
+
+[[package]]
 name = "serde_spanned"
 version = "0.6.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3900,7 +3922,7 @@ dependencies = [
  "chain",
  "chrono",
  "clap",
- "contracts",
+ "contracts 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.306.0)",
  "dashmap",
  "database",
  "derivative",
@@ -4017,7 +4039,7 @@ dependencies = [
  "bigdecimal",
  "chrono",
  "clap",
- "contracts",
+ "contracts 0.1.0 (git+https://github.com/cowprotocol/services.git?branch=main)",
  "ethereum-types",
  "ethrpc",
  "futures",
@@ -4039,6 +4061,7 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
+ "serde_repr",
  "serde_with",
  "sha2",
  "shared",

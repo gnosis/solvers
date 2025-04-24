@@ -41,6 +41,17 @@ impl Simulator {
         }
 
         let swapper = contracts::support::Swapper::at(&self.web3, owner);
+        let swapper_calls_arg = swap
+            .calls
+            .iter()
+            .map(|call| {
+                (
+                    call.to.0,
+                    U256::zero(),
+                    ethcontract::Bytes(call.calldata.clone()),
+                )
+            })
+            .collect();
         let tx = swapper
             .methods()
             .swap(
@@ -48,11 +59,7 @@ impl Simulator {
                 (swap.input.token.0, swap.input.amount),
                 (swap.output.token.0, swap.output.amount),
                 (swap.allowance.spender.0, swap.allowance.amount.get()),
-                (
-                    swap.call.to.0,
-                    U256::zero(),
-                    ethcontract::Bytes(swap.call.calldata.clone()),
-                ),
+                swapper_calls_arg,
             )
             .tx;
 

@@ -154,10 +154,10 @@ impl OneInch {
         };
 
         Ok(dex::Swap {
-            call: dex::Call {
+            calls: vec![dex::Call {
                 to: eth::ContractAddress(swap.tx.to),
                 calldata: swap.tx.data,
-            },
+            }],
             input: eth::Asset {
                 token: order.sell,
                 amount: swap.from_token_amount,

@@ -13,7 +13,7 @@ use {
 
 /// Get swap quote from the SOR v2 for the V2 vault.
 const QUERY: &str = r#"
-query sorGetSwapPaths($callDataInput: GqlSwapCallDataInput!, $chain: GqlChain!, $queryBatchSwap: Boolean!, $swapAmount: AmountHumanReadable!, $swapType: GqlSorSwapType!, $tokenIn: String!, $tokenOut: String!, $useProtocolVersion: Int) {
+query sorGetSwapPaths($callDataInput: GqlSwapCallDataInput!, $chain: GqlChain!, $queryBatchSwap: Boolean!, $swapAmount: AmountHumanReadable!, $swapType: GqlSorSwapType!, $tokenIn: String!, $tokenOut: String!) {
     sorGetSwapPaths(
         callDataInput: $callDataInput,
         chain: $chain,
@@ -22,7 +22,6 @@ query sorGetSwapPaths($callDataInput: GqlSwapCallDataInput!, $chain: GqlChain!, 
         swapType: $swapType,
         tokenIn: $tokenIn,
         tokenOut: $tokenOut,
-        useProtocolVersion: $useProtocolVersion
     ) {
         tokenAddresses
         swaps {
@@ -36,6 +35,17 @@ query sorGetSwapPaths($callDataInput: GqlSwapCallDataInput!, $chain: GqlChain!, 
         returnAmountRaw
         tokenIn
         tokenOut
+        protocolVersion
+        paths {
+            inputAmountRaw
+            isBuffer
+            outputAmountRaw
+            pools
+            protocolVersion
+            tokens {
+              address
+            }
+        }
     }
 }
 "#;
@@ -78,7 +88,6 @@ impl Query<'_> {
             swap_type: SwapType::from_domain(order.side),
             token_in: order.sell.0,
             token_out: order.buy.0,
-            use_protocol_version: Some(ProtocolVersion::V2.into()),
         };
         Ok(Self {
             query: QUERY,
@@ -143,9 +152,6 @@ struct Variables {
     token_in: H160,
     /// Token address of the tokenOut.
     token_out: H160,
-    /// Which vault version to use. If none provided, will chose the better
-    /// return from either version.
-    use_protocol_version: Option<u8>,
 }
 
 /// Inputs for the call data to create the swap transaction. If this input is
@@ -211,17 +217,6 @@ impl SwapType {
     }
 }
 
-#[repr(u8)]
-enum ProtocolVersion {
-    V2 = 2,
-}
-
-impl From<ProtocolVersion> for u8 {
-    fn from(value: ProtocolVersion) -> Self {
-        value as u8
-    }
-}
-
 /// The response from the Balancer SOR service.
 #[serde_as]
 #[derive(Debug, Default, PartialEq, Deserialize)]
@@ -247,6 +242,9 @@ pub struct Quote {
     pub token_addresses: Vec<H160>,
     /// The swap route.
     pub swaps: Vec<Swap>,
+    /// The swap route (different representation than `swaps` suitable for
+    /// the v3 BatchRouter).
+    pub paths: Vec<Path>,
     /// The swapped token amount.
     ///
     /// In sell token for sell orders or buy token for buy orders.
@@ -263,6 +261,17 @@ pub struct Quote {
     /// The output (buy) token.
     #[serde(with = "address_default_when_empty")]
     pub token_out: H160,
+    /// Which balancer version the trade needs to be routed through.
+    pub protocol_version: ProtocolVersion,
+}
+
+#[derive(serde_repr::Deserialize_repr, PartialEq, Eq, Default, Debug)]
+#[serde(untagged)]
+#[repr(u8)]
+pub enum ProtocolVersion {
+    #[default]
+    V2 = 2,
+    V3 = 3,
 }
 
 impl Quote {
@@ -281,7 +290,7 @@ impl Quote {
 #[serde(rename_all = "camelCase")]
 pub struct Swap {
     /// The ID of the pool swapping in this step.
-    pub pool_id: H256,
+    pub pool_id: PoolId,
     /// The index in `token_addresses` for the input token.
     #[serde(with = "value_or_string")]
     pub asset_in_index: usize,
@@ -294,6 +303,59 @@ pub struct Swap {
     /// Additional user data to pass to the pool.
     #[serde_as(as = "serialize::Hex")]
     pub user_data: Vec<u8>,
+}
+
+#[serde_as]
+#[derive(Debug, PartialEq, Deserialize)]
+#[serde(untagged)]
+pub enum PoolId {
+    V2(H256),
+    V3(H160),
+}
+
+impl PoolId {
+    pub fn as_v2(&self) -> Result<H256, Error> {
+        if let Self::V2(h256) = self {
+            Ok(*h256)
+        } else {
+            Err(Error::InvalidPoolIdFormat)
+        }
+    }
+
+    pub fn as_v3(&self) -> Result<H160, Error> {
+        if let Self::V3(h160) = self {
+            Ok(*h160)
+        } else {
+            Err(Error::InvalidPoolIdFormat)
+        }
+    }
+}
+
+impl Default for PoolId {
+    fn default() -> Self {
+        Self::V2(H256::default())
+    }
+}
+
+/// Models a single swap path consisting of multiple steps.
+#[serde_as]
+#[derive(Debug, Default, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Path {
+    #[serde_as(as = "serialize::U256")]
+    pub input_amount_raw: U256,
+    #[serde_as(as = "serialize::U256")]
+    pub output_amount_raw: U256,
+    pub is_buffer: Vec<bool>,
+    pub pools: Vec<PoolId>,
+    pub tokens: Vec<PathToken>,
+}
+
+#[serde_as]
+#[derive(Debug, Default, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PathToken {
+    pub address: H160,
 }
 
 /// Balancer SOR responds with `address: ""` on error cases.
@@ -417,7 +479,6 @@ mod tests {
                 "swapType": "EXACT_OUT",
                 "tokenIn": "0x2170ed0880ac9a755fd29b2688956bd959f933f8",
                 "tokenOut": "0xdac17f958d2ee523a2206206994597c13d831ec7",
-                "useProtocolVersion": 2
             }
         });
 

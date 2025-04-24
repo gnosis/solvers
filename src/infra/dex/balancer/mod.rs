@@ -4,7 +4,7 @@ use {
             auction,
             dex,
             eth::{self, TokenAddress},
-            order,
+            order::{self, Side},
         },
         infra::dex::balancer::dto::Chain,
         util,
@@ -22,13 +22,16 @@ use {
 };
 
 mod dto;
-mod vault;
+mod v2;
+mod v3;
 
 /// Bindings to the Balancer Smart Order Router (SOR) API.
 pub struct Sor {
     client: super::Client,
     endpoint: reqwest::Url,
-    vault: vault::Vault,
+    v2_vault: v2::Vault,
+    v3_batch_router: v3::Router,
+    permit2: v3::Permit2,
     settlement: eth::ContractAddress,
     chain_id: Chain,
     query_batch_swap: bool,
@@ -41,8 +44,15 @@ pub struct Config {
     /// The URL for the Balancer SOR API.
     pub endpoint: reqwest::Url,
 
-    /// The address of the Balancer Vault contract.
+    /// The address of the Balancer V2 Vault contract. For V2, it's used as both
+    /// the spender and router.
     pub vault: eth::ContractAddress,
+
+    /// The address of the Balancer V3 BatchRouter contract.
+    pub v3_batch_router: eth::ContractAddress,
+
+    /// The address of the Permit2 contract.
+    pub permit2: eth::ContractAddress,
 
     /// The address of the Settlement contract.
     pub settlement: eth::ContractAddress,
@@ -66,7 +76,9 @@ impl Sor {
         Ok(Self {
             client: super::Client::new(Default::default(), config.block_stream),
             endpoint: config.endpoint,
-            vault: vault::Vault::new(config.vault),
+            v2_vault: v2::Vault::new(config.vault),
+            v3_batch_router: v3::Router::new(config.v3_batch_router),
+            permit2: v3::Permit2::new(config.permit2),
             settlement: config.settlement,
             chain_id: Chain::from_domain(config.chain_id)?,
             query_batch_swap: config.query_batch_swap,
@@ -118,57 +130,23 @@ impl Sor {
         };
 
         let gas = U256::from(quote.swaps.len()) * Self::GAS_PER_SWAP;
-        let call = {
-            let kind = match order.side {
-                order::Side::Sell => vault::SwapKind::GivenIn,
-                order::Side::Buy => vault::SwapKind::GivenOut,
-            } as _;
-            let swaps = quote
-                .swaps
-                .into_iter()
-                .map(|swap| vault::Swap {
-                    pool_id: swap.pool_id,
-                    asset_in_index: swap.asset_in_index.into(),
-                    asset_out_index: swap.asset_out_index.into(),
-                    amount: swap.amount,
-                    user_data: swap.user_data,
-                })
-                .collect();
-            let assets = quote.token_addresses.clone();
-            let funds = vault::Funds {
-                sender: self.settlement.0,
-                from_internal_balance: false,
-                recipient: self.settlement.0,
-                to_internal_balance: false,
-            };
-            let limits = quote
-                .token_addresses
-                .iter()
-                .map(|token| {
-                    if *token == quote.token_in {
-                        // Use positive swap limit for sell amounts (that is, maximum
-                        // amount that can be transferred in).
-                        I256::try_from(max_input).unwrap_or_default()
-                    } else if *token == quote.token_out {
-                        I256::try_from(min_output)
-                            .unwrap_or_default()
-                            .checked_neg()
-                            .expect("positive integer can't overflow negation")
-                    } else {
-                        I256::zero()
-                    }
-                })
-                .collect();
-            // Sufficiently large value with as many 0's as possible for some
-            // small gas savings.
-            let deadline = U256::one() << 255;
-
-            self.vault
-                .batch_swap(kind, swaps, assets, funds, limits, deadline)
+        let (spender, calls) = match quote.protocol_version {
+            dto::ProtocolVersion::V2 => (
+                self.v2_vault.address(),
+                self.encode_v2_swap(order, &quote, max_input, min_output)?,
+            ),
+            dto::ProtocolVersion::V3 => {
+                // In Balancer v3, the spender must be the Permit2 contract, as it's the one
+                // doing the transfer of funds from the settlement
+                (
+                    self.permit2.address(),
+                    self.encode_v3_swap(order, &quote, max_input)?,
+                )
+            }
         };
 
         Ok(dex::Swap {
-            call,
+            calls,
             input: eth::Asset {
                 token: eth::TokenAddress(quote.token_in),
                 amount: input,
@@ -178,10 +156,118 @@ impl Sor {
                 amount: output,
             },
             allowance: dex::Allowance {
-                spender: self.vault.address(),
+                spender,
                 amount: dex::Amount::new(max_input),
             },
             gas: eth::Gas(gas),
+        })
+    }
+
+    fn encode_v2_swap(
+        &self,
+        order: &dex::Order,
+        quote: &dto::Quote,
+        max_input: U256,
+        min_output: U256,
+    ) -> Result<Vec<dex::Call>, Error> {
+        let kind = match order.side {
+            order::Side::Sell => v2::SwapKind::GivenIn,
+            order::Side::Buy => v2::SwapKind::GivenOut,
+        };
+        let swaps = quote
+            .swaps
+            .iter()
+            .map(|swap| {
+                Ok(v2::Swap {
+                    pool_id: swap.pool_id.as_v2()?,
+                    asset_in_index: swap.asset_in_index.into(),
+                    asset_out_index: swap.asset_out_index.into(),
+                    amount: swap.amount,
+                    user_data: swap.user_data.clone(),
+                })
+            })
+            .collect::<Result<_, Error>>()?;
+        let assets = quote.token_addresses.clone();
+        let funds = v2::Funds {
+            sender: self.settlement.0,
+            from_internal_balance: false,
+            recipient: self.settlement.0,
+            to_internal_balance: false,
+        };
+        let limits = quote
+            .token_addresses
+            .iter()
+            .map(|token| {
+                if *token == quote.token_in {
+                    // Use positive swap limit for sell amounts (that is, maximum
+                    // amount that can be transferred in).
+                    I256::try_from(max_input).unwrap_or_default()
+                } else if *token == quote.token_out {
+                    I256::try_from(min_output)
+                        .unwrap_or_default()
+                        .checked_neg()
+                        .expect("positive integer can't overflow negation")
+                } else {
+                    I256::zero()
+                }
+            })
+            .collect();
+
+        Ok(self.v2_vault.batch_swap(kind, swaps, assets, funds, limits))
+    }
+
+    fn encode_v3_swap(
+        &self,
+        order: &dex::Order,
+        quote: &dto::Quote,
+        max_input: U256,
+    ) -> Result<Vec<dex::Call>, Error> {
+        let paths = quote
+            .paths
+            .iter()
+            .map(|path| {
+                Ok(v3::SwapPath {
+                    token_in: path
+                        .tokens
+                        .first()
+                        .map(|t| t.address)
+                        .ok_or_else(|| Error::InvalidPath)?,
+                    input_amount_raw: path.input_amount_raw,
+                    output_amount_raw: path.output_amount_raw,
+                    // A path step consists of 1 item of 3 different arrays at the correct
+                    // index. `tokens` contains 1 item more where the first one needs
+                    // to be skipped.
+                    steps: path
+                        .tokens
+                        .iter()
+                        .skip(1)
+                        .zip(path.is_buffer.iter())
+                        .zip(path.pools.iter())
+                        .map(|((token_out, is_buffer), pool)| {
+                            Ok(v3::SwapPathStep {
+                                pool: pool.as_v3()?,
+                                token_out: token_out.address,
+                                is_buffer: *is_buffer,
+                            })
+                        })
+                        .collect::<Result<_, Error>>()?,
+                })
+            })
+            .collect::<Result<_, Error>>()?;
+
+        Ok(match order.side {
+            Side::Buy => self.v3_batch_router.swap_exact_amount_out(
+                paths,
+                &self.permit2,
+                quote.token_in,
+                max_input,
+            ),
+            Side::Sell => self.v3_batch_router.swap_exact_amount_in(
+                paths,
+                &self.permit2,
+                quote.token_in,
+                max_input,
+            ),
         })
     }
 
@@ -209,6 +295,10 @@ pub enum Error {
     UnsupportedChainId(eth::ChainId),
     #[error("decimals are missing for the swapped token: {0:?}")]
     MissingDecimals(TokenAddress),
+    #[error("invalid pool id format")]
+    InvalidPoolIdFormat,
+    #[error("invalid path")]
+    InvalidPath,
 }
 
 impl From<util::http::RoundtripError<util::serialize::Never>> for Error {
