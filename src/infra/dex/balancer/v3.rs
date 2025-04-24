@@ -147,7 +147,7 @@ impl Router {
     }
 
     /// Returns a `deadline` value that is sufficiently large with as many 0's
-    /// as possible for some small gas savings.
+    /// as possible for some small gas savings (i.e. b1000...0000).
     fn deadline() -> U256 {
         U256::one() << 255
     }
