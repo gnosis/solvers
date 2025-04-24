@@ -8,6 +8,10 @@ pub enum ChainId {
     Gnosis = 100,
     Base = 8453,
     ArbitrumOne = 42161,
+    Bnb = 56,
+    Avalanche = 43114,
+    Optimism = 10,
+    Polygon = 137,
 }
 
 impl ChainId {
@@ -25,6 +29,10 @@ impl ChainId {
             100 => Ok(Self::Gnosis),
             8453 => Ok(Self::Base),
             42161 => Ok(Self::ArbitrumOne),
+            56 => Ok(Self::Bnb),
+            43114 => Ok(Self::Avalanche),
+            10 => Ok(Self::Optimism),
+            137 => Ok(Self::Polygon),
             _ => Err(UnsupportedChain),
         }
     }
@@ -37,6 +45,10 @@ impl ChainId {
             ChainId::Gnosis => "100",
             ChainId::Base => "8453",
             ChainId::ArbitrumOne => "42161",
+            ChainId::Bnb => "56",
+            ChainId::Avalanche => "43114",
+            ChainId::Optimism => "10",
+            ChainId::Polygon => "137",
         }
     }
 
