@@ -225,24 +225,24 @@ impl Sor {
         let paths = quote
             .paths
             .iter()
-            .map(|p| {
+            .map(|path| {
                 Ok(v3::SwapPath {
-                    token_in: p
+                    token_in: path
                         .tokens
                         .first()
                         .map(|t| t.address)
                         .ok_or_else(|| Error::InvalidPath)?,
-                    input_amount_raw: p.input_amount_raw,
-                    output_amount_raw: p.output_amount_raw,
+                    input_amount_raw: path.input_amount_raw,
+                    output_amount_raw: path.output_amount_raw,
                     // A path step consists of 1 item of 3 different arrays at the correct
                     // index. `tokens` contains 1 item more where the first one needs
                     // to be skipped.
-                    steps: p
+                    steps: path
                         .tokens
                         .iter()
                         .skip(1)
-                        .zip(p.is_buffer.iter())
-                        .zip(p.pools.iter())
+                        .zip(path.is_buffer.iter())
+                        .zip(path.pools.iter())
                         .map(|((token_out, is_buffer), pool)| {
                             Ok(v3::SwapPathStep {
                                 pool: pool.as_v3()?,

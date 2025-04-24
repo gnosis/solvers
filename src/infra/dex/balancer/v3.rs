@@ -132,15 +132,15 @@ impl Router {
     fn encode_paths(paths: Vec<SwapPath>) -> Vec<(H160, Vec<(H160, H160, bool)>, U256, U256)> {
         paths
             .into_iter()
-            .map(|p| {
+            .map(|path| {
                 (
-                    p.token_in,
-                    p.steps
+                    path.token_in,
+                    path.steps
                         .into_iter()
                         .map(|s| (s.pool, s.token_out, s.is_buffer))
                         .collect(),
-                    p.input_amount_raw,
-                    p.output_amount_raw,
+                    path.input_amount_raw,
+                    path.output_amount_raw,
                 )
             })
             .collect()
