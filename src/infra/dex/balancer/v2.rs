@@ -50,9 +50,8 @@ impl Vault {
         assets: Vec<H160>,
         funds: Funds,
         limits: Vec<I256>,
-        deadline: U256,
-    ) -> dex::Call {
-        dex::Call {
+    ) -> Vec<dex::Call> {
+        vec![dex::Call {
             to: self.address(),
             calldata: self
                 .0
@@ -79,12 +78,14 @@ impl Vault {
                         funds.to_internal_balance,
                     ),
                     limits,
-                    deadline,
+                    // `deadline`: Sufficiently large value with as many 0's as possible for some
+                    // small gas savings.
+                    U256::one() << 255,
                 )
                 .tx
                 .data
                 .expect("calldata")
                 .0,
-        }
+        }]
     }
 }

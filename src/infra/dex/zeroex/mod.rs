@@ -95,10 +95,10 @@ impl ZeroEx {
         };
 
         Ok(dex::Swap {
-            call: dex::Call {
+            calls: vec![dex::Call {
                 to: eth::ContractAddress(quote.transaction.to),
                 calldata: quote.transaction.data,
-            },
+            }],
             input: eth::Asset {
                 token: order.sell,
                 amount: quote.sell_amount,
