@@ -173,12 +173,10 @@ impl From<util::http::RoundtripError<dto::Error>> for Error {
                             Self::UnavailableForLegalReasons
                         }
                         StatusCode::UNPROCESSABLE_ENTITY => Self::UnavailableForLegalReasons,
-                        // This seem to be a common Zeroex API response when not finding a trade
+                        // This seem to be a expected Zeroex API response when not finding a trade
                         StatusCode::BAD_REQUEST if body.contains("SWAP_VALIDATION_FAILED") => {
                             Self::NotFound
                         }
-                        // Also a common Zeroex API response when not finding a trade
-                        StatusCode::INTERNAL_SERVER_ERROR => Self::NotFound,
                         _ => Self::Http(err),
                     }
                 } else {
