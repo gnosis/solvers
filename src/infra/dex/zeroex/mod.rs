@@ -166,13 +166,19 @@ impl From<util::http::RoundtripError<dto::Error>> for Error {
     fn from(err: util::http::RoundtripError<dto::Error>) -> Self {
         match err {
             util::http::RoundtripError::Http(err) => {
-                if let util::http::Error::Status(code, _) = err {
+                if let util::http::Error::Status(code, ref body) = err {
                     match code {
                         StatusCode::TOO_MANY_REQUESTS => Self::RateLimited,
                         StatusCode::UNAVAILABLE_FOR_LEGAL_REASONS => {
                             Self::UnavailableForLegalReasons
                         }
                         StatusCode::UNPROCESSABLE_ENTITY => Self::UnavailableForLegalReasons,
+                        // This mapping avoids false positives on some alarms that trigger due to
+                        // log messages on the Http variant TODO: remove
+                        // when the 0x team finds/fixes the root cause of this errors
+                        StatusCode::BAD_REQUEST if body.contains("SWAP_VALIDATION_FAILED") => {
+                            Self::NotFound
+                        }
                         _ => Self::Http(err),
                     }
                 } else {
