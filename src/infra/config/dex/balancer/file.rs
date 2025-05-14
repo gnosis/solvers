@@ -41,7 +41,7 @@ struct Config {
     query_batch_swap: Option<bool>,
 
     /// Controls which API versions are enabled.
-    /// Absence of this config param means all versions are supported.
+    /// Absence of this config param means all versions are enabled.
     enabled_api_versions: Option<Vec<ApiVersion>>,
 }
 
