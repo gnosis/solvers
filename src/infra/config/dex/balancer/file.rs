@@ -39,6 +39,22 @@ struct Config {
     /// Whether to run `queryBatchSwap` to update the return amount with most
     /// up-to-date on-chain values.
     query_batch_swap: Option<bool>,
+
+    /// Controls the maximum supported API version.
+    supported_api_versions: Option<Vec<SupportedApiVersion>>,
+}
+
+#[derive(Deserialize, Eq, PartialEq)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+enum SupportedApiVersion {
+    V2,
+    V3,
+}
+
+impl SupportedApiVersion {
+    fn all() -> Vec<Self> {
+        vec![Self::V2, Self::V3]
+    }
 }
 
 /// Load the driver configuration from a TOML file.
@@ -53,13 +69,17 @@ pub async fn load(path: &Path) -> super::Config {
         config.chain_id,
         BalancerV2Vault::raw_contract(),
     );
-    // Balancer V3 is not currently supported on Polygon.
-    let batch_router = (config.chain_id != eth::ChainId::Polygon).then(|| {
-        infra::contracts::contract_address_for_chain(
-            config.chain_id,
-            contracts::BalancerV3BatchRouter::raw_contract(),
-        )
-    });
+    let supported_versions = config
+        .supported_api_versions
+        .unwrap_or_else(SupportedApiVersion::all);
+    let batch_router = supported_versions
+        .contains(&SupportedApiVersion::V3)
+        .then(|| {
+            infra::contracts::contract_address_for_chain(
+                config.chain_id,
+                contracts::BalancerV3BatchRouter::raw_contract(),
+            )
+        });
 
     super::Config {
         sor: dex::balancer::Config {
