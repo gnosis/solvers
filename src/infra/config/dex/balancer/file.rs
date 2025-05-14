@@ -1,9 +1,10 @@
 use {
     crate::{
         domain::eth,
-        infra::{config::dex::file, contracts, dex},
+        infra::{self, config::dex::file, dex},
         util::serialize,
     },
+    contracts::BalancerV2Vault,
     ethereum_types::H160,
     serde::Deserialize,
     serde_with::serde_as,
@@ -47,7 +48,15 @@ struct Config {
 /// This method panics if the config is invalid or on I/O errors.
 pub async fn load(path: &Path) -> super::Config {
     let (base, config) = file::load::<Config>(path).await;
-    let contracts = contracts::Contracts::for_chain(config.chain_id);
+    let contracts = infra::contracts::Contracts::for_chain(config.chain_id);
+    let vault_contract = infra::contracts::contract_address_for_chain(
+        config.chain_id,
+        BalancerV2Vault::raw_contract(),
+    );
+    let batch_router = infra::contracts::contract_address_for_chain(
+        config.chain_id,
+        contracts::BalancerV3BatchRouter::raw_contract(),
+    );
 
     super::Config {
         sor: dex::balancer::Config {
@@ -55,11 +64,11 @@ pub async fn load(path: &Path) -> super::Config {
             vault: config
                 .vault
                 .map(eth::ContractAddress)
-                .unwrap_or(contracts.balancer_v2_vault),
+                .unwrap_or(vault_contract),
             v3_batch_router: config
                 .v3_batch_router
                 .map(eth::ContractAddress)
-                .unwrap_or(contracts.balancer_v3_batch_router),
+                .unwrap_or(batch_router),
             permit2: config
                 .permit2
                 .map(eth::ContractAddress)
