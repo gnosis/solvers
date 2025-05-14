@@ -53,10 +53,13 @@ pub async fn load(path: &Path) -> super::Config {
         config.chain_id,
         BalancerV2Vault::raw_contract(),
     );
-    let batch_router = infra::contracts::contract_address_for_chain(
-        config.chain_id,
-        contracts::BalancerV3BatchRouter::raw_contract(),
-    );
+    // Balancer V3 is not currently supported on Polygon.
+    let batch_router = (config.chain_id != eth::ChainId::Polygon).then(|| {
+        infra::contracts::contract_address_for_chain(
+            config.chain_id,
+            contracts::BalancerV3BatchRouter::raw_contract(),
+        )
+    });
 
     super::Config {
         sor: dex::balancer::Config {
@@ -68,7 +71,7 @@ pub async fn load(path: &Path) -> super::Config {
             v3_batch_router: config
                 .v3_batch_router
                 .map(eth::ContractAddress)
-                .unwrap_or(batch_router),
+                .or(batch_router),
             permit2: config
                 .permit2
                 .map(eth::ContractAddress)

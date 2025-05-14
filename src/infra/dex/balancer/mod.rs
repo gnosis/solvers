@@ -30,7 +30,7 @@ pub struct Sor {
     client: super::Client,
     endpoint: reqwest::Url,
     v2_vault: v2::Vault,
-    v3_batch_router: v3::Router,
+    v3_batch_router: Option<v3::Router>,
     permit2: v3::Permit2,
     settlement: eth::ContractAddress,
     chain_id: Chain,
@@ -49,7 +49,8 @@ pub struct Config {
     pub vault: eth::ContractAddress,
 
     /// The address of the Balancer V3 BatchRouter contract.
-    pub v3_batch_router: eth::ContractAddress,
+    /// Not supported on some chains.
+    pub v3_batch_router: Option<eth::ContractAddress>,
 
     /// The address of the Permit2 contract.
     pub permit2: eth::ContractAddress,
@@ -77,7 +78,7 @@ impl Sor {
             client: super::Client::new(Default::default(), config.block_stream),
             endpoint: config.endpoint,
             v2_vault: v2::Vault::new(config.vault),
-            v3_batch_router: v3::Router::new(config.v3_batch_router),
+            v3_batch_router: config.v3_batch_router.map(v3::Router::new),
             permit2: v3::Permit2::new(config.permit2),
             settlement: config.settlement,
             chain_id: Chain::from_domain(config.chain_id)?,
@@ -222,6 +223,10 @@ impl Sor {
         quote: &dto::Quote,
         max_input: U256,
     ) -> Result<Vec<dex::Call>, Error> {
+        // Receiving this error indicates that V3 is now supported on the current chain.
+        let Some(v3_batch_router) = &self.v3_batch_router else {
+            return Err(Error::UnsupportedChainId(self.chain_id.as_domain()));
+        };
         let paths = quote
             .paths
             .iter()
@@ -256,13 +261,13 @@ impl Sor {
             .collect::<Result<_, Error>>()?;
 
         Ok(match order.side {
-            Side::Buy => self.v3_batch_router.swap_exact_amount_out(
+            Side::Buy => v3_batch_router.swap_exact_amount_out(
                 paths,
                 &self.permit2,
                 quote.token_in,
                 max_input,
             ),
-            Side::Sell => self.v3_batch_router.swap_exact_amount_in(
+            Side::Sell => v3_batch_router.swap_exact_amount_in(
                 paths,
                 &self.permit2,
                 quote.token_in,
