@@ -66,13 +66,17 @@ impl SupportedApiVersion {
 pub async fn load(path: &Path) -> super::Config {
     let (base, config) = file::load::<Config>(path).await;
     let contracts = infra::contracts::Contracts::for_chain(config.chain_id);
-    let vault_contract = infra::contracts::contract_address_for_chain(
-        config.chain_id,
-        BalancerV2Vault::raw_contract(),
-    );
     let supported_versions = config
         .supported_api_versions
         .unwrap_or_else(SupportedApiVersion::all);
+    let vault_contract = supported_versions
+        .contains(&SupportedApiVersion::V2)
+        .then(|| {
+            infra::contracts::contract_address_for_chain(
+                config.chain_id,
+                BalancerV2Vault::raw_contract(),
+            )
+        });
     let batch_router = supported_versions
         .contains(&SupportedApiVersion::V3)
         .then(|| {
@@ -85,10 +89,7 @@ pub async fn load(path: &Path) -> super::Config {
     super::Config {
         sor: dex::balancer::Config {
             endpoint: config.endpoint,
-            vault: config
-                .vault
-                .map(eth::ContractAddress)
-                .unwrap_or(vault_contract),
+            vault: config.vault.map(eth::ContractAddress).or(vault_contract),
             v3_batch_router: config
                 .v3_batch_router
                 .map(eth::ContractAddress)

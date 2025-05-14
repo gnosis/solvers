@@ -29,7 +29,7 @@ mod v3;
 pub struct Sor {
     client: super::Client,
     endpoint: reqwest::Url,
-    v2_vault: v2::Vault,
+    v2_vault: Option<v2::Vault>,
     v3_batch_router: Option<v3::Router>,
     permit2: v3::Permit2,
     settlement: eth::ContractAddress,
@@ -46,7 +46,7 @@ pub struct Config {
 
     /// The address of the Balancer V2 Vault contract. For V2, it's used as both
     /// the spender and router.
-    pub vault: eth::ContractAddress,
+    pub vault: Option<eth::ContractAddress>,
 
     /// The address of the Balancer V3 BatchRouter contract.
     /// Not supported on some chains.
@@ -77,7 +77,7 @@ impl Sor {
         Ok(Self {
             client: super::Client::new(Default::default(), config.block_stream),
             endpoint: config.endpoint,
-            v2_vault: v2::Vault::new(config.vault),
+            v2_vault: config.vault.map(v2::Vault::new),
             v3_batch_router: config.v3_batch_router.map(v3::Router::new),
             permit2: v3::Permit2::new(config.permit2),
             settlement: config.settlement,
@@ -92,6 +92,9 @@ impl Sor {
         slippage: &dex::Slippage,
         tokens: &auction::Tokens,
     ) -> Result<dex::Swap, Error> {
+        let Some(v2_vault) = &self.v2_vault else {
+            return Err(Error::UnsupportedChainId(self.chain_id.as_domain()));
+        };
         let query = dto::Query::from_domain(
             order,
             tokens,
@@ -133,8 +136,8 @@ impl Sor {
         let gas = U256::from(quote.swaps.len()) * Self::GAS_PER_SWAP;
         let (spender, calls) = match quote.protocol_version {
             dto::ProtocolVersion::V2 => (
-                self.v2_vault.address(),
-                self.encode_v2_swap(order, &quote, max_input, min_output)?,
+                v2_vault.address(),
+                self.encode_v2_swap(order, &quote, max_input, min_output, v2_vault)?,
             ),
             dto::ProtocolVersion::V3 => {
                 // In Balancer v3, the spender must be the Permit2 contract, as it's the one
@@ -170,6 +173,7 @@ impl Sor {
         quote: &dto::Quote,
         max_input: U256,
         min_output: U256,
+        v2_vault: &v2::Vault,
     ) -> Result<Vec<dex::Call>, Error> {
         let kind = match order.side {
             order::Side::Sell => v2::SwapKind::GivenIn,
@@ -214,7 +218,7 @@ impl Sor {
             })
             .collect();
 
-        Ok(self.v2_vault.batch_swap(kind, swaps, assets, funds, limits))
+        Ok(v2_vault.batch_swap(kind, swaps, assets, funds, limits))
     }
 
     fn encode_v3_swap(
