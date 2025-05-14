@@ -6,7 +6,7 @@ use {
             eth::{self, TokenAddress},
             order::{self, Side},
         },
-        infra::dex::balancer::dto::Chain,
+        infra::{config::dex::balancer::file::ApiVersion, dex::balancer::dto::Chain},
         util,
     },
     contracts::ethcontract::I256,
@@ -92,8 +92,9 @@ impl Sor {
         slippage: &dex::Slippage,
         tokens: &auction::Tokens,
     ) -> Result<dex::Swap, Error> {
+        // Receiving this error indicates that V2 is now supported on the current chain.
         let Some(v2_vault) = &self.v2_vault else {
-            return Err(Error::UnsupportedChainId(self.chain_id.as_domain()));
+            return Err(Error::UnsupportedApiVersion(ApiVersion::V2));
         };
         let query = dto::Query::from_domain(
             order,
@@ -229,7 +230,7 @@ impl Sor {
     ) -> Result<Vec<dex::Call>, Error> {
         // Receiving this error indicates that V3 is now supported on the current chain.
         let Some(v3_batch_router) = &self.v3_batch_router else {
-            return Err(Error::UnsupportedChainId(self.chain_id.as_domain()));
+            return Err(Error::UnsupportedApiVersion(ApiVersion::V3));
         };
         let paths = quote
             .paths
@@ -302,6 +303,8 @@ pub enum Error {
     Http(util::http::Error),
     #[error("unsupported chain: {0:?}")]
     UnsupportedChainId(eth::ChainId),
+    #[error("unsupported API version: {0:?}")]
+    UnsupportedApiVersion(ApiVersion),
     #[error("decimals are missing for the swapped token: {0:?}")]
     MissingDecimals(TokenAddress),
     #[error("invalid pool id format")]

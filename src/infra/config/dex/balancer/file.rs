@@ -42,17 +42,17 @@ struct Config {
 
     /// Controls the maximum supported API version.
     /// Absence of this config param means all versions are supported.
-    supported_api_versions: Option<Vec<SupportedApiVersion>>,
+    supported_api_versions: Option<Vec<ApiVersion>>,
 }
 
-#[derive(Deserialize, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Deserialize)]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
-enum SupportedApiVersion {
+pub enum ApiVersion {
     V2,
     V3,
 }
 
-impl SupportedApiVersion {
+impl ApiVersion {
     fn all() -> Vec<Self> {
         vec![Self::V2, Self::V3]
     }
@@ -68,23 +68,19 @@ pub async fn load(path: &Path) -> super::Config {
     let contracts = infra::contracts::Contracts::for_chain(config.chain_id);
     let supported_versions = config
         .supported_api_versions
-        .unwrap_or_else(SupportedApiVersion::all);
-    let vault_contract = supported_versions
-        .contains(&SupportedApiVersion::V2)
-        .then(|| {
-            infra::contracts::contract_address_for_chain(
-                config.chain_id,
-                BalancerV2Vault::raw_contract(),
-            )
-        });
-    let batch_router = supported_versions
-        .contains(&SupportedApiVersion::V3)
-        .then(|| {
-            infra::contracts::contract_address_for_chain(
-                config.chain_id,
-                contracts::BalancerV3BatchRouter::raw_contract(),
-            )
-        });
+        .unwrap_or_else(ApiVersion::all);
+    let vault_contract = supported_versions.contains(&ApiVersion::V2).then(|| {
+        infra::contracts::contract_address_for_chain(
+            config.chain_id,
+            BalancerV2Vault::raw_contract(),
+        )
+    });
+    let batch_router = supported_versions.contains(&ApiVersion::V3).then(|| {
+        infra::contracts::contract_address_for_chain(
+            config.chain_id,
+            contracts::BalancerV3BatchRouter::raw_contract(),
+        )
+    });
 
     super::Config {
         sor: dex::balancer::Config {

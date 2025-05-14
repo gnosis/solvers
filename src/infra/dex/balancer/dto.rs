@@ -202,19 +202,6 @@ impl Chain {
             eth::ChainId::Bnb | eth::ChainId::Goerli => Err(Error::UnsupportedChainId(chain_id)),
         }
     }
-
-    pub(crate) fn as_domain(&self) -> eth::ChainId {
-        match self {
-            Self::Mainnet => eth::ChainId::Mainnet,
-            Self::Gnosis => eth::ChainId::Gnosis,
-            Self::Arbitrum => eth::ChainId::ArbitrumOne,
-            Self::Base => eth::ChainId::Base,
-            Self::Avalanche => eth::ChainId::Avalanche,
-            Self::Polygon => eth::ChainId::Polygon,
-            Self::Optimism => eth::ChainId::Optimism,
-            _ => unreachable!(),
-        }
-    }
 }
 
 #[derive(Serialize)]
