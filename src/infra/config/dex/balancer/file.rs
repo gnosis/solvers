@@ -40,9 +40,9 @@ struct Config {
     /// up-to-date on-chain values.
     query_batch_swap: Option<bool>,
 
-    /// Controls the maximum supported API version.
+    /// Controls which API versions are enabled.
     /// Absence of this config param means all versions are supported.
-    supported_api_versions: Option<Vec<ApiVersion>>,
+    enabled_api_versions: Option<Vec<ApiVersion>>,
 }
 
 #[derive(Debug, Eq, PartialEq, Deserialize)]
@@ -66,16 +66,14 @@ impl ApiVersion {
 pub async fn load(path: &Path) -> super::Config {
     let (base, config) = file::load::<Config>(path).await;
     let contracts = infra::contracts::Contracts::for_chain(config.chain_id);
-    let supported_versions = config
-        .supported_api_versions
-        .unwrap_or_else(ApiVersion::all);
-    let vault_contract = supported_versions.contains(&ApiVersion::V2).then(|| {
+    let enabled_api_versions = config.enabled_api_versions.unwrap_or_else(ApiVersion::all);
+    let vault_contract = enabled_api_versions.contains(&ApiVersion::V2).then(|| {
         infra::contracts::contract_address_for_chain(
             config.chain_id,
             BalancerV2Vault::raw_contract(),
         )
     });
-    let batch_router = supported_versions.contains(&ApiVersion::V3).then(|| {
+    let batch_router = enabled_api_versions.contains(&ApiVersion::V3).then(|| {
         infra::contracts::contract_address_for_chain(
             config.chain_id,
             contracts::BalancerV3BatchRouter::raw_contract(),
