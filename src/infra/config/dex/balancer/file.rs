@@ -41,6 +41,7 @@ struct Config {
     query_batch_swap: Option<bool>,
 
     /// Controls the maximum supported API version.
+    /// Absence of this config param means all versions are supported.
     supported_api_versions: Option<Vec<SupportedApiVersion>>,
 }
 
