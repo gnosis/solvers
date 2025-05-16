@@ -6,7 +6,7 @@ use {
             eth::{self, TokenAddress},
             order::{self, Side},
         },
-        infra::dex::balancer::dto::Chain,
+        infra::{config::dex::balancer::file::ApiVersion, dex::balancer::dto::Chain},
         util,
     },
     contracts::ethcontract::I256,
@@ -29,8 +29,8 @@ mod v3;
 pub struct Sor {
     client: super::Client,
     endpoint: reqwest::Url,
-    v2_vault: v2::Vault,
-    v3_batch_router: v3::Router,
+    v2_vault: Option<v2::Vault>,
+    v3_batch_router: Option<v3::Router>,
     permit2: v3::Permit2,
     settlement: eth::ContractAddress,
     chain_id: Chain,
@@ -46,10 +46,11 @@ pub struct Config {
 
     /// The address of the Balancer V2 Vault contract. For V2, it's used as both
     /// the spender and router.
-    pub vault: eth::ContractAddress,
+    pub vault: Option<eth::ContractAddress>,
 
     /// The address of the Balancer V3 BatchRouter contract.
-    pub v3_batch_router: eth::ContractAddress,
+    /// Not supported on some chains.
+    pub v3_batch_router: Option<eth::ContractAddress>,
 
     /// The address of the Permit2 contract.
     pub permit2: eth::ContractAddress,
@@ -76,8 +77,8 @@ impl Sor {
         Ok(Self {
             client: super::Client::new(Default::default(), config.block_stream),
             endpoint: config.endpoint,
-            v2_vault: v2::Vault::new(config.vault),
-            v3_batch_router: v3::Router::new(config.v3_batch_router),
+            v2_vault: config.vault.map(v2::Vault::new),
+            v3_batch_router: config.v3_batch_router.map(v3::Router::new),
             permit2: v3::Permit2::new(config.permit2),
             settlement: config.settlement,
             chain_id: Chain::from_domain(config.chain_id)?,
@@ -91,6 +92,10 @@ impl Sor {
         slippage: &dex::Slippage,
         tokens: &auction::Tokens,
     ) -> Result<dex::Swap, Error> {
+        // Receiving this error indicates that V2 is now supported on the current chain.
+        let Some(v2_vault) = &self.v2_vault else {
+            return Err(Error::DisabledApiVersion(ApiVersion::V2));
+        };
         let query = dto::Query::from_domain(
             order,
             tokens,
@@ -132,8 +137,8 @@ impl Sor {
         let gas = U256::from(quote.swaps.len()) * Self::GAS_PER_SWAP;
         let (spender, calls) = match quote.protocol_version {
             dto::ProtocolVersion::V2 => (
-                self.v2_vault.address(),
-                self.encode_v2_swap(order, &quote, max_input, min_output)?,
+                v2_vault.address(),
+                self.encode_v2_swap(order, &quote, max_input, min_output, v2_vault)?,
             ),
             dto::ProtocolVersion::V3 => {
                 // In Balancer v3, the spender must be the Permit2 contract, as it's the one
@@ -169,6 +174,7 @@ impl Sor {
         quote: &dto::Quote,
         max_input: U256,
         min_output: U256,
+        v2_vault: &v2::Vault,
     ) -> Result<Vec<dex::Call>, Error> {
         let kind = match order.side {
             order::Side::Sell => v2::SwapKind::GivenIn,
@@ -213,7 +219,7 @@ impl Sor {
             })
             .collect();
 
-        Ok(self.v2_vault.batch_swap(kind, swaps, assets, funds, limits))
+        Ok(v2_vault.batch_swap(kind, swaps, assets, funds, limits))
     }
 
     fn encode_v3_swap(
@@ -222,6 +228,10 @@ impl Sor {
         quote: &dto::Quote,
         max_input: U256,
     ) -> Result<Vec<dex::Call>, Error> {
+        // Receiving this error indicates that V3 is now supported on the current chain.
+        let Some(v3_batch_router) = &self.v3_batch_router else {
+            return Err(Error::DisabledApiVersion(ApiVersion::V3));
+        };
         let paths = quote
             .paths
             .iter()
@@ -256,13 +266,13 @@ impl Sor {
             .collect::<Result<_, Error>>()?;
 
         Ok(match order.side {
-            Side::Buy => self.v3_batch_router.swap_exact_amount_out(
+            Side::Buy => v3_batch_router.swap_exact_amount_out(
                 paths,
                 &self.permit2,
                 quote.token_in,
                 max_input,
             ),
-            Side::Sell => self.v3_batch_router.swap_exact_amount_in(
+            Side::Sell => v3_batch_router.swap_exact_amount_in(
                 paths,
                 &self.permit2,
                 quote.token_in,
@@ -293,6 +303,8 @@ pub enum Error {
     Http(util::http::Error),
     #[error("unsupported chain: {0:?}")]
     UnsupportedChainId(eth::ChainId),
+    #[error("disabled API version: {0:?}")]
+    DisabledApiVersion(ApiVersion),
     #[error("decimals are missing for the swapped token: {0:?}")]
     MissingDecimals(TokenAddress),
     #[error("invalid pool id format")]

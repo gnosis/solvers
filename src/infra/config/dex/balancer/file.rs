@@ -39,6 +39,23 @@ struct Config {
     /// Whether to run `queryBatchSwap` to update the return amount with most
     /// up-to-date on-chain values.
     query_batch_swap: Option<bool>,
+
+    /// Controls which API versions are enabled.
+    /// Absence of this config param means all versions are enabled.
+    enabled_api_versions: Option<Vec<ApiVersion>>,
+}
+
+#[derive(Debug, Eq, PartialEq, Deserialize)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub enum ApiVersion {
+    V2,
+    V3,
+}
+
+impl ApiVersion {
+    fn all() -> Vec<Self> {
+        vec![Self::V2, Self::V3]
+    }
 }
 
 /// Load the driver configuration from a TOML file.
@@ -49,26 +66,28 @@ struct Config {
 pub async fn load(path: &Path) -> super::Config {
     let (base, config) = file::load::<Config>(path).await;
     let contracts = infra::contracts::Contracts::for_chain(config.chain_id);
-    let vault_contract = infra::contracts::contract_address_for_chain(
-        config.chain_id,
-        BalancerV2Vault::raw_contract(),
-    );
-    let batch_router = infra::contracts::contract_address_for_chain(
-        config.chain_id,
-        contracts::BalancerV3BatchRouter::raw_contract(),
-    );
+    let enabled_api_versions = config.enabled_api_versions.unwrap_or_else(ApiVersion::all);
+    let vault_contract = enabled_api_versions.contains(&ApiVersion::V2).then(|| {
+        infra::contracts::contract_address_for_chain(
+            config.chain_id,
+            BalancerV2Vault::raw_contract(),
+        )
+    });
+    let batch_router = enabled_api_versions.contains(&ApiVersion::V3).then(|| {
+        infra::contracts::contract_address_for_chain(
+            config.chain_id,
+            contracts::BalancerV3BatchRouter::raw_contract(),
+        )
+    });
 
     super::Config {
         sor: dex::balancer::Config {
             endpoint: config.endpoint,
-            vault: config
-                .vault
-                .map(eth::ContractAddress)
-                .unwrap_or(vault_contract),
+            vault: config.vault.map(eth::ContractAddress).or(vault_contract),
             v3_batch_router: config
                 .v3_batch_router
                 .map(eth::ContractAddress)
-                .unwrap_or(batch_router),
+                .or(batch_router),
             permit2: config
                 .permit2
                 .map(eth::ContractAddress)
