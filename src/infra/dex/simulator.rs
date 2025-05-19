@@ -98,8 +98,15 @@ impl Simulator {
         let return_data = self
             .web3
             .eth()
-            .call_with_state_overrides(call, web3::types::BlockNumber::Latest.into(), overrides)
-            .await?
+            .call_with_state_overrides(
+                call.clone(),
+                web3::types::BlockNumber::Latest.into(),
+                overrides,
+            )
+            .await
+            .inspect_err(|_| {
+                tracing::warn!(?call, "newlog: resimulate with");
+            })?
             .0;
 
         let gas = {
