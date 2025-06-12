@@ -15,7 +15,7 @@ pub use self::simulator::Simulator;
 
 /// A supported external DEX/DEX aggregator API.
 pub enum Dex {
-    Balancer(balancer::Sor),
+    Balancer(Box<balancer::Sor>),
     OneInch(oneinch::OneInch),
     ZeroEx(zeroex::ZeroEx),
     ParaSwap(paraswap::ParaSwap),
