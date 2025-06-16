@@ -122,9 +122,9 @@ pub trait TolerancePolicy {
 
 /// Policy for slippage tolerance - caps the relative tolerance with absolute.
 #[derive(Clone, Debug, PartialEq)]
-pub struct SlippagePolicy;
+pub struct Slippage;
 
-impl TolerancePolicy for SlippagePolicy {
+impl TolerancePolicy for Slippage {
     fn validate_relative(relative: &BigDecimal) -> bool {
         relative >= &Zero::zero() && relative <= &BigDecimal::from(1)
     }
@@ -136,9 +136,9 @@ impl TolerancePolicy for SlippagePolicy {
 
 /// Policy for minimum surplus - ensures at least the higher of absolute or relative.
 #[derive(Clone, Debug, PartialEq)]
-pub struct MinimumSurplusPolicy;
+pub struct MinimumSurplus;
 
-impl TolerancePolicy for MinimumSurplusPolicy {
+impl TolerancePolicy for MinimumSurplus {
     fn validate_relative(relative: &BigDecimal) -> bool {
         relative >= &Zero::zero()
     }
@@ -180,7 +180,7 @@ mod tests {
             .into_iter()
             .collect(),
         );
-        let slippage = Limits::<SlippagePolicy> {
+        let slippage = Limits::<Slippage> {
             relative: "0.01".parse().unwrap(), // 1%
             absolute: Some(ether("0.02")),
             _policy: PhantomData,
@@ -208,7 +208,7 @@ mod tests {
                 100_020_000_000_000_000_000_u128,
             ),
         ] {
-            let relative = Tolerance::<SlippagePolicy>::new(relative.parse().unwrap());
+            let relative = Tolerance::<Slippage>::new(relative.parse().unwrap());
             let min = U256::from(min);
             let max = U256::from(max);
 
@@ -248,7 +248,7 @@ mod tests {
             .into_iter()
             .collect(),
         );
-        let minimum_surplus = Limits::<MinimumSurplusPolicy> {
+        let minimum_surplus = Limits::<MinimumSurplus> {
             relative: "0.01".parse().unwrap(), // 1%
             absolute: Some(ether("0.02")),
             _policy: PhantomData,
@@ -285,7 +285,7 @@ mod tests {
                 10_100_000_000_u128,
             ),
         ] {
-            let relative = Tolerance::<MinimumSurplusPolicy>::new(relative.parse().unwrap());
+            let relative = Tolerance::<MinimumSurplus>::new(relative.parse().unwrap());
             let min_buy = U256::from(min_buy);
 
             let computed = minimum_surplus.relative(&asset, &tokens);
