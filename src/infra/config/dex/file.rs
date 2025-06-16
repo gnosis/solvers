@@ -2,7 +2,7 @@
 
 use {
     crate::{
-        domain::{dex::slippage, eth},
+        domain::{dex::{minimum_surplus, slippage}, eth},
         infra::{blockchain, config::unwrap_or_log, contracts},
         util::serialize,
     },
@@ -33,6 +33,15 @@ struct Config {
     /// The absolute slippage allowed by the solver.
     #[serde_as(as = "Option<serialize::U256>")]
     absolute_slippage: Option<eth::U256>,
+
+    /// The relative minimum surplus required by the solver.
+    #[serde(default = "default_relative_minimum_surplus")]
+    #[serde_as(as = "serde_with::DisplayFromStr")]
+    relative_minimum_surplus: BigDecimal,
+
+    /// The absolute minimum surplus required by the solver.
+    #[serde_as(as = "Option<serialize::U256>")]
+    absolute_minimum_surplus: Option<eth::U256>,
 
     /// The number of concurrent requests to make to the DEX aggregator API.
     #[serde(default = "default_concurrent_requests")]
@@ -80,6 +89,10 @@ struct Config {
 
 fn default_relative_slippage() -> BigDecimal {
     BigDecimal::new(1.into(), 2) // 1%
+}
+
+fn default_relative_minimum_surplus() -> BigDecimal {
+    BigDecimal::new(0.into(), 0) // 0%
 }
 
 fn default_concurrent_requests() -> NonZeroUsize {
@@ -166,6 +179,11 @@ pub async fn load<T: DeserializeOwned>(path: &Path) -> (super::Config, T) {
             config.absolute_slippage.map(eth::Ether),
         )
         .expect("invalid slippage limits"),
+        minimum_surplus: minimum_surplus::Limits::new(
+            config.relative_minimum_surplus,
+            config.absolute_minimum_surplus.map(eth::Ether),
+        )
+        .expect("invalid minimum surplus limits"),
         concurrent_requests: config.concurrent_requests,
         smallest_partial_fill: eth::Ether(config.smallest_partial_fill),
         rate_limiting_strategy: rate_limit::Strategy::try_new(

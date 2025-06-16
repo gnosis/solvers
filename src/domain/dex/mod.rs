@@ -12,6 +12,7 @@ use {
     std::fmt::{self, Debug, Formatter},
 };
 
+pub mod minimum_surplus;
 pub mod slippage;
 
 pub use self::slippage::Slippage;
@@ -157,6 +158,16 @@ impl Swap {
     pub fn satisfies(&self, order: &domain::order::Order) -> bool {
         self.output.amount.full_mul(order.sell.amount)
             >= self.input.amount.full_mul(order.buy.amount)
+    }
+
+    pub fn satisfies_with_minimum_surplus(
+        &self,
+        order: &domain::order::Order,
+        minimum_surplus: &minimum_surplus::MinimumSurplus,
+    ) -> bool {
+        let required_buy_amount = minimum_surplus.add(order.buy.amount);
+        self.output.amount.full_mul(order.sell.amount)
+            >= self.input.amount.full_mul(required_buy_amount)
     }
 }
 
