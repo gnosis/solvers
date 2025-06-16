@@ -14,6 +14,7 @@ use {
 
 pub mod minimum_surplus;
 pub mod slippage;
+pub mod tolerance;
 
 pub use self::slippage::Slippage;
 

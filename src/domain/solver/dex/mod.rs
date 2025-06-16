@@ -5,7 +5,7 @@ use {
     crate::{
         domain::{
             auction,
-            dex::{self, minimum_surplus, slippage},
+            dex::{self, minimum_surplus::MinimumSurplusLimits, slippage::SlippageLimits},
             eth,
             order::{self, Order},
             solution,
@@ -28,10 +28,10 @@ pub struct Dex {
     simulator: infra::dex::Simulator,
 
     /// The slippage configuration to use for the solver.
-    slippage: slippage::Limits,
+    slippage: SlippageLimits,
 
     /// The minimum surplus configuration to use for the solver.
-    minimum_surplus: minimum_surplus::Limits,
+    minimum_surplus: MinimumSurplusLimits,
 
     /// The number of concurrent requests to make.
     concurrent_requests: NonZeroUsize,

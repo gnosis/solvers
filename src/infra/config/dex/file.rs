@@ -2,7 +2,7 @@
 
 use {
     crate::{
-        domain::{dex::{minimum_surplus, slippage}, eth},
+        domain::{dex::{minimum_surplus::MinimumSurplusLimits, slippage::SlippageLimits}, eth},
         infra::{blockchain, config::unwrap_or_log, contracts},
         util::serialize,
     },
@@ -174,12 +174,12 @@ pub async fn load<T: DeserializeOwned>(path: &Path) -> (super::Config, T) {
             settlement,
             authenticator,
         },
-        slippage: slippage::Limits::new(
+        slippage: SlippageLimits::new(
             config.relative_slippage,
             config.absolute_slippage.map(eth::Ether),
         )
         .expect("invalid slippage limits"),
-        minimum_surplus: minimum_surplus::Limits::new(
+        minimum_surplus: MinimumSurplusLimits::new(
             config.relative_minimum_surplus,
             config.absolute_minimum_surplus.map(eth::Ether),
         )
