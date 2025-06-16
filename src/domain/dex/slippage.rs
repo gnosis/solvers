@@ -1,12 +1,12 @@
 //! Slippage tolerance computation for DEX swaps.
 
-pub use crate::domain::dex::tolerance::{Limits, Slippage, Tolerance};
+pub use crate::domain::dex::tolerance::{Limits, SlippagePolicy, Tolerance};
 
 /// DEX swap slippage limits.
-pub type SlippageLimits = Limits<Slippage>;
+pub type SlippageLimits = Limits<SlippagePolicy>;
 
 /// A relative slippage tolerance.
-pub type Slippage = Tolerance<Slippage>;
+pub type Slippage = Tolerance<SlippagePolicy>;
 
 impl Slippage {
     pub fn one_percent() -> Self {
