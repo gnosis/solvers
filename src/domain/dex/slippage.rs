@@ -1,16 +1,91 @@
 //! Slippage tolerance computation for DEX swaps.
 
-pub use crate::domain::dex::tolerance::{Limits, SlippagePolicy, Tolerance};
+use {
+    crate::{
+        domain::{auction, dex::shared, eth},
+        util::conv,
+    },
+    bigdecimal::{BigDecimal, ToPrimitive, Zero, One},
+    ethereum_types::U256,
+    std::cmp,
+};
 
 /// DEX swap slippage limits.
-pub type SlippageLimits = Limits<SlippagePolicy>;
+#[derive(Clone, Debug)]
+pub struct SlippageLimits {
+    /// The relative slippage (percent) allowed for swaps.
+    pub relative: BigDecimal,
+    /// The maximum absolute slippage allowed for swaps.
+    pub absolute: Option<eth::Ether>,
+}
+
+impl SlippageLimits {
+    /// Creates a new slippage limits configuration.
+    pub fn new(relative: BigDecimal, absolute: Option<eth::Ether>) -> Result<Self, anyhow::Error> {
+        anyhow::ensure!(
+            relative >= BigDecimal::zero() && relative <= BigDecimal::from(1),
+            "slippage relative tolerance must be in the range [0, 1]"
+        );
+        Ok(Self { relative, absolute })
+    }
+
+    /// Returns the slippage for the specified token amount.
+    pub fn relative(&self, asset: &eth::Asset, tokens: &auction::Tokens) -> Slippage {
+        let absolute_as_relative =
+            shared::absolute_to_relative(self.absolute, asset, tokens);
+
+        Slippage::new(cmp::min(self.relative.clone(), absolute_as_relative.unwrap_or(BigDecimal::one())))
+    }
+}
 
 /// A relative slippage tolerance.
-pub type Slippage = Tolerance<SlippagePolicy>;
+#[derive(Clone, Debug, Default, Eq, PartialEq, PartialOrd, Ord)]
+pub struct Slippage(BigDecimal);
 
 impl Slippage {
+    /// Creates a new slippage from a decimal value.
+    pub fn new(value: BigDecimal) -> Self {
+        Self(value)
+    }
+
+    /// Creates a slippage from an absolute amount and reference amount.
+    fn from_amount(tolerance_amount: U256, reference_amount: U256) -> Self {
+        let tolerance = conv::u256_to_bigdecimal(&tolerance_amount);
+        let reference = conv::u256_to_bigdecimal(&reference_amount);
+        Self(tolerance / reference)
+    }
+
+    /// Returns 1% slippage.
     pub fn one_percent() -> Self {
-        Tolerance::new("0.01".parse().unwrap())
+        Self::new("0.01".parse().unwrap())
+    }
+
+    /// Adds slippage to the specified amount.
+    pub fn add(&self, amount: U256) -> U256 {
+        let tolerance_amount = shared::compute_absolute_tolerance(amount, &self.0);
+        amount.saturating_add(tolerance_amount)
+    }
+
+    /// Subtracts slippage from the specified amount.
+    pub fn sub(&self, amount: U256) -> U256 {
+        let tolerance_amount = shared::compute_absolute_tolerance(amount, &self.0);
+        amount.saturating_sub(tolerance_amount)
+    }
+
+    /// Returns the slippage as a decimal factor.
+    pub fn as_factor(&self) -> &BigDecimal {
+        &self.0
+    }
+
+    /// Converts the slippage to basis points.
+    pub fn as_bps(&self) -> Option<u16> {
+        let bps = &self.0 * BigDecimal::from(10_000);
+        bps.to_u32().and_then(|v| v.try_into().ok())
+    }
+
+    /// Rounds the slippage to the specified number of decimal places.
+    pub fn round(&self, decimals: i64) -> Self {
+        Self(self.0.round(decimals))
     }
 }
 
