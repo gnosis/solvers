@@ -29,15 +29,12 @@ pub fn absolute_to_relative(
     asset: &eth::Asset,
     tokens: &auction::Tokens,
 ) -> Option<BigDecimal> {
-    let Some(absolute_slippage) = absolute else {
-        return None;
-    };
     let price = tokens.reference_price(&asset.token)?;
     if price.0 .0.is_zero() {
         None
     } else {
         // Convert absolute slippage and asset value to ETH using BigDecimal
-        let absolute = conv::ether_to_decimal(&absolute_slippage);
+        let absolute = conv::ether_to_decimal(&absolute?);
         let amount_in_token = conv::ether_to_decimal(&eth::Ether(asset.amount));
         let price_in_eth = conv::ether_to_decimal(&price.0);
 
