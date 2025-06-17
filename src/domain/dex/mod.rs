@@ -166,7 +166,7 @@ impl Swap {
         order: &domain::order::Order,
         minimum_surplus: &minimum_surplus::MinimumSurplus,
     ) -> bool {
-        let required_buy_amount = minimum_surplus.add(order.buy.amount);
+        let required_buy_amount = minimum_surplus.apply(order.buy.amount);
         self.output.amount.full_mul(order.sell.amount)
             >= self.input.amount.full_mul(required_buy_amount)
     }

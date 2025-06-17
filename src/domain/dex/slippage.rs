@@ -16,7 +16,13 @@ impl Slippage {
 
 #[cfg(test)]
 mod tests {
-    use {super::*, crate::domain::{auction, eth}, crate::util::conv};
+    use {
+        super::*,
+        crate::{
+            domain::{auction, eth},
+            util::conv,
+        },
+    };
 
     #[test]
     fn slippage_tolerance() {
@@ -54,7 +60,8 @@ mod tests {
         let slippage = SlippageLimits::new(
             "0.01".parse().unwrap(), // 1%
             Some(ether("0.02")),
-        ).unwrap();
+        )
+        .unwrap();
 
         for (asset, relative, min, max) in [
             // tolerance defined by relative slippage

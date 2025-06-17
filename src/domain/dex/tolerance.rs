@@ -109,6 +109,15 @@ impl<Policy> Tolerance<Policy> {
     pub fn round(&self, arg: u32) -> Self {
         Self::new(self.value.round(arg as _))
     }
+
+    /// Applies a tolerance factor to a U256.
+    /// For a tolerance of 0.01 (1%), this returns value * 1.01
+    pub fn apply(&self, value: eth::U256) -> eth::U256 {
+        let factor = BigDecimal::from(1) + self.value.clone();
+        let value_decimal = conv::u256_to_bigdecimal(&value);
+        let result = value_decimal * factor;
+        conv::bigdecimal_to_u256(&result).unwrap_or(eth::U256::max_value())
+    }
 }
 
 /// Policy trait that defines how tolerance limits behave.
@@ -134,7 +143,8 @@ impl TolerancePolicy for SlippagePolicy {
     }
 }
 
-/// Policy for minimum surplus - ensures at least the higher of absolute or relative.
+/// Policy for minimum surplus - ensures at least the higher of absolute or
+/// relative.
 #[derive(Clone, Debug, PartialEq)]
 pub struct MinimumSurplusPolicy;
 
@@ -265,14 +275,14 @@ mod tests {
                 "0.04",
                 520_000_000_000_000_000_u128,
             ),
-            // Medium amount: relative minimum surplus dominates  
+            // Medium amount: relative minimum surplus dominates
             // 5 WETH * 1% = 0.05 WETH > 0.02 WETH absolute
             (
                 eth::Asset {
                     token: token("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"),
                     amount: 5_000_000_000_000_000_000_u128.into(), // 5 WETH
                 },
-                "0.01", 
+                "0.01",
                 5_050_000_000_000_000_000_u128,
             ),
             // For USDC: relative dominates for this amount

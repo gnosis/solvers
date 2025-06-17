@@ -2,7 +2,10 @@
 
 use {
     crate::{
-        domain::{dex::{minimum_surplus::MinimumSurplusLimits, slippage::SlippageLimits}, eth},
+        domain::{
+            dex::{minimum_surplus::MinimumSurplusLimits, slippage::SlippageLimits},
+            eth,
+        },
         infra::{blockchain, config::unwrap_or_log, contracts},
         util::serialize,
     },

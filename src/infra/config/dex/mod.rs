@@ -6,7 +6,10 @@ pub mod paraswap;
 pub mod zeroex;
 
 use {
-    crate::domain::{dex::{minimum_surplus::MinimumSurplusLimits, slippage::SlippageLimits}, eth},
+    crate::domain::{
+        dex::{minimum_surplus::MinimumSurplusLimits, slippage::SlippageLimits},
+        eth,
+    },
     ethrpc::block_stream::CurrentBlockWatcher,
     std::num::NonZeroUsize,
 };

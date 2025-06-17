@@ -19,15 +19,16 @@ api-key = 'SUPER_SECRET_API_KEY'
     ))
 }
 
-/// Creates a temporary file containing the config of the given solver with custom settings.
-pub fn config_with(solver_addr: &str, extra_config: &str) -> tests::Config {
+/// Creates a temporary file containing the config of the given solver with
+/// custom settings.
+pub fn config_with(solver_addr: &SocketAddr, extra_config: &str) -> tests::Config {
     tests::Config::String(format!(
         r"
 node-url = 'http://localhost:8545'
 {extra_config}
 [dex]
 chain-id = '1'
-endpoint = '{solver_addr}/swap/allowance-holder/'
+endpoint = 'http://{solver_addr}/swap/allowance-holder/'
 api-key = 'SUPER_SECRET_API_KEY'
         ",
     ))
