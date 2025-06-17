@@ -9,7 +9,7 @@ use {
         infra::{blockchain, config::unwrap_or_log, contracts},
         util::serialize,
     },
-    bigdecimal::BigDecimal,
+    bigdecimal::{BigDecimal, Zero},
     serde::{de::DeserializeOwned, Deserialize},
     serde_with::serde_as,
     std::{fmt::Debug, num::NonZeroUsize, path::Path, time::Duration},
@@ -95,7 +95,7 @@ fn default_relative_slippage() -> BigDecimal {
 }
 
 fn default_relative_minimum_surplus() -> BigDecimal {
-    BigDecimal::new(0.into(), 0) // 0%
+    BigDecimal::zero() // 0%
 }
 
 fn default_concurrent_requests() -> NonZeroUsize {

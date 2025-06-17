@@ -45,13 +45,11 @@ async fn buy_order_insufficient_surplus() {
                             "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820db8f56000200000000000000000014",
                             "assetInIndex": 0,
                             "assetOutIndex": 1,
-                            // This exactly meets the order's limit price but doesn't provide 1% surplus
-                            // Order wants 230 ZRX, with 1% surplus needs 230 * 1.01 = 232.3 ZRX
-                            // But swap only provides 230 ZRX (no surplus)
                             "amount": "1000000000000000000",
                             "userData": "0x",
                         }
                     ],
+                    // This exactly meets the order's limit price but doesn't provide 1% surplus
                     "swapAmountRaw": "1000000000000000000",
                     "returnAmountRaw": "230000000000000000000",
                     "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
@@ -180,12 +178,11 @@ async fn buy_order_with_sufficient_surplus() {
                             "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820db8f56000200000000000000000014",
                             "assetInIndex": 0,
                             "assetOutIndex": 1,
-                            // This provides sufficient surplus: provides 235 ZRX for 230 ZRX order
-                            // With 1% surplus requirement, needs 232.3 ZRX, gets 235 ZRX (sufficient)
                             "amount": "990000000000000000",
                             "userData": "0x",
                         }
                     ],
+                    // This provides sufficient surplus (1%). User only needs to sell 0.99ETH (instead of 1ETH) for 230 ZRX order.
                     "returnAmountRaw": "990000000000000000",
                     "swapAmountRaw": "230000000000000000000",
                     "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
@@ -310,13 +307,13 @@ async fn sell_order_insufficient_surplus() {
                             "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820db8f56000200000000000000000014",
                             "assetInIndex": 0,
                             "assetOutIndex": 1,
-                            // This exactly meets the order's limit price but doesn't provide 1% surplus
-                            // Order expects at least 230 ZRX, swap returns exactly 230 (no surplus)
                             "amount": "1000000000000000000",
                             "userData": "0x",
                         }
                     ],
                     "swapAmountRaw": "1000000000000000000",
+                    // This exactly meets the order's limit price but doesn't provide 1% surplus
+                    // Order expects at least 230 ZRX, swap returns exactly 230 (no surplus)
                     "returnAmountRaw": "230000000000000000000",
                     "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
                     "tokenOut": "0xe41d2489571d322189246dafa5ebde1f4699f498",
@@ -444,13 +441,13 @@ async fn sell_order_with_sufficient_surplus() {
                             "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820db8f56000200000000000000000014",
                             "assetInIndex": 0,
                             "assetOutIndex": 1,
-                            // This provides sufficient surplus: gives 235 ZRX for 230 ZRX order
-                            // With 1% surplus requirement, needs 232.3 ZRX, gets 235 ZRX (sufficient)
                             "amount": "1000000000000000000",
                             "userData": "0x",
                         }
                     ],
                     "swapAmountRaw": "1000000000000000000",
+                    // This provides sufficient surplus: gives 235 ZRX for 230 ZRX order
+                    // With 1% surplus requirement, needs 232.3 ZRX, gets 235 ZRX (sufficient)
                     "returnAmountRaw": "235000000000000000000",
                     "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
                     "tokenOut": "0xe41d2489571d322189246dafa5ebde1f4699f498",

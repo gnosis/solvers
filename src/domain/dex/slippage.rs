@@ -5,7 +5,7 @@ use {
         domain::{auction, dex::shared, eth},
         util::conv,
     },
-    bigdecimal::{BigDecimal, ToPrimitive, Zero, One},
+    bigdecimal::{BigDecimal, One, ToPrimitive, Zero},
     ethereum_types::U256,
     std::cmp,
 };
@@ -23,7 +23,7 @@ impl SlippageLimits {
     /// Creates a new slippage limits configuration.
     pub fn new(relative: BigDecimal, absolute: Option<eth::Ether>) -> Result<Self, anyhow::Error> {
         anyhow::ensure!(
-            relative >= BigDecimal::zero() && relative <= BigDecimal::from(1),
+            relative >= BigDecimal::zero() && relative <= BigDecimal::one(),
             "slippage relative tolerance must be in the range [0, 1]"
         );
         Ok(Self { relative, absolute })
@@ -31,10 +31,12 @@ impl SlippageLimits {
 
     /// Returns the slippage for the specified token amount.
     pub fn relative(&self, asset: &eth::Asset, tokens: &auction::Tokens) -> Slippage {
-        let absolute_as_relative =
-            shared::absolute_to_relative(self.absolute, asset, tokens);
+        let absolute_as_relative = shared::absolute_to_relative(self.absolute, asset, tokens);
 
-        Slippage::new(cmp::min(self.relative.clone(), absolute_as_relative.unwrap_or(BigDecimal::one())))
+        Slippage::new(cmp::min(
+            self.relative.clone(),
+            absolute_as_relative.unwrap_or(BigDecimal::one()),
+        ))
     }
 }
 

@@ -5,7 +5,7 @@ use {
         domain::{auction, dex::shared, eth},
         util::conv,
     },
-    bigdecimal::{BigDecimal, Zero, One},
+    bigdecimal::{BigDecimal, One, Zero},
     ethereum_types::U256,
     std::cmp,
 };
@@ -31,10 +31,12 @@ impl MinimumSurplusLimits {
 
     /// Returns the minimum surplus for the specified token amount.
     pub fn relative(&self, asset: &eth::Asset, tokens: &auction::Tokens) -> MinimumSurplus {
-                let absolute_as_relative =
-            shared::absolute_to_relative(self.absolute, asset, tokens);
+        let absolute_as_relative = shared::absolute_to_relative(self.absolute, asset, tokens);
 
-        MinimumSurplus::new(cmp::max(self.relative.clone(), absolute_as_relative.unwrap_or(BigDecimal::zero())))
+        MinimumSurplus::new(cmp::max(
+            self.relative.clone(),
+            absolute_as_relative.unwrap_or(BigDecimal::zero()),
+        ))
     }
 }
 

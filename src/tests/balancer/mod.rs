@@ -18,7 +18,7 @@ chain-id = '1'
 }
 
 /// Creates a temporary file containing the config of the given solver with
-/// custom settings.
+/// custom top-level settings.
 pub fn config_with(solver_addr: &SocketAddr, extra_config: &str) -> tests::Config {
     tests::Config::String(format!(
         r"

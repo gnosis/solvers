@@ -1,8 +1,10 @@
 //! Shared mathematical functions for slippage and minimum surplus calculations.
 
 use {
-    crate::util::conv,
-    crate::domain::{eth, auction},
+    crate::{
+        domain::{auction, eth},
+        util::conv,
+    },
     bigdecimal::BigDecimal,
     ethereum_types::U256,
     num::{BigUint, Integer},
@@ -20,8 +22,13 @@ pub fn compute_absolute_tolerance(amount: U256, factor: &BigDecimal) -> U256 {
     conv::biguint_to_u256(&abs).unwrap_or(U256::MAX)
 }
 
-/// Converts an absolute slippage value to a relative slippage value based on the amount and asset's price.
-pub fn absolute_to_relative(absolute: Option<eth::Ether>, asset: &eth::Asset, tokens: &auction::Tokens) -> Option<BigDecimal> {
+/// Converts an absolute slippage value to a relative slippage value based on
+/// the amount and asset's price.
+pub fn absolute_to_relative(
+    absolute: Option<eth::Ether>,
+    asset: &eth::Asset,
+    tokens: &auction::Tokens,
+) -> Option<BigDecimal> {
     let Some(absolute_slippage) = absolute else {
         return None;
     };

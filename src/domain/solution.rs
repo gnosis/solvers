@@ -137,9 +137,9 @@ impl Single {
 
         if (order.sell.token, order.buy.token) != (input.token, output.token) {
             tracing::debug!(
-                "input/output tokens do not match order tokens: {:?} != {:?}",
-                (input.token, output.token),
-                (order.sell.token, order.buy.token)
+                swap = ?(input.token, output.token),
+                order = ?(order.sell.token, order.buy.token),
+                "input/output tokens do not match",
             );
             return None;
         }
@@ -190,11 +190,8 @@ impl Single {
         // specified fees.
         if order.sell.amount.checked_mul(buy)? < order.buy.amount.checked_mul(sell)? {
             tracing::debug!(
-                "order limit price not satisfied: {} / {} < {} / {}",
-                order.sell.amount,
-                buy,
-                order.buy.amount,
-                sell
+                ?buy, ?sell, order = ?order,
+                "order limit price not satisfied",
             );
             return None;
         }
@@ -264,11 +261,7 @@ impl Fulfillment {
         };
         if (!order.partially_fillable && fill != full) || (order.partially_fillable && fill > full)
         {
-            tracing::debug!(
-                "invalid fill amount ({}) for orders full amount {}",
-                fill,
-                full
-            );
+            tracing::debug!(?fill, ?full, "invalid fill amount for orders full amount",);
             return None;
         }
 
