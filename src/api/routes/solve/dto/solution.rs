@@ -21,7 +21,7 @@ pub fn from_domain(solutions: &[solution::Solution]) -> super::Solutions {
                     .iter()
                     .map(|trade| match trade {
                         solution::Trade::Fulfillment(trade) => Trade::Fulfillment(Fulfillment {
-                            order: trade.order().uid.0,
+                            order: OrderUid(trade.order().uid.0),
                             executed_amount: trade.executed().amount,
                             fee: trade.surplus_fee().map(|fee| fee.amount),
                         }),
