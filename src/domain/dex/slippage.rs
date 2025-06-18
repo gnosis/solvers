@@ -14,9 +14,9 @@ use {
 #[derive(Clone, Debug)]
 pub struct SlippageLimits {
     /// The relative slippage (percent) allowed for swaps.
-    pub relative: BigDecimal,
+    relative: BigDecimal,
     /// The maximum absolute slippage allowed for swaps.
-    pub absolute: Option<eth::Ether>,
+    absolute: Option<eth::Ether>,
 }
 
 impl SlippageLimits {
@@ -46,7 +46,7 @@ pub struct Slippage(BigDecimal);
 
 impl Slippage {
     /// Creates a new slippage from a decimal value.
-    pub fn new(value: BigDecimal) -> Self {
+    fn new(value: BigDecimal) -> Self {
         Self(value)
     }
 

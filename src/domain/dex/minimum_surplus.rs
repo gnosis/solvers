@@ -5,7 +5,7 @@ use {
         domain::{auction, dex::shared, eth},
         util::conv,
     },
-    bigdecimal::{BigDecimal, One, Zero},
+    bigdecimal::{BigDecimal, Zero},
     ethereum_types::U256,
     std::cmp,
 };
@@ -14,9 +14,9 @@ use {
 #[derive(Clone, Debug)]
 pub struct MinimumSurplusLimits {
     /// The relative minimum surplus (percent) required for swaps.
-    pub relative: BigDecimal,
+    relative: BigDecimal,
     /// The absolute minimum surplus required for swaps.
-    pub absolute: Option<eth::Ether>,
+    absolute: Option<eth::Ether>,
 }
 
 impl MinimumSurplusLimits {
@@ -46,7 +46,7 @@ pub struct MinimumSurplus(BigDecimal);
 
 impl MinimumSurplus {
     /// Creates a new minimum surplus from a decimal value.
-    pub fn new(value: BigDecimal) -> Self {
+    fn new(value: BigDecimal) -> Self {
         Self(value)
     }
 
@@ -61,21 +61,6 @@ impl MinimumSurplus {
     pub fn add(&self, amount: U256) -> U256 {
         let tolerance_amount = shared::compute_absolute_tolerance(amount, &self.0);
         amount.saturating_add(tolerance_amount)
-    }
-
-    /// Applies the minimum surplus to a value as a multiplicative factor.
-    pub fn apply(&self, value: BigDecimal) -> BigDecimal {
-        &value * (BigDecimal::one() + &self.0)
-    }
-
-    /// Returns the minimum surplus as a decimal factor.
-    pub fn as_factor(&self) -> &BigDecimal {
-        &self.0
-    }
-
-    /// Rounds the minimum surplus to the specified number of decimal places.
-    pub fn round(&self, decimals: i64) -> Self {
-        Self(self.0.round(decimals))
     }
 }
 
@@ -159,7 +144,7 @@ mod tests {
 
             let computed = minimum_surplus.relative(&asset, &tokens);
 
-            assert_eq!(computed.round(9), relative);
+            assert_eq!(computed, relative);
             assert_eq!(computed.add(asset.amount), min_buy);
         }
     }

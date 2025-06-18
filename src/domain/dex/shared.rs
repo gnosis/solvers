@@ -31,18 +31,18 @@ pub fn absolute_to_relative(
 ) -> Option<BigDecimal> {
     let price = tokens.reference_price(&asset.token)?;
     if price.0 .0.is_zero() {
-        None
-    } else {
-        // Convert absolute slippage and asset value to ETH using BigDecimal
-        let absolute = conv::ether_to_decimal(&absolute?);
-        let amount_in_token = conv::ether_to_decimal(&eth::Ether(asset.amount));
-        let price_in_eth = conv::ether_to_decimal(&price.0);
-
-        // Calculate asset value in ETH: amount * price
-        let amount_in_eth = amount_in_token * price_in_eth;
-
-        // Calculate absolute as relative: absolute_eth / asset_value_in_eth
-        let absolute_as_relative = absolute / amount_in_eth;
-        Some(absolute_as_relative)
+        return None;
     }
+
+    // Convert absolute slippage and asset value to ETH using BigDecimal
+    let absolute = conv::ether_to_decimal(&absolute?);
+    let amount_in_token = conv::ether_to_decimal(&eth::Ether(asset.amount));
+    let price_in_eth = conv::ether_to_decimal(&price.0);
+
+    // Calculate asset value in ETH: amount * price
+    let amount_in_eth = amount_in_token * price_in_eth;
+
+    // Calculate absolute as relative: absolute_eth / asset_value_in_eth
+    let absolute_as_relative = absolute / amount_in_eth;
+    Some(absolute_as_relative)
 }
