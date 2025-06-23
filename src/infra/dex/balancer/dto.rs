@@ -297,7 +297,7 @@ pub struct Swap {
     /// The index in `token_addresses` for the input token.
     #[serde(with = "value_or_string")]
     pub asset_in_index: usize,
-    /// The index in `token_addresses` for the ouput token.
+    /// The index in `token_addresses` for the output token.
     #[serde(with = "value_or_string")]
     pub asset_out_index: usize,
     /// The amount to swap.
