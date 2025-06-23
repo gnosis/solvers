@@ -5,7 +5,7 @@ use {
     crate::{
         domain::{
             auction,
-            dex::{self, slippage},
+            dex::{self, minimum_surplus::MinimumSurplusLimits, slippage::SlippageLimits},
             eth,
             order::{self, Order},
             solution,
@@ -28,7 +28,10 @@ pub struct Dex {
     simulator: infra::dex::Simulator,
 
     /// The slippage configuration to use for the solver.
-    slippage: slippage::Limits,
+    slippage: SlippageLimits,
+
+    /// The minimum surplus configuration to use for the solver.
+    minimum_surplus: MinimumSurplusLimits,
 
     /// The number of concurrent requests to make.
     concurrent_requests: NonZeroUsize,
@@ -67,6 +70,7 @@ impl Dex {
                 config.contracts.authenticator,
             ),
             slippage: config.slippage,
+            minimum_surplus: config.minimum_surplus,
             concurrent_requests: config.concurrent_requests,
             fills: Fills::new(config.smallest_partial_fill),
             rate_limiter,
@@ -169,14 +173,24 @@ impl Dex {
             .and_then(|result| result)
             .ok()
             .filter(|swap| {
-                let valid = swap.satisfies(order);
-                if !valid {
+                if !swap.satisfies(order) {
                     tracing::debug!("swap does not satisfy order");
+                    if order.partially_fillable {
+                        self.fills.reduce_next_try(order.uid);
+                    }
+                    return false;
                 }
-                if order.partially_fillable && !valid {
-                    self.fills.reduce_next_try(order.uid);
+
+                // Check minimum surplus requirement
+                let minimum_surplus = self.minimum_surplus.relative(&dex_order.amount(), tokens);
+                let valid_surplus = swap.satisfies_with_minimum_surplus(order, &minimum_surplus);
+                if !valid_surplus {
+                    tracing::debug!("swap does not meet minimum surplus requirement");
+                    if order.partially_fillable {
+                        self.fills.reduce_next_try(order.uid);
+                    }
                 }
-                valid
+                valid_surplus
             })
     }
 

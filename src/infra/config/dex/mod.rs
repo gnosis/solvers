@@ -6,7 +6,10 @@ pub mod paraswap;
 pub mod zeroex;
 
 use {
-    crate::domain::{dex::slippage, eth},
+    crate::domain::{
+        dex::{minimum_surplus::MinimumSurplusLimits, slippage::SlippageLimits},
+        eth,
+    },
     ethrpc::block_stream::CurrentBlockWatcher,
     std::num::NonZeroUsize,
 };
@@ -21,7 +24,8 @@ pub struct Contracts {
 pub struct Config {
     pub node_url: reqwest::Url,
     pub contracts: Contracts,
-    pub slippage: slippage::Limits,
+    pub slippage: SlippageLimits,
+    pub minimum_surplus: MinimumSurplusLimits,
     pub concurrent_requests: NonZeroUsize,
     pub smallest_partial_fill: eth::Ether,
     pub rate_limiting_strategy: rate_limit::Strategy,

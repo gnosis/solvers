@@ -136,6 +136,11 @@ impl Single {
         } = self;
 
         if (order.sell.token, order.buy.token) != (input.token, output.token) {
+            tracing::debug!(
+                swap = ?(input.token, output.token),
+                order = ?(order.sell.token, order.buy.token),
+                "input/output tokens do not match",
+            );
             return None;
         }
 
@@ -184,6 +189,10 @@ impl Single {
         // Check order's limit price is satisfied accounting for solver
         // specified fees.
         if order.sell.amount.checked_mul(buy)? < order.buy.amount.checked_mul(sell)? {
+            tracing::debug!(
+                ?buy, ?sell, order = ?order,
+                "order limit price not satisfied",
+            );
             return None;
         }
 
@@ -239,18 +248,20 @@ impl Fulfillment {
     /// the fill amount is incompatible with the order.
     pub fn new(order: order::Order, executed: U256, fee: Fee) -> Option<Self> {
         if matches!(fee, Fee::Surplus(_)) != order.solver_determines_fee() {
+            tracing::debug!("incompatible fee type for order");
             return None;
         }
 
-        let (fill, full) = match order.side {
+        let (full, fill) = match order.side {
             order::Side::Buy => (order.buy.amount, executed),
             order::Side::Sell => (
                 order.sell.amount,
                 executed.checked_add(fee.surplus().unwrap_or_default())?,
             ),
         };
-        if (!order.partially_fillable && full != fill) || (order.partially_fillable && full > fill)
+        if (!order.partially_fillable && fill != full) || (order.partially_fillable && fill > full)
         {
+            tracing::debug!(?fill, ?full, "invalid fill amount for orders full amount",);
             return None;
         }
 
