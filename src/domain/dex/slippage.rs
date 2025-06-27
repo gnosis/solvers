@@ -1,10 +1,7 @@
 //! Slippage tolerance computation for DEX swaps.
 
 use {
-    crate::{
-        domain::{auction, dex::shared, eth},
-        util::conv,
-    },
+    crate::domain::{auction, dex::shared, eth},
     bigdecimal::{BigDecimal, One, ToPrimitive, Zero},
     ethereum_types::U256,
     std::cmp,
@@ -50,14 +47,8 @@ impl Slippage {
         Self(value)
     }
 
-    /// Creates a slippage from an absolute amount and reference amount.
-    fn from_amount(tolerance_amount: U256, reference_amount: U256) -> Self {
-        let tolerance = conv::u256_to_bigdecimal(&tolerance_amount);
-        let reference = conv::u256_to_bigdecimal(&reference_amount);
-        Self(tolerance / reference)
-    }
-
     /// Returns 1% slippage.
+    #[cfg(test)]
     pub fn one_percent() -> Self {
         Self::new("0.01".parse().unwrap())
     }
@@ -107,7 +98,6 @@ mod tests {
         let ether = |e: &str| conv::decimal_to_ether(&e.parse().unwrap()).unwrap();
         let price = |e: &str| auction::Token {
             decimals: Default::default(),
-            symbol: Default::default(),
             reference_price: Some(auction::Price(ether(e))),
             available_balance: Default::default(),
             trusted: Default::default(),

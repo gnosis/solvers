@@ -1,7 +1,3 @@
-// TODO remove this once the crate stabilizes a bit.
-#![allow(dead_code)]
-#![recursion_limit = "256"]
-
 mod api;
 mod domain;
 mod infra;

@@ -137,31 +137,10 @@ pub struct PriceRoute {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TxParams {
-    pub from: H160,
     pub to: H160,
-
-    #[serde_as(as = "serialize::U256")]
-    pub value: U256,
 
     #[serde_as(as = "serialize::Hex")]
     pub data: Vec<u8>,
-}
-
-#[derive(Deserialize)]
-#[serde(untagged)]
-pub enum Response<T> {
-    Ok(T),
-    Err(Error),
-}
-
-impl<T> Response<T> {
-    /// Turns the API response into a [`std::result::Result`].
-    pub fn into_result(self) -> Result<T, Error> {
-        match self {
-            Response::Ok(quote) => Ok(quote),
-            Response::Err(err) => Err(err),
-        }
-    }
 }
 
 #[derive(Debug, Deserialize)]

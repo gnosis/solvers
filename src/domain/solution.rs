@@ -1,10 +1,10 @@
 use {
     crate::{
-        domain::{auction, eth, liquidity, order},
+        domain::{auction, eth, order},
         util,
     },
     ethereum_types::{Address, U256},
-    std::{collections::HashMap, slice},
+    std::collections::HashMap,
 };
 
 #[derive(Debug, Default, Copy, Clone)]
@@ -26,7 +26,6 @@ pub struct Solution {
     pub interactions: Vec<Interaction>,
     pub post_interactions: Vec<eth::Interaction>,
     pub gas: Option<eth::Gas>,
-    pub flashloans: Option<Vec<Flashloan>>,
 }
 
 impl Solution {
@@ -45,11 +44,6 @@ impl Solution {
         let mut used_buffers = HashMap::new();
         for interaction in self.interactions.iter_mut() {
             let (inputs, outputs, internalize) = match interaction {
-                Interaction::Liquidity(interaction) => (
-                    slice::from_ref(&interaction.input),
-                    slice::from_ref(&interaction.output),
-                    &mut interaction.internalize,
-                ),
                 Interaction::Custom(interaction) => (
                     &interaction.inputs[..],
                     &interaction.outputs[..],
@@ -97,10 +91,6 @@ impl Solution {
         }
 
         self
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.prices.0.is_empty() && self.trades.is_empty() && self.interactions.is_empty()
     }
 }
 
@@ -210,7 +200,6 @@ impl Single {
             interactions,
             post_interactions: Default::default(),
             gas: Some(gas_offset + self.gas),
-            flashloans: None,
             trades: vec![Trade::Fulfillment(Fulfillment::new(order, executed, fee)?)],
         })
     }
@@ -232,7 +221,6 @@ impl ClearingPrices {
 #[derive(Debug)]
 pub enum Trade {
     Fulfillment(Fulfillment),
-    Jit(JitTrade),
 }
 
 /// A traded order within a solution.
@@ -270,15 +258,6 @@ impl Fulfillment {
             executed,
             fee,
         })
-    }
-
-    /// Creates a new trade for a fully executed order.
-    pub fn fill(order: order::Order) -> Option<Self> {
-        let executed = match order.side {
-            order::Side::Buy => order.buy.amount,
-            order::Side::Sell => order.sell.amount,
-        };
-        Self::new(order, executed, Fee::Protocol)
     }
 
     /// Get a reference to the traded order.
@@ -333,32 +312,11 @@ impl Fee {
     }
 }
 
-/// A trade of an order that was created specifically for this solution
-/// providing just-in-time liquidity for other regular orders.
-#[derive(Debug)]
-pub struct JitTrade {
-    pub order: order::JitOrder,
-    pub executed: U256,
-}
-
 /// An interaction that is required to execute a solution by acquiring liquidity
 /// or running some custom logic.
 #[derive(Debug)]
 pub enum Interaction {
-    Liquidity(Box<LiquidityInteraction>),
     Custom(CustomInteraction),
-}
-
-/// An interaction using input liquidity. This interaction will be encoded by
-/// the driver.
-#[derive(Debug)]
-pub struct LiquidityInteraction {
-    pub liquidity: liquidity::Liquidity,
-    // TODO: Currently there is not type-level guarantee that `input` and
-    // output` are valid for the specified liquidity.
-    pub input: eth::Asset,
-    pub output: eth::Asset,
-    pub internalize: bool,
 }
 
 /// An arbitrary interaction returned by the solver, which needs to be executed
@@ -387,23 +345,4 @@ pub struct CustomInteraction {
 pub struct Allowance {
     pub spender: Address,
     pub asset: eth::Asset,
-}
-
-// initial tx gas used to call the settle function from the settlement contract
-pub const INITIALIZATION_COST: u64 = 32_000;
-/// minimum gas every settlement takes (isSolver)
-pub const SETTLEMENT: u64 = 7365;
-/// lower bound for an erc20 transfer.
-///
-/// Value was computed by taking 52 percentile median of `transfer()` costs
-/// of the 90% most traded tokens by volume in the month of Oct. 2021.
-pub const ERC20_TRANSFER: u64 = 27_513;
-
-/// A flashloan that is required to execute a solution.
-#[derive(Debug, Clone)]
-pub struct Flashloan {
-    pub lender: eth::Address,
-    pub borrower: eth::Address,
-    pub token: eth::TokenAddress,
-    pub amount: eth::U256,
 }

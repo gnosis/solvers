@@ -55,15 +55,6 @@ impl Debug for Path {
     }
 }
 
-pub fn abort_on_panic() {
-    let previous_hook = std::panic::take_hook();
-    let new_hook = move |info: &std::panic::PanicHookInfo| {
-        previous_hook(info);
-        std::process::exit(1);
-    };
-    std::panic::set_hook(Box::new(new_hook));
-}
-
 #[derive(Clone, Debug)]
 pub enum Expectation {
     Get {
@@ -80,6 +71,7 @@ pub enum Expectation {
 #[derive(Clone, Debug)]
 pub enum RequestBody {
     /// The received `[RequestBody]` has to match the provided value exactly.
+    #[allow(dead_code)]
     Exact(serde_json::Value),
     /// The received `[RequestBody]` has to match the provided value partially
     /// excluding the specified paths which are represented as dot-separated

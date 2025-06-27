@@ -172,23 +172,6 @@ pub struct Tx {
 }
 
 #[derive(Deserialize)]
-#[serde(untagged)]
-pub enum Response {
-    Ok(Swap),
-    Err(Error),
-}
-
-impl Response {
-    /// Turns the API response into a [`std::result::Result`].
-    pub fn into_result(self) -> Result<Swap, Error> {
-        match self {
-            Response::Ok(swap) => Ok(swap),
-            Response::Err(err) => Err(err),
-        }
-    }
-}
-
-#[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Error {
     pub status_code: i32,

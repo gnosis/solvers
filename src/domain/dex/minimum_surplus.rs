@@ -1,10 +1,7 @@
 //! Minimum surplus requirements for DEX swaps.
 
 use {
-    crate::{
-        domain::{auction, dex::shared, eth},
-        util::conv,
-    },
+    crate::domain::{auction, dex::shared, eth},
     bigdecimal::{BigDecimal, Zero},
     ethereum_types::U256,
     std::cmp,
@@ -50,13 +47,6 @@ impl MinimumSurplus {
         Self(value)
     }
 
-    /// Creates a minimum surplus from an absolute amount and reference amount.
-    fn from_amount(surplus_amount: U256, reference_amount: U256) -> Self {
-        let surplus = conv::u256_to_bigdecimal(&surplus_amount);
-        let reference = conv::u256_to_bigdecimal(&reference_amount);
-        Self(surplus / reference)
-    }
-
     /// Adds minimum surplus to the specified amount.
     pub fn add(&self, amount: U256) -> U256 {
         let tolerance_amount = shared::compute_absolute_tolerance(amount, &self.0);
@@ -80,7 +70,6 @@ mod tests {
         let ether = |e: &str| conv::decimal_to_ether(&e.parse().unwrap()).unwrap();
         let price = |e: &str| auction::Token {
             decimals: Default::default(),
-            symbol: Default::default(),
             reference_price: Some(auction::Price(ether(e))),
             available_balance: Default::default(),
             trusted: Default::default(),

@@ -120,6 +120,7 @@ impl HumanReadableAmount {
     }
 
     /// Convert the human readable amount to a `U256` with the token's decimals.
+    #[cfg(test)]
     pub fn as_wei(&self) -> U256 {
         self.amount
     }
@@ -178,14 +179,19 @@ pub(super) enum Chain {
     Arbitrum,
     Avalanche,
     Base,
-    Fantom,
-    Fraxtal,
     Gnosis,
     Mainnet,
-    Mode,
     Optimism,
     Polygon,
+    #[allow(dead_code)]
+    Mode,
+    #[allow(dead_code)]
+    Fraxtal,
+    #[allow(dead_code)]
     Sepolia,
+    #[allow(dead_code)]
+    Fantom,
+    #[allow(dead_code)]
     ZkEvm,
 }
 
@@ -426,14 +432,12 @@ mod tests {
         let tokens = auction::Tokens(hashmap! {
             eth::TokenAddress(H160::from_str("0x2170ed0880ac9a755fd29b2688956bd959f933f8").unwrap()) => auction::Token {
                 decimals: Some(18),
-                symbol: Some("ETH".to_string()),
                 reference_price: None,
                 available_balance: U256::from(1000),
                 trusted: true,
             },
             eth::TokenAddress(H160::from_str("0xdac17f958d2ee523a2206206994597c13d831ec7").unwrap()) => auction::Token {
                 decimals: Some(24),
-                symbol: Some("USDT".to_string()),
                 reference_price: None,
                 available_balance: U256::from(1000),
                 trusted: true,
