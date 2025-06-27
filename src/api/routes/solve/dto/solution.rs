@@ -1,5 +1,5 @@
 use {
-    crate::domain::{eth, order, solution},
+    crate::domain::{eth, solution},
     dto::solution::*,
 };
 
@@ -25,43 +25,6 @@ pub fn from_domain(solutions: &[solution::Solution]) -> super::Solutions {
                             executed_amount: trade.executed().amount,
                             fee: trade.surplus_fee().map(|fee| fee.amount),
                         }),
-                        solution::Trade::Jit(trade) => {
-                            let (signing_scheme, signature) = match &trade.order.signature {
-                                order::Signature::Eip712(signature) => {
-                                    (SigningScheme::Eip712, signature.to_bytes().to_vec())
-                                }
-                                order::Signature::EthSign(signature) => {
-                                    (SigningScheme::EthSign, signature.to_bytes().to_vec())
-                                }
-                                order::Signature::Eip1271(bytes) => {
-                                    (SigningScheme::Eip1271, bytes.clone())
-                                }
-                                order::Signature::PreSign => (SigningScheme::PreSign, vec![]),
-                            };
-
-                            Trade::Jit(JitTrade {
-                                order: JitOrder {
-                                    sell_token: trade.order.sell.token.0,
-                                    sell_amount: trade.order.sell.amount,
-                                    buy_token: trade.order.buy.token.0,
-                                    buy_amount: trade.order.buy.amount,
-                                    receiver: trade.order.receiver,
-                                    valid_to: trade.order.valid_to,
-                                    app_data: trade.order.app_data.0,
-                                    kind: match trade.order.side {
-                                        crate::domain::order::Side::Buy => Kind::Buy,
-                                        crate::domain::order::Side::Sell => Kind::Sell,
-                                    },
-                                    sell_token_balance: SellTokenBalance::Erc20,
-                                    buy_token_balance: BuyTokenBalance::Erc20,
-                                    signing_scheme,
-                                    signature,
-                                    partially_fillable: trade.order.partially_fillable,
-                                },
-                                executed_amount: trade.executed,
-                                fee: Some(0.into()),
-                            })
-                        }
                     })
                     .collect(),
                 pre_interactions: interaction_data_from_domain(&solution.pre_interactions),
@@ -70,16 +33,6 @@ pub fn from_domain(solutions: &[solution::Solution]) -> super::Solutions {
                     .interactions
                     .iter()
                     .map(|interaction| match interaction {
-                        solution::Interaction::Liquidity(interaction) => {
-                            Interaction::Liquidity(LiquidityInteraction {
-                                id: interaction.liquidity.id.0.clone(),
-                                input_token: interaction.input.token.0,
-                                input_amount: interaction.input.amount,
-                                output_token: interaction.output.token.0,
-                                output_amount: interaction.output.amount,
-                                internalize: interaction.internalize,
-                            })
-                        }
                         solution::Interaction::Custom(interaction) => {
                             Interaction::Custom(CustomInteraction {
                                 target: interaction.target,

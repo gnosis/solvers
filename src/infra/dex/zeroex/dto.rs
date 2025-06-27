@@ -155,24 +155,6 @@ pub struct Allowance {
 }
 
 #[derive(Deserialize)]
-#[serde(untagged)]
-#[allow(clippy::large_enum_variant)]
-pub enum Response {
-    Ok(Quote),
-    Err(Error),
-}
-
-impl Response {
-    /// Turns the API response into a [`std::result::Result`].
-    pub fn into_result(self) -> Result<Quote, Error> {
-        match self {
-            Response::Ok(quote) => Ok(quote),
-            Response::Err(err) => Err(err),
-        }
-    }
-}
-
-#[derive(Deserialize)]
 pub struct Error {
     pub code: i64,
     pub reason: String,

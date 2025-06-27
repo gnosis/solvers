@@ -23,11 +23,6 @@ struct Metrics {
     solutions: prometheus::IntCounter,
 }
 
-/// Setup the metrics registry.
-pub fn init() {
-    observe::metrics::setup_registry_reentrant(Some("solver-engine".to_owned()), None);
-}
-
 pub fn solve(auction: &auction::Auction) {
     get().time_limit.observe(
         auction

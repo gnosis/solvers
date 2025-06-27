@@ -2,7 +2,7 @@
 
 use {
     crate::{domain::eth, util},
-    ethereum_types::{Address, H256},
+    ethereum_types::Address,
     std::fmt::{self, Debug, Display, Formatter},
 };
 
@@ -15,7 +15,6 @@ pub struct Order {
     pub side: Side,
     pub class: Class,
     pub partially_fillable: bool,
-    pub flashloan_hint: Option<FlashloanHint>,
 }
 
 impl Order {
@@ -30,15 +29,6 @@ impl Order {
     pub fn solver_determines_fee(&self) -> bool {
         self.class == Class::Limit
     }
-}
-
-/// A hint for the solver to use a flashloan for this order.
-#[derive(Debug, Copy, Clone)]
-pub struct FlashloanHint {
-    pub lender: eth::Address,
-    pub borrower: eth::Address,
-    pub token: eth::TokenAddress,
-    pub amount: eth::U256,
 }
 
 /// UID of an order.
@@ -73,87 +63,6 @@ pub enum Side {
 pub enum Class {
     Market,
     Limit,
-}
-
-/// An arbitrary ethereum interaction that is required for the settlement
-/// execution.
-#[derive(Debug, Clone)]
-pub struct Interaction {
-    pub target: Address,
-    pub value: eth::Ether,
-    pub calldata: Vec<u8>,
-}
-
-/// An order that can be used to provide just-in-time liquidity in form of a CoW
-/// Protocol order. This is how solvers integrate private market makers into
-/// their solutions.
-#[derive(Debug)]
-pub struct JitOrder {
-    pub owner: Address,
-    pub signature: Signature,
-    pub sell: eth::Asset,
-    pub buy: eth::Asset,
-    pub side: Side,
-    pub class: Class,
-    pub partially_fillable: bool,
-    pub valid_to: u32,
-    pub app_data: AppData,
-    pub receiver: Address,
-}
-
-/// Signature over the order data.
-/// All variants rely on the EIP-712 hash of the order data, referred to as the
-/// order hash.
-#[derive(Debug, Clone)]
-pub enum Signature {
-    /// The order struct is signed according to EIP-712.
-    ///
-    /// https://eips.ethereum.org/EIPS/eip-712
-    Eip712(EcdsaSignature),
-    /// The order hash is signed according to EIP-191's personal_sign signature
-    /// format.
-    ///
-    /// https://eips.ethereum.org/EIPS/eip-191
-    EthSign(EcdsaSignature),
-    /// Signature verified according to EIP-1271, which facilitates a way for
-    /// contracts to verify signatures using an arbitrary method. This
-    /// allows smart contracts to sign and place orders. The order hash is
-    /// passed to the verification method, along with this signature.
-    ///
-    /// https://eips.ethereum.org/EIPS/eip-1271
-    Eip1271(Vec<u8>),
-    /// For these signatures, the user broadcasts a transaction onchain. This
-    /// transaction contains a signature of the order hash. Because this
-    /// onchain transaction is also signed, it proves that the user indeed
-    /// signed the order.
-    PreSign,
-}
-
-impl Signature {
-    pub fn to_bytes(&self) -> Vec<u8> {
-        match self {
-            Self::Eip712(signature) | Self::EthSign(signature) => signature.to_bytes().to_vec(),
-            Self::Eip1271(signature) => signature.clone(),
-            Self::PreSign => Vec::new(),
-        }
-    }
-}
-
-#[derive(Clone, Copy, Debug, Default)]
-pub struct EcdsaSignature {
-    pub r: H256,
-    pub s: H256,
-    pub v: u8,
-}
-
-impl EcdsaSignature {
-    pub fn to_bytes(self) -> [u8; 65] {
-        let mut bytes = [0u8; 65];
-        bytes[..32].copy_from_slice(self.r.as_bytes());
-        bytes[32..64].copy_from_slice(self.s.as_bytes());
-        bytes[64] = self.v;
-        bytes
-    }
 }
 
 /// This is a hash allowing arbitrary user data to be associated with an order.
