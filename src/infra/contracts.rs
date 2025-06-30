@@ -2,7 +2,6 @@ use crate::domain::eth;
 
 #[derive(Clone, Debug)]
 pub struct Contracts {
-    pub weth: eth::WethAddress,
     pub settlement: eth::ContractAddress,
     pub authenticator: eth::ContractAddress,
     pub permit2: eth::ContractAddress,
@@ -11,9 +10,6 @@ pub struct Contracts {
 impl Contracts {
     pub fn for_chain(chain: eth::ChainId) -> Self {
         Self {
-            weth: eth::WethAddress(
-                contract_address_for_chain(chain, contracts::WETH9::raw_contract()).0,
-            ),
             settlement: contract_address_for_chain(
                 chain,
                 contracts::GPv2Settlement::raw_contract(),

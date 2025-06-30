@@ -7,7 +7,7 @@
 use {
     anyhow::Context,
     reqwest::Url,
-    std::{io::Write, path::PathBuf},
+    std::io::Write,
     tokio::{sync::oneshot, task::JoinHandle},
 };
 
@@ -22,14 +22,15 @@ mod zeroex;
 /// A solver engine handle for E2E testing.
 pub struct SolverEngine {
     url: Url,
+    #[allow(dead_code)] // only needed for Drop handling
     tempfile: Option<tempfile::TempPath>,
     handle: JoinHandle<()>,
 }
 
 /// Solver configuration.
 pub enum Config {
+    #[allow(dead_code)]
     None,
-    File(PathBuf),
     String(String),
 }
 
@@ -47,10 +48,6 @@ impl SolverEngine {
         ];
         let tempfile = match config {
             Config::None => None,
-            Config::File(path) => {
-                args.push(format!("--config={}", path.display()));
-                None
-            }
             Config::String(config) => {
                 let mut file = tempfile::NamedTempFile::new().unwrap();
                 file.write_all(config.as_bytes()).unwrap();
