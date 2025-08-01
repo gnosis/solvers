@@ -5,7 +5,7 @@ use {
         domain::{auction, eth},
         util::conv,
     },
-    bigdecimal::BigDecimal,
+    bigdecimal::{BigDecimal, Zero},
     ethereum_types::U256,
     num::{BigUint, Integer, Zero},
 };
