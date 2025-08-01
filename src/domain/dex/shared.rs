@@ -7,7 +7,7 @@ use {
     },
     bigdecimal::BigDecimal,
     ethereum_types::U256,
-    num::{BigUint, Integer},
+    num::{BigUint, Integer, Zero},
 };
 
 /// Computes the absolute tolerance amount from a relative factor.
@@ -41,6 +41,11 @@ pub fn absolute_to_relative(
 
     // Calculate asset value in ETH: amount * price
     let amount_in_eth = amount_in_token * price_in_eth;
+
+    // Check if amount_in_eth is zero to prevent division by zero
+    if amount_in_eth.is_zero() {
+        return None;
+    }
 
     // Calculate absolute as relative: absolute_eth / asset_value_in_eth
     let absolute_as_relative = absolute / amount_in_eth;
