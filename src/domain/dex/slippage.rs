@@ -216,4 +216,41 @@ mod tests {
 
         assert_eq!(slippage.round(4), Slippage::new("42.1158".parse().unwrap()));
     }
+
+    #[test]
+    fn handles_zero_amount_without_panic() {
+        let token = |t: &str| eth::TokenAddress(t.parse().unwrap());
+        let ether = |e: &str| conv::decimal_to_ether(&e.parse().unwrap()).unwrap();
+        let price = |e: &str| auction::Token {
+            decimals: Default::default(),
+            reference_price: Some(auction::Price(ether(e))),
+            available_balance: Default::default(),
+            trusted: Default::default(),
+        };
+
+        let tokens = auction::Tokens(
+            [(
+                token("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"),
+                price("1.0"),
+            )]
+            .into_iter()
+            .collect(),
+        );
+
+        let slippage = SlippageLimits::new(
+            "0.01".parse().unwrap(), // 1%
+            Some(ether("0.02")),
+        )
+        .unwrap();
+
+        // Test with zero amount - should not panic and use relative slippage fallback
+        let asset_with_zero_amount = eth::Asset {
+            token: token("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"),
+            amount: 0.into(), // Zero amount
+        };
+
+        // This should not panic and should return the relative slippage (1%)
+        let computed = slippage.relative(&asset_with_zero_amount, &tokens);
+        assert_eq!(computed.as_factor(), &"0.01".parse::<BigDecimal>().unwrap());
+    }
 }
