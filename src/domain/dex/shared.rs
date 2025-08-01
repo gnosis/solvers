@@ -7,7 +7,7 @@ use {
     },
     bigdecimal::{BigDecimal, Zero},
     ethereum_types::U256,
-    num::{BigUint, Integer, Zero},
+    num::{BigUint, Integer},
 };
 
 /// Computes the absolute tolerance amount from a relative factor.
