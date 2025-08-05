@@ -3902,6 +3902,7 @@ source = "git+https://github.com/cowprotocol/services.git?tag=v2.320.0#5f8ca053e
 dependencies = [
  "async-trait",
  "atty",
+ "axum",
  "chrono",
  "console-subscriber",
  "futures",
