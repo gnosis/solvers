@@ -3,6 +3,7 @@
 use {
     crate::domain::solver::Solver,
     axum::extract::DefaultBodyLimit,
+    observe::distributed_tracing::tracing_axum::{make_span, record_trace_id},
     std::{future::Future, net::SocketAddr, sync::Arc},
     tokio::sync::oneshot,
 };
@@ -25,14 +26,14 @@ impl Api {
             .route("/healthz", axum::routing::get(routes::healthz))
             .route("/solve", axum::routing::post(routes::solve))
             .layer(
-                tower::ServiceBuilder::new().layer(tower_http::trace::TraceLayer::new_for_http()),
+                tower::ServiceBuilder::new()
+                    .layer(tower_http::trace::TraceLayer::new_for_http().make_span_with(make_span))
+                    .map_request(record_trace_id),
             )
             .layer(DefaultBodyLimit::disable())
             .with_state(Arc::new(self.solver));
 
-        let make_svc = observe::make_service_with_request_tracing!(app);
-
-        let server = axum::Server::bind(&self.addr).serve(make_svc);
+        let server = axum::Server::bind(&self.addr).serve(app.into_make_service());
         if let Some(bind) = bind {
             let _ = bind.send(server.local_addr());
         }
