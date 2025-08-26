@@ -64,17 +64,3 @@ pub enum Class {
     Market,
     Limit,
 }
-
-/// This is a hash allowing arbitrary user data to be associated with an order.
-/// While this type holds the hash, the data itself is uploaded to IPFS. This
-/// hash is signed along with the order.
-#[derive(Clone, Copy, Default)]
-pub struct AppData(pub [u8; 32]);
-
-impl Debug for AppData {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        f.debug_tuple("AppData")
-            .field(&util::fmt::Hex(&self.0))
-            .finish()
-    }
-}

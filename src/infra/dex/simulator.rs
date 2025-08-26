@@ -127,10 +127,6 @@ impl Simulator {
 }
 
 #[derive(Debug, thiserror::Error)]
-#[error("error initializing simulator: {0}")]
-pub struct InitializationError(#[from] ethcontract::errors::MethodError);
-
-#[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error("web3 error: {0:?}")]
     Web3(#[from] web3::error::Error),
