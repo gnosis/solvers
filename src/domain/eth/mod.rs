@@ -21,10 +21,6 @@ impl From<H160> for TokenAddress {
     }
 }
 
-/// The WETH token (or equivalent) for the EVM compatible network.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct WethAddress(pub H160);
-
 /// An asset on the Ethereum blockchain. Represents a particular amount of a
 /// particular token.
 #[derive(Debug, Clone, Copy)]
