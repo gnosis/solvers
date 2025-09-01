@@ -145,7 +145,7 @@ impl Sor {
                 // doing the transfer of funds from the settlement
                 (
                     self.permit2.address(),
-                    self.encode_v3_swap(order, &quote, max_input)?,
+                    self.encode_v3_swap(order, &quote, max_input, slippage)?,
                 )
             }
         };
@@ -227,6 +227,7 @@ impl Sor {
         order: &dex::Order,
         quote: &dto::Quote,
         max_input: U256,
+        slippage: &dex::Slippage,
     ) -> Result<Vec<dex::Call>, Error> {
         // Receiving this error indicates that V3 is now supported on the current chain.
         let Some(v3_batch_router) = &self.v3_batch_router else {
@@ -242,8 +243,15 @@ impl Sor {
                         .first()
                         .map(|t| t.address)
                         .ok_or_else(|| Error::InvalidPath)?,
-                    input_amount_raw: path.input_amount_raw,
-                    output_amount_raw: path.output_amount_raw,
+                    input_amount_raw: match order.side {
+                        Side::Buy => slippage.add(path.input_amount_raw),
+                        Side::Sell => path.input_amount_raw,
+                    },
+                    output_amount_raw: match order.side {
+                        Side::Buy => path.output_amount_raw,
+                        Side::Sell => slippage.sub(path.output_amount_raw),
+                    },
+
                     // A path step consists of 1 item of 3 different arrays at the correct
                     // index. `tokens` contains 1 item more where the first one needs
                     // to be skipped.
