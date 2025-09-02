@@ -386,7 +386,10 @@ mod value_or_string {
 #[cfg(test)]
 mod tests {
     use {
-        super::*, maplit::hashmap, number::conversions::big_decimal_to_u256, serde_json::json,
+        super::*,
+        maplit::hashmap,
+        number::conversions::big_decimal_to_u256,
+        serde_json::json,
         std::str::FromStr,
     };
 

@@ -1,7 +1,8 @@
 use {
     crate::{
         domain::{
-            auction, dex,
+            auction,
+            dex,
             eth::{self, TokenAddress},
             order::{self, Side},
         },
