@@ -17,13 +17,7 @@ async fn sell_v2() {
         req: mock::http::RequestBody::Partial(json!({
             "query": serde_json::to_value(SWAP_QUERY).unwrap(),
             "variables": {
-                "callDataInput": {
-                  "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                  "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                  "slippagePercentage": "0.01"
-                },
                 "chain": "MAINNET",
-                "queryBatchSwap": false,
                 "swapAmount": "1",
                 "swapType": "EXACT_IN",
                 "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
@@ -198,13 +192,7 @@ async fn sell_v3() {
             json!({
                 "query": serde_json::to_value(SWAP_QUERY).unwrap(),
                 "variables": {
-                    "callDataInput": {
-                      "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                      "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                      "slippagePercentage": "0.01"
-                    },
                     "chain": "MAINNET",
-                    "queryBatchSwap": false,
                     "swapAmount": "1",
                     "swapType": "EXACT_IN",
                     "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
@@ -404,13 +392,7 @@ async fn buy_v2() {
         req: mock::http::RequestBody::Partial(json!({
             "query": serde_json::to_value(SWAP_QUERY).unwrap(),
             "variables": {
-                "callDataInput": {
-                  "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                  "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                  "slippagePercentage": "0.01"
-                },
                 "chain": "MAINNET",
-                "queryBatchSwap": false,
                 "swapAmount": "100",
                 "swapType": "EXACT_OUT",
                 "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",

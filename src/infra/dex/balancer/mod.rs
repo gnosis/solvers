@@ -1,8 +1,7 @@
 use {
     crate::{
         domain::{
-            auction,
-            dex,
+            auction, dex,
             eth::{self, TokenAddress},
             order::{self, Side},
         },
@@ -12,12 +11,7 @@ use {
     contracts::ethcontract::I256,
     ethereum_types::U256,
     ethrpc::block_stream::CurrentBlockWatcher,
-    num::ToPrimitive,
-    std::{
-        ops::Add,
-        sync::atomic::{self, AtomicU64},
-        time::Duration,
-    },
+    std::sync::atomic::{self, AtomicU64},
     tracing::Instrument,
 };
 
@@ -34,7 +28,6 @@ pub struct Sor {
     permit2: v3::Permit2,
     settlement: eth::ContractAddress,
     chain_id: Chain,
-    query_batch_swap: bool,
 }
 
 pub struct Config {
@@ -60,10 +53,6 @@ pub struct Config {
 
     /// For which chain the solver is configured.
     pub chain_id: eth::ChainId,
-
-    /// Whether to run `queryBatchSwap` to update the return amount with most
-    /// up-to-date on-chain values.
-    pub query_batch_swap: bool,
 }
 
 impl Sor {
@@ -82,7 +71,6 @@ impl Sor {
             permit2: v3::Permit2::new(config.permit2),
             settlement: config.settlement,
             chain_id: Chain::from_domain(config.chain_id)?,
-            query_batch_swap: config.query_batch_swap,
         })
     }
 
@@ -96,19 +84,7 @@ impl Sor {
         let Some(v2_vault) = &self.v2_vault else {
             return Err(Error::DisabledApiVersion(ApiVersion::V2));
         };
-        let query = dto::Query::from_domain(
-            order,
-            tokens,
-            slippage,
-            self.chain_id,
-            self.settlement,
-            self.query_batch_swap,
-            // 2 minutes from now
-            chrono::Utc::now()
-                .add(Duration::from_secs(120))
-                .timestamp()
-                .to_u64(),
-        )?;
+        let query = dto::Query::from_domain(order, tokens, self.chain_id)?;
         let quote = {
             // Set up a tracing span to make debugging of API requests easier.
             // Historically, debugging API requests to external DEXs was a bit
