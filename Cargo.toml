@@ -47,7 +47,7 @@ tower-http = { version = "0.4", features = ["trace"] }
 tracing = "0.1"
 web3 = "0.19"
 
-contracts = { git = "https://github.com/cowprotocol/services.git", tag = "v2.324.0", package = "contracts" }
+contracts = { git = "https://github.com/brunoguerios/services.git", branch = "add-balancer-queries-2", package = "contracts" }
 ethrpc = { git = "https://github.com/cowprotocol/services.git", tag = "v2.324.0", package = "ethrpc" }
 observe = { git = "https://github.com/cowprotocol/services.git", tag = "v2.324.0", package = "observe" , features = ["axum-tracing"]}
 shared = { git = "https://github.com/cowprotocol/services.git", tag = "v2.324.0", package = "shared" }

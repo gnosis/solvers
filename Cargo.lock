@@ -1697,6 +1697,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "contracts"
+version = "0.1.0"
+source = "git+https://github.com/brunoguerios/services.git?branch=add-balancer-queries-2#5f2839a7afe1549b38e7f3c81df30991f24b3f6c"
+dependencies = [
+ "anyhow",
+ "ethcontract",
+ "ethcontract-generate",
+ "serde",
+]
+
+[[package]]
 name = "convert_case"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2275,7 +2286,7 @@ dependencies = [
  "alloy",
  "anyhow",
  "async-trait",
- "contracts",
+ "contracts 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.324.0)",
  "ethcontract",
  "futures",
  "hex",
@@ -4059,7 +4070,7 @@ name = "order-validation"
 version = "0.1.0"
 source = "git+https://github.com/cowprotocol/services.git?tag=v2.324.0#33829dd2a19aeb63d37fe160bdfb3f905067b822"
 dependencies = [
- "contracts",
+ "contracts 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.324.0)",
  "ethcontract",
  "thiserror 1.0.61",
  "tokio",
@@ -5367,7 +5378,7 @@ dependencies = [
  "chain",
  "chrono",
  "clap",
- "contracts",
+ "contracts 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.324.0)",
  "dashmap",
  "database",
  "derivative",
@@ -5503,7 +5514,7 @@ dependencies = [
  "bigdecimal",
  "chrono",
  "clap",
- "contracts",
+ "contracts 0.1.0 (git+https://github.com/brunoguerios/services.git?branch=add-balancer-queries-2)",
  "ethereum-types",
  "ethrpc",
  "futures",
