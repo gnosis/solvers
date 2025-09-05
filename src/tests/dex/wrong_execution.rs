@@ -50,13 +50,7 @@ async fn test() {
                 json!({
                     "query": serde_json::to_value(SWAP_QUERY).unwrap(),
                     "variables": {
-                        "callDataInput": {
-                            "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                            "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                            "slippagePercentage": "0.01"
-                        },
                         "chain": "MAINNET",
-                        "queryBatchSwap": false,
                         "swapAmount": if side == "sell" {
                             "1"
                         } else {
