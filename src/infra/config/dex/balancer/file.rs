@@ -4,7 +4,7 @@ use {
         infra::{self, config::dex::file, dex},
         util::serialize,
     },
-    contracts::BalancerV2Vault,
+    contracts::{BalancerQueries, BalancerV2Vault, BalancerV3BatchRouter},
     ethereum_types::H160,
     serde::Deserialize,
     serde_with::serde_as,
@@ -19,6 +19,10 @@ struct Config {
     #[serde_as(as = "serde_with::DisplayFromStr")]
     endpoint: reqwest::Url,
 
+    /// The RPC URL for on-chain queries.
+    #[serde_as(as = "serde_with::DisplayFromStr")]
+    rpc_url: reqwest::Url,
+
     /// Optional Balancer V2 Vault contract address. If not specified, the
     /// default Vault contract address will be used.
     vault: Option<H160>,
@@ -26,6 +30,10 @@ struct Config {
     /// Optional Balancer V3 BatchRouter contract address. If not specified, the
     /// default contract address will be used.
     v3_batch_router: Option<H160>,
+
+    /// Optional Balancer Queries contract address. If not specified, the
+    /// default contract address will be used.
+    queries: Option<H160>,
 
     /// Optional Permit2 contract address. If not specified, the
     /// default contract address will be used.
@@ -73,21 +81,32 @@ pub async fn load(path: &Path) -> super::Config {
             BalancerV2Vault::raw_contract(),
         )
     });
+    let queries_contract = enabled_api_versions.contains(&ApiVersion::V2).then(|| {
+        infra::contracts::contract_address_for_chain(
+            config.chain_id,
+            BalancerQueries::raw_contract(),
+        )
+    });
     let batch_router = enabled_api_versions.contains(&ApiVersion::V3).then(|| {
         infra::contracts::contract_address_for_chain(
             config.chain_id,
-            contracts::BalancerV3BatchRouter::raw_contract(),
+            BalancerV3BatchRouter::raw_contract(),
         )
     });
 
     super::Config {
         sor: dex::balancer::Config {
             endpoint: config.endpoint,
+            rpc_url: config.rpc_url,
             vault: config.vault.map(eth::ContractAddress).or(vault_contract),
             v3_batch_router: config
                 .v3_batch_router
                 .map(eth::ContractAddress)
                 .or(batch_router),
+            queries: config
+                .queries
+                .map(eth::ContractAddress)
+                .or(queries_contract),
             permit2: config
                 .permit2
                 .map(eth::ContractAddress)

@@ -12,6 +12,7 @@ pub fn config(solver_addr: &SocketAddr) -> tests::Config {
 node-url = 'http://localhost:8545'
 [dex]
 endpoint = 'http://{solver_addr}/sor'
+rpc-url = 'http://localhost:8545'
 chain-id = '1'
         ",
     ))
@@ -26,6 +27,7 @@ node-url = 'http://localhost:8545'
 {extra_config}
 [dex]
 endpoint = 'http://{solver_addr}/sor'
+rpc-url = 'http://localhost:8545'
 chain-id = '1'
         ",
     ))
