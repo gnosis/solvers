@@ -21,13 +21,7 @@ async fn tested_amounts_adjust_depending_on_response() {
             json!({
                 "query": serde_json::to_value(SWAP_QUERY).unwrap(),
                 "variables": {
-                    "callDataInput": {
-                        "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                        "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                        "slippagePercentage": "0.01"
-                    },
                     "chain": "MAINNET",
-                    "queryBatchSwap": false,
                     "swapAmount": ether_amount,
                     "swapType": "EXACT_IN",
                     "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
@@ -335,13 +329,7 @@ async fn tested_amounts_wrap_around() {
             json!({
                 "query": serde_json::to_value(SWAP_QUERY).unwrap(),
                 "variables": {
-                    "callDataInput": {
-                        "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                        "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                        "slippagePercentage": "0.01"
-                    },
                     "chain": "MAINNET",
-                    "queryBatchSwap": false,
                     "swapAmount": amount_in,
                     "swapType": "EXACT_OUT",
                     "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
@@ -466,13 +454,7 @@ async fn moves_surplus_fee_to_buy_token() {
                 json!({
                     "query": serde_json::to_value(SWAP_QUERY).unwrap(),
                     "variables": {
-                        "callDataInput": {
-                            "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                            "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                            "slippagePercentage": "0.01"
-                        },
                         "chain": "MAINNET",
-                        "queryBatchSwap": false,
                         "swapAmount": "2",
                         "swapType": "EXACT_IN",
                         "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
@@ -502,13 +484,7 @@ async fn moves_surplus_fee_to_buy_token() {
                 json!({
                     "query": serde_json::to_value(SWAP_QUERY).unwrap(),
                     "variables": {
-                        "callDataInput": {
-                            "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                            "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                            "slippagePercentage": "0.01"
-                        },
                         "chain": "MAINNET",
-                        "queryBatchSwap": false,
                         "swapAmount": "1",
                         "swapType": "EXACT_IN",
                         "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
@@ -730,13 +706,7 @@ async fn insufficient_room_for_surplus_fee() {
             json!({
                 "query": serde_json::to_value(SWAP_QUERY).unwrap(),
                 "variables": {
-                    "callDataInput": {
-                        "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                        "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                        "slippagePercentage": "0.01"
-                    },
                     "chain": "MAINNET",
-                    "queryBatchSwap": false,
                     "swapAmount": "1",
                     "swapType": "EXACT_IN",
                     "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
@@ -856,13 +826,7 @@ async fn market() {
             json!({
                 "query": serde_json::to_value(SWAP_QUERY).unwrap(),
                 "variables": {
-                    "callDataInput": {
-                        "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                        "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                        "slippagePercentage": "0.01"
-                    },
                     "chain": "MAINNET",
-                    "queryBatchSwap": false,
                     "swapAmount": "1",
                     "swapType": "EXACT_IN",
                     "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",

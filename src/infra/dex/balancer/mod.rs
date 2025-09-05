@@ -2,7 +2,7 @@ use {
     crate::{
         domain::{
             auction,
-            dex,
+            dex::{self, Slippage},
             eth::{self, TokenAddress},
             order::{self, Side},
         },
@@ -12,12 +12,7 @@ use {
     contracts::ethcontract::I256,
     ethereum_types::U256,
     ethrpc::block_stream::CurrentBlockWatcher,
-    num::ToPrimitive,
-    std::{
-        ops::Add,
-        sync::atomic::{self, AtomicU64},
-        time::Duration,
-    },
+    std::sync::atomic::{self, AtomicU64},
     tracing::Instrument,
 };
 
@@ -35,7 +30,6 @@ pub struct Sor {
     permit2: v3::Permit2,
     settlement: eth::ContractAddress,
     chain_id: Chain,
-    query_batch_swap: bool,
     web3: ethrpc::Web3,
 }
 
@@ -68,10 +62,6 @@ pub struct Config {
 
     /// For which chain the solver is configured.
     pub chain_id: eth::ChainId,
-
-    /// Whether to run `queryBatchSwap` to update the return amount with most
-    /// up-to-date on-chain values.
-    pub query_batch_swap: bool,
 }
 
 impl Sor {
@@ -91,7 +81,6 @@ impl Sor {
             permit2: v3::Permit2::new(config.permit2),
             settlement: config.settlement,
             chain_id: Chain::from_domain(config.chain_id)?,
-            query_batch_swap: config.query_batch_swap,
             web3: blockchain::rpc(&config.rpc_url),
         })
     }
@@ -106,19 +95,7 @@ impl Sor {
         let Some(v2_vault) = &self.v2_vault else {
             return Err(Error::DisabledApiVersion(ApiVersion::V2));
         };
-        let query = dto::Query::from_domain(
-            order,
-            tokens,
-            slippage,
-            self.chain_id,
-            self.settlement,
-            self.query_batch_swap,
-            // 2 minutes from now
-            chrono::Utc::now()
-                .add(Duration::from_secs(120))
-                .timestamp()
-                .to_u64(),
-        )?;
+        let query = dto::Query::from_domain(order, tokens, self.chain_id)?;
         let quote = {
             // Set up a tracing span to make debugging of API requests easier.
             // Historically, debugging API requests to external DEXs was a bit
@@ -173,7 +150,7 @@ impl Sor {
                 // doing the transfer of funds from the settlement
                 (
                     self.permit2.address(),
-                    self.encode_v3_swap(order, &quote, max_input)?,
+                    self.encode_v3_swap(order, &quote, max_input, slippage)?,
                 )
             }
         };
@@ -233,12 +210,13 @@ impl Sor {
         order: &dex::Order,
         quote: &dto::Quote,
         max_input: U256,
+        slippage: &dex::Slippage,
     ) -> Result<Vec<dex::Call>, Error> {
         // Receiving this error indicates that V3 is now supported on the current chain.
         let Some(v3_batch_router) = &self.v3_batch_router else {
             return Err(Error::DisabledApiVersion(ApiVersion::V3));
         };
-        let paths = self.build_v3_swap_data(quote)?;
+        let paths = self.build_v3_swap_data(quote, order, slippage)?;
 
         Ok(match order.side {
             Side::Buy => v3_batch_router.swap_exact_amount_out(
@@ -295,7 +273,12 @@ impl Sor {
     }
 
     /// Build common V3 swap data (paths) from quote
-    fn build_v3_swap_data(&self, quote: &dto::Quote) -> Result<Vec<v3::SwapPath>, Error> {
+    fn build_v3_swap_data(
+        &self,
+        quote: &dto::Quote,
+        order: &dex::Order,
+        slippage: &dex::Slippage,
+    ) -> Result<Vec<v3::SwapPath>, Error> {
         quote
             .paths
             .iter()
@@ -306,8 +289,15 @@ impl Sor {
                         .first()
                         .map(|t| t.address)
                         .ok_or_else(|| Error::InvalidPath)?,
-                    input_amount_raw: path.input_amount_raw,
-                    output_amount_raw: path.output_amount_raw,
+                    input_amount_raw: match order.side {
+                        Side::Buy => slippage.add(path.input_amount_raw),
+                        Side::Sell => path.input_amount_raw,
+                    },
+                    output_amount_raw: match order.side {
+                        Side::Buy => path.output_amount_raw,
+                        Side::Sell => slippage.sub(path.output_amount_raw),
+                    },
+
                     // A path step consists of 1 item of 3 different arrays at the correct
                     // index. `tokens` contains 1 item more where the first one needs
                     // to be skipped.
@@ -399,7 +389,7 @@ impl Sor {
         // Get the V3 batch router (it should be available for V3 quotes)
         let v3_batch_router = self.v3_batch_router.as_ref().ok_or(Error::InvalidPath)?;
 
-        let paths = self.build_v3_swap_data(quote)?;
+        let paths = self.build_v3_swap_data(quote, order, &Slippage::zero())?;
 
         // Execute the appropriate query based on order side
         let result = match order.side {

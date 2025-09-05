@@ -13,11 +13,9 @@ use {
 
 /// Get swap quote from the SOR v2 for the V2 vault.
 const QUERY: &str = r#"
-query sorGetSwapPaths($callDataInput: GqlSwapCallDataInput!, $chain: GqlChain!, $queryBatchSwap: Boolean!, $swapAmount: AmountHumanReadable!, $swapType: GqlSorSwapType!, $tokenIn: String!, $tokenOut: String!) {
+query sorGetSwapPaths($chain: GqlChain!, $swapAmount: AmountHumanReadable!, $swapType: GqlSorSwapType!, $tokenIn: String!, $tokenOut: String!) {
     sorGetSwapPaths(
-        callDataInput: $callDataInput,
         chain: $chain,
-        queryBatchSwap: $queryBatchSwap,
         swapAmount: $swapAmount,
         swapType: $swapType,
         tokenIn: $tokenIn,
@@ -61,11 +59,7 @@ impl Query<'_> {
     pub fn from_domain(
         order: &dex::Order,
         tokens: &auction::Tokens,
-        slippage: &dex::Slippage,
         chain: Chain,
-        contract_address: eth::ContractAddress,
-        query_batch_swap: bool,
-        swap_deadline: Option<u64>,
     ) -> Result<Self, Error> {
         let token_decimals = match order.side {
             order::Side::Buy => tokens
@@ -76,14 +70,7 @@ impl Query<'_> {
                 .ok_or(Error::MissingDecimals(order.sell)),
         }?;
         let variables = Variables {
-            call_data_input: CallDataInput {
-                deadline: swap_deadline,
-                receiver: contract_address.0,
-                sender: contract_address.0,
-                slippage_percentage: slippage.as_factor().clone(),
-            },
             chain,
-            query_batch_swap,
             swap_amount: HumanReadableAmount::from_u256(&order.amount.get(), token_decimals),
             swap_type: SwapType::from_domain(order.side),
             token_in: order.sell.0,
@@ -139,12 +126,8 @@ impl Serialize for HumanReadableAmount {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct Variables {
-    call_data_input: CallDataInput,
     /// The Chain to query.
     chain: Chain,
-    /// Whether to run `queryBatchSwap` to update the return amount with most
-    /// up-to-date on-chain values.
-    query_batch_swap: bool,
     /// The amount to swap in human form.
     swap_amount: HumanReadableAmount,
     /// SwapType either exact_in or exact_out (also givenIn or givenOut).
@@ -153,23 +136,6 @@ struct Variables {
     token_in: H160,
     /// Token address of the tokenOut.
     token_out: H160,
-}
-
-/// Inputs for the call data to create the swap transaction. If this input is
-/// given, call data is added to the response.
-#[derive(Serialize)]
-#[serde(rename_all = "camelCase")]
-struct CallDataInput {
-    /// How long the swap should be valid, provide a timestamp. `999999999` for
-    /// infinite. Default: infinite.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    deadline: Option<u64>,
-    /// Who receives the output amount.
-    receiver: H160,
-    /// Who sends the input amount.
-    sender: H160,
-    /// The max slippage in percent 0.01 -> 0.01%.
-    slippage_percentage: BigDecimal,
 }
 
 /// Balancer SOR API supported chains.
@@ -454,34 +420,14 @@ mod tests {
             amount: dex::Amount::new(U256::from(1000)),
             owner: H160::from_str("0x9008d19f58aabd9ed0d60971565aa8510560ab41").unwrap(),
         };
-        let slippage = dex::Slippage::one_percent();
         let chain = Chain::Mainnet;
-        let contract_address = eth::ContractAddress(
-            H160::from_str("0x9008d19f58aabd9ed0d60971565aa8510560ab41").unwrap(),
-        );
-        let query = Query::from_domain(
-            &order,
-            &tokens,
-            &slippage,
-            chain,
-            contract_address,
-            false,
-            Some(12345_u64),
-        )
-        .unwrap();
+        let query = Query::from_domain(&order, &tokens, chain).unwrap();
 
         let actual = serde_json::to_value(query).unwrap();
         let expected = json!({
             "query": QUERY,
             "variables": {
-                "callDataInput": {
-                    "deadline": 12345,
-                    "receiver": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                    "sender": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-                    "slippagePercentage": "0.01"
-                },
                 "chain": "MAINNET",
-                "queryBatchSwap": false,
                 "swapAmount": "0.000000000000000000001",
                 "swapType": "EXACT_OUT",
                 "tokenIn": "0x2170ed0880ac9a755fd29b2688956bd959f933f8",
