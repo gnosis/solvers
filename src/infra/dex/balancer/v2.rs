@@ -6,6 +6,7 @@ use {
     crate::domain::{dex, eth},
     contracts::{
         ethcontract::{Bytes, I256},
+        BalancerQueries,
         BalancerV2Vault,
     },
     ethereum_types::{H160, H256, U256},
@@ -87,5 +88,65 @@ impl Vault {
                 .expect("calldata")
                 .0,
         }]
+    }
+}
+
+pub struct Queries(contracts::BalancerQueries);
+
+impl Queries {
+    /// Create a new BalancerQueries contract instance
+    pub fn new(address: eth::ContractAddress) -> Self {
+        Self(contracts::dummy_contract!(BalancerQueries, address.0))
+    }
+
+    /// Get the contract address
+    pub fn address(&self) -> eth::ContractAddress {
+        eth::ContractAddress(self.0.address())
+    }
+
+    /// Execute on-chain query and return the actual amounts (high-level
+    /// contract call)
+    pub async fn execute_query_batch_swap(
+        &self,
+        web3: &ethrpc::Web3,
+        kind: SwapKind,
+        swaps: Vec<Swap>,
+        assets: Vec<H160>,
+        funds: Funds,
+    ) -> Result<Vec<I256>, Box<dyn std::error::Error>> {
+        // Create a contract instance with the Web3 client
+        let contract = contracts::BalancerQueries::at(web3, self.address().0);
+
+        // Execute the query call directly
+        let asset_deltas = contract
+            .methods()
+            .query_batch_swap(
+                kind as _,
+                swaps
+                    .into_iter()
+                    .map(|swap| {
+                        (
+                            Bytes(swap.pool_id.0),
+                            swap.asset_in_index,
+                            swap.asset_out_index,
+                            swap.amount,
+                            Bytes(swap.user_data),
+                        )
+                    })
+                    .collect(),
+                assets,
+                (
+                    funds.sender,
+                    funds.from_internal_balance,
+                    funds.recipient,
+                    funds.to_internal_balance,
+                ),
+            )
+            .call()
+            .await?;
+
+        // The result is automatically parsed to the correct types
+        // queryBatchSwap returns an array of int256 values
+        Ok(asset_deltas)
     }
 }

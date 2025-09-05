@@ -1,5 +1,6 @@
 use {crate::tests, std::net::SocketAddr};
 
+mod dependency_injection;
 mod market_order;
 mod minimum_surplus;
 mod not_found;
@@ -12,6 +13,7 @@ pub fn config(solver_addr: &SocketAddr) -> tests::Config {
 node-url = 'http://localhost:8545'
 [dex]
 endpoint = 'http://{solver_addr}/sor'
+rpc-url = 'http://localhost:8545'
 chain-id = '1'
         ",
     ))
@@ -26,6 +28,7 @@ node-url = 'http://localhost:8545'
 {extra_config}
 [dex]
 endpoint = 'http://{solver_addr}/sor'
+rpc-url = 'http://localhost:8545'
 chain-id = '1'
         ",
     ))

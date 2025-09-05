@@ -46,9 +46,16 @@ async fn run_with(args: cli::Args, bind: Option<oneshot::Sender<SocketAddr>>) {
         }
         cli::Command::Balancer { config } => {
             let config = config::dex::balancer::file::load(&config).await;
+            let query_swap_provider = Box::new(dex::balancer::OnChainQuerySwapProvider::new(
+                config.sor.queries,
+                config.sor.v3_batch_router,
+                config.sor.rpc_url.clone(),
+                config.sor.settlement,
+            ));
             Solver::Dex(solver::Dex::new(
                 dex::Dex::Balancer(Box::new(
-                    dex::balancer::Sor::new(config.sor).expect("invalid Balancer configuration"),
+                    dex::balancer::Sor::new(config.sor, query_swap_provider)
+                        .expect("invalid Balancer configuration"),
                 )),
                 config.base.clone(),
             ))
