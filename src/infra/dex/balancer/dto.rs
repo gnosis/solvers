@@ -141,7 +141,7 @@ struct Variables {
 /// Balancer SOR API supported chains.
 #[derive(Serialize, Clone, Copy)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub(super) enum Chain {
+pub(crate) enum Chain {
     Arbitrum,
     Avalanche,
     Base,

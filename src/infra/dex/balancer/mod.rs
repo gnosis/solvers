@@ -2,11 +2,11 @@ use {
     crate::{
         domain::{
             auction,
-            dex::{self, Slippage},
+            dex,
             eth::{self, TokenAddress},
             order::{self, Side},
         },
-        infra::{blockchain, config::dex::balancer::file::ApiVersion, dex::balancer::dto::Chain},
+        infra::{config::dex::balancer::file::ApiVersion, dex::balancer::dto::Chain},
         util,
     },
     contracts::ethcontract::I256,
@@ -16,9 +16,13 @@ use {
     tracing::Instrument,
 };
 
-mod dto;
+pub mod dto;
+pub mod query_swap_provider;
 mod v2;
 mod v3;
+
+// Re-export query swap provider types
+pub use query_swap_provider::{OnChainQuerySwapProvider, QuerySwapProvider};
 
 /// Bindings to the Balancer Smart Order Router (SOR) API.
 pub struct Sor {
@@ -26,11 +30,10 @@ pub struct Sor {
     endpoint: reqwest::Url,
     v2_vault: Option<v2::Vault>,
     v3_batch_router: Option<v3::Router>,
-    queries: Option<v2::Queries>,
     permit2: v3::Permit2,
     settlement: eth::ContractAddress,
     chain_id: Chain,
-    web3: ethrpc::Web3,
+    query_swap_provider: Box<dyn QuerySwapProvider>,
 }
 
 pub struct Config {
@@ -71,17 +74,19 @@ impl Sor {
     /// lost to time... See <https://github.com/cowprotocol/services/pull/171>.
     const GAS_PER_SWAP: u64 = 88_892;
 
-    pub fn new(config: Config) -> Result<Self, Error> {
+    pub fn new(
+        config: Config,
+        query_swap_provider: Box<dyn QuerySwapProvider>,
+    ) -> Result<Self, Error> {
         Ok(Self {
             client: super::Client::new(Default::default(), config.block_stream),
             endpoint: config.endpoint,
             v2_vault: config.vault.map(v2::Vault::new),
             v3_batch_router: config.v3_batch_router.map(v3::Router::new),
-            queries: config.queries.map(v2::Queries::new),
             permit2: v3::Permit2::new(config.permit2),
             settlement: config.settlement,
             chain_id: Chain::from_domain(config.chain_id)?,
-            web3: blockchain::rpc(&config.rpc_url),
+            query_swap_provider,
         })
     }
 
@@ -114,7 +119,7 @@ impl Sor {
         // Execute on-chain query if BalancerQueries contract is available to get
         // up-to-date amounts, otherwise use the SOR quote amounts
         let (updated_swap_amount, updated_return_amount) =
-            match self.query_swap(order, &quote).await {
+            match self.query_swap_provider.query_swap(order, &quote).await {
                 Ok(on_chain_amounts) => {
                     tracing::debug!(
                         "Using on-chain amounts: swap={}, return={}",
@@ -320,117 +325,6 @@ impl Sor {
             .collect::<Result<_, Error>>()
     }
 
-    /// Execute on-chain query to get updated swap amounts for both V2 and V3
-    async fn query_swap(
-        &self,
-        order: &dex::Order,
-        quote: &dto::Quote,
-    ) -> Result<OnChainAmounts, Error> {
-        match quote.protocol_version {
-            dto::ProtocolVersion::V2 => self.query_swap_v2(order, quote).await,
-            dto::ProtocolVersion::V3 => self.query_swap_v3(order, quote).await,
-        }
-    }
-
-    /// Execute on-chain query for V2 using BalancerQueries contract
-    async fn query_swap_v2(
-        &self,
-        order: &dex::Order,
-        quote: &dto::Quote,
-    ) -> Result<OnChainAmounts, Error> {
-        let (kind, swaps, funds) = self.build_v2_swap_data(order, quote)?;
-        let assets = quote.token_addresses.clone();
-
-        // Execute the on-chain query
-        let asset_deltas = self
-            .queries
-            .as_ref()
-            .ok_or(Error::InvalidPath)?
-            .execute_query_batch_swap(&self.web3, kind, swaps, assets, funds)
-            .await
-            .map_err(|_e| Error::InvalidPath)?;
-
-        // Parse the result - asset_deltas corresponds to the assets array
-        // We need to find the indices for token_in and token_out in the quote's
-        // token_addresses
-        if asset_deltas.len() != quote.token_addresses.len() {
-            return Err(Error::InvalidPath);
-        }
-
-        let token_in_index = quote
-            .token_addresses
-            .iter()
-            .position(|&addr| addr == order.sell.0)
-            .ok_or(Error::InvalidPath)?;
-        let token_out_index = quote
-            .token_addresses
-            .iter()
-            .position(|&addr| addr == order.buy.0)
-            .ok_or(Error::InvalidPath)?;
-
-        // Get the deltas for token_in and token_out (convert to absolute values)
-        let amount_in = U256::from_dec_str(&asset_deltas[token_in_index].abs().to_string())
-            .map_err(|_| Error::InvalidPath)?;
-        let amount_out = U256::from_dec_str(&asset_deltas[token_out_index].abs().to_string())
-            .map_err(|_| Error::InvalidPath)?;
-
-        Ok(OnChainAmounts {
-            swap_amount: amount_in,
-            return_amount: amount_out,
-        })
-    }
-
-    /// Execute on-chain query for V3 using BalancerV3BatchRouter contract
-    async fn query_swap_v3(
-        &self,
-        order: &dex::Order,
-        quote: &dto::Quote,
-    ) -> Result<OnChainAmounts, Error> {
-        // Get the V3 batch router (it should be available for V3 quotes)
-        let v3_batch_router = self.v3_batch_router.as_ref().ok_or(Error::InvalidPath)?;
-
-        let paths = self.build_v3_swap_data(quote, order, &Slippage::zero())?;
-
-        // Execute the appropriate query based on order side
-        let result = match order.side {
-            order::Side::Sell => {
-                // For sell orders, we know the input amount, query for output amount
-                v3_batch_router
-                    .query_swap_exact_amount_in(&self.web3, paths)
-                    .await
-                    .map_err(|_e| Error::InvalidPath)?
-            }
-            order::Side::Buy => {
-                // For buy orders, we know the output amount, query for input amount
-                v3_batch_router
-                    .query_swap_exact_amount_out(&self.web3, paths)
-                    .await
-                    .map_err(|_e| Error::InvalidPath)?
-            }
-        };
-
-        // For V3, the result is a single amount
-        // We need to determine which is the input and which is the output based on
-        // order side
-        let (swap_amount, return_amount) = match order.side {
-            order::Side::Sell => {
-                // For sell orders: swap_amount is the input (known), return_amount is the
-                // output (queried)
-                (quote.swap_amount_raw, result)
-            }
-            order::Side::Buy => {
-                // For buy orders: swap_amount is the input (queried), return_amount is the
-                // output (known)
-                (result, quote.return_amount_raw)
-            }
-        };
-
-        Ok(OnChainAmounts {
-            swap_amount,
-            return_amount,
-        })
-    }
-
     async fn quote(&self, query: &dto::Query<'_>) -> Result<dto::Quote, Error> {
         let response = util::http::roundtrip!(
             <dto::GetSwapPathsResponse, util::serialize::Never>;
@@ -441,13 +335,6 @@ impl Sor {
         .await?;
         Ok(response.data.sor_get_swap_paths)
     }
-}
-
-/// Result from on-chain query containing updated swap amounts
-#[derive(Debug, Clone)]
-struct OnChainAmounts {
-    swap_amount: U256,
-    return_amount: U256,
 }
 
 #[derive(Debug, thiserror::Error)]

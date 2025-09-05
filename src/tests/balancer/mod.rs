@@ -1,5 +1,6 @@
 use {crate::tests, std::net::SocketAddr};
 
+mod dependency_injection;
 mod market_order;
 mod minimum_surplus;
 mod not_found;
