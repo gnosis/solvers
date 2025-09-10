@@ -5526,6 +5526,7 @@ dependencies = [
  "hyper 0.14.29",
  "itertools 0.11.0",
  "maplit",
+ "mockall 0.12.1",
  "moka",
  "num",
  "number",

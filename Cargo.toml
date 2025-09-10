@@ -60,3 +60,4 @@ testlib =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.325.
 glob = "0.3"
 maplit = "1"
 tempfile = "3"
+mockall = "0.12"

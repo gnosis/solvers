@@ -3,69 +3,27 @@
 use {
     crate::{
         domain::{auction, dex, eth, order},
-        infra::dex::balancer::{self, dto, query_swap_provider::OnChainAmounts, QuerySwapProvider},
+        infra::dex::balancer::{
+            self,
+            dto,
+            query_swap_provider::{MockQuerySwapProvider, OnChainAmounts, QuerySwapProvider},
+        },
         tests::{self, mock},
     },
-    anyhow::{anyhow, Result},
     ethereum_types::{H160, U256},
     serde_json::json,
     std::str::FromStr,
 };
 
-/// Mock query swap provider for testing
-pub struct MockQuerySwapProvider {
-    swap_amount: U256,
-    return_amount: U256,
-    should_error: bool,
-    error_message: Option<String>,
-}
-
-impl MockQuerySwapProvider {
-    /// Create a mock provider that returns a successful response
-    pub fn success(swap_amount: U256, return_amount: U256) -> Self {
-        Self {
-            swap_amount,
-            return_amount,
-            should_error: false,
-            error_message: None,
-        }
-    }
-
-    /// Create a mock provider that returns an error
-    pub fn error(msg: &str) -> Self {
-        Self {
-            swap_amount: U256::zero(),
-            return_amount: U256::zero(),
-            should_error: true,
-            error_message: Some(msg.to_string()),
-        }
-    }
-}
-
-#[async_trait::async_trait]
-impl QuerySwapProvider for MockQuerySwapProvider {
-    async fn query_swap(&self, _order: &dex::Order, _quote: &dto::Quote) -> Result<OnChainAmounts> {
-        if self.should_error {
-            let msg: String = self
-                .error_message
-                .clone()
-                .unwrap_or_else(|| "mock provider error".to_string());
-            Err(anyhow!(msg))
-        } else {
-            Ok(OnChainAmounts {
-                swap_amount: self.swap_amount,
-                return_amount: self.return_amount,
-            })
-        }
-    }
-}
-
 #[tokio::test]
 async fn test_mock_provider_success() {
-    let mock_provider = MockQuerySwapProvider::success(
-        U256::from(1000000000000000000u64),
-        U256::from(2275987844420653889u64), // return_amount (updated by user)
-    );
+    let mut mock_provider = MockQuerySwapProvider::new();
+    mock_provider.expect_query_swap().returning(|_, _| {
+        Ok(OnChainAmounts {
+            swap_amount: U256::from(1000000000000000000u64),
+            return_amount: U256::from(2275987844420653889u64),
+        })
+    });
 
     let order = dex::Order {
         sell: eth::TokenAddress(H160::from_low_u64_be(1)),
@@ -77,7 +35,7 @@ async fn test_mock_provider_success() {
 
     let result = mock_provider
         .query_swap(&order, &create_dummy_quote())
-        .await; // Formatted by user
+        .await;
     assert!(result.is_ok());
 
     let amounts = result.unwrap();
@@ -87,7 +45,10 @@ async fn test_mock_provider_success() {
 
 #[tokio::test]
 async fn test_mock_provider_error() {
-    let mock_provider = MockQuerySwapProvider::error("invalid path");
+    let mut mock_provider = MockQuerySwapProvider::new();
+    mock_provider
+        .expect_query_swap()
+        .returning(|_, _| Err(anyhow::anyhow!("invalid path")));
 
     let order = dex::Order {
         sell: eth::TokenAddress(H160::from_low_u64_be(1)),
@@ -158,11 +119,13 @@ async fn test_mock_provider_affects_swap_result() {
 
     // Create a mock provider that returns different amounts than the SOR response
     // This will help us verify that the mock provider is actually being used
-    let mock_provider = MockQuerySwapProvider::success(
-        U256::from(1000000000000000000u64), // swap_amount (same as SOR)
-        U256::from_dec_str("300000000000000000000").unwrap(), /* return_amount (different from SOR's
-                                             * 227598784442065388110) */
-    );
+    let mut mock_provider = MockQuerySwapProvider::new();
+    mock_provider.expect_query_swap().returning(|_, _| {
+        Ok(OnChainAmounts {
+            swap_amount: U256::from(1000000000000000000u64),
+            return_amount: U256::from_dec_str("300000000000000000000").unwrap(),
+        })
+    });
 
     // Create Sor with the mock provider
     let config = balancer::Config {

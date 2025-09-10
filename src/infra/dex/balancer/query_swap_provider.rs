@@ -50,6 +50,7 @@ pub struct OnChainAmounts {
 /// Defines the contract for providers that can execute on-chain queries to get
 /// updated swap amounts. This abstraction allows for different implementations
 /// (real blockchain calls, mocked responses, etc.).
+#[cfg_attr(test, mockall::automock)]
 #[async_trait::async_trait]
 pub trait QuerySwapProvider: Send + Sync {
     /// Execute on-chain query to get updated swap amounts for both V2 and V3
