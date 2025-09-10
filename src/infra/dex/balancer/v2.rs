@@ -151,8 +151,6 @@ impl Queries {
             .call()
             .await?;
 
-        // The result is automatically parsed to the correct types
-        // queryBatchSwap returns an array of int256 values
         Ok(asset_deltas)
     }
 }
