@@ -122,14 +122,17 @@ impl Sor {
             match self.query_swap_provider.query_swap(order, &quote).await {
                 Ok(on_chain_amounts) => {
                     tracing::debug!(
-                        "Using on-chain amounts: swap={}, return={}",
-                        on_chain_amounts.swap_amount,
-                        on_chain_amounts.return_amount
+                        swap = ?on_chain_amounts.swap_amount,
+                        return = ?on_chain_amounts.return_amount,
+                        "Using on-chain amounts"
                     );
                     (on_chain_amounts.swap_amount, on_chain_amounts.return_amount)
                 }
                 Err(e) => {
-                    tracing::warn!("On-chain query failed: {:?}, using SOR quote amounts", e);
+                    tracing::warn!(
+                        error = ?e,
+                        "On-chain query failed, using SOR quote amounts"
+                    );
                     (quote.swap_amount_raw, quote.return_amount_raw)
                 }
             };
