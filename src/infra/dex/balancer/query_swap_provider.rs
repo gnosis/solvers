@@ -21,11 +21,28 @@ use {
     ethereum_types::U256,
 };
 
-/// A simple data structure containing the updated swap and return amounts from
-/// on-chain queries.
+/// Result from on-chain query containing updated swap amounts.
+///
+/// The amounts represent the real-time values from on-chain contract calls:
+/// - `swap_amount`: Always the given/exact amount (what the user specifies)
+/// - `return_amount`: Always the calculated amount (what the user receives)
+///
+/// ## Order Side Mapping
+///
+/// For **sell orders** (exact input):
+/// - `swap_amount` = amount in (what user wants to sell)
+/// - `return_amount` = amount out (what user will receive in return)
+///
+/// For **buy orders** (exact output):
+/// - `swap_amount` = amount out (what user wants to buy)
+/// - `return_amount` = amount in (what user needs to pay)
 #[derive(Debug, Clone)]
 pub struct OnChainAmounts {
+    /// The given/exact amount (amount in for sell orders, amount out for buy
+    /// orders)
     pub swap_amount: U256,
+    /// The calculated amount (amount out for sell orders, amount in for buy
+    /// orders)
     pub return_amount: U256,
 }
 
