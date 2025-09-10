@@ -18,6 +18,7 @@ use {
             dex::balancer::{dto, v2, v3},
         },
     },
+    anyhow::{anyhow, ensure, Context, Result},
     ethereum_types::U256,
 };
 
@@ -52,11 +53,7 @@ pub struct OnChainAmounts {
 #[async_trait::async_trait]
 pub trait QuerySwapProvider: Send + Sync {
     /// Execute on-chain query to get updated swap amounts for both V2 and V3
-    async fn query_swap(
-        &self,
-        order: &dex::Order,
-        quote: &dto::Quote,
-    ) -> Result<OnChainAmounts, crate::infra::dex::balancer::Error>;
+    async fn query_swap(&self, order: &dex::Order, quote: &dto::Quote) -> Result<OnChainAmounts>;
 }
 
 /// On-chain query swap provider that uses real blockchain calls
@@ -91,11 +88,7 @@ impl OnChainQuerySwapProvider {
 
 #[async_trait::async_trait]
 impl QuerySwapProvider for OnChainQuerySwapProvider {
-    async fn query_swap(
-        &self,
-        order: &dex::Order,
-        quote: &dto::Quote,
-    ) -> Result<OnChainAmounts, crate::infra::dex::balancer::Error> {
+    async fn query_swap(&self, order: &dex::Order, quote: &dto::Quote) -> Result<OnChainAmounts> {
         match quote.protocol_version {
             dto::ProtocolVersion::V2 => self.query_swap_v2(order, quote).await,
             dto::ProtocolVersion::V3 => self.query_swap_v3(order, quote).await,
@@ -109,7 +102,7 @@ impl OnChainQuerySwapProvider {
         &self,
         order: &dex::Order,
         quote: &dto::Quote,
-    ) -> Result<OnChainAmounts, crate::infra::dex::balancer::Error> {
+    ) -> Result<OnChainAmounts> {
         let (kind, swaps, funds) = self.build_v2_swap_data(order, quote)?;
         let assets = quote.token_addresses.clone();
 
@@ -117,34 +110,57 @@ impl OnChainQuerySwapProvider {
         let asset_deltas = self
             .queries
             .as_ref()
-            .ok_or(crate::infra::dex::balancer::Error::InvalidPath)?
+            .context("BalancerQueries not configured (required for V2 on-chain query)")?
             .execute_query_batch_swap(&self.web3, kind, swaps, assets, funds)
             .await
-            .map_err(|_e| crate::infra::dex::balancer::Error::InvalidPath)?;
+            .map_err(|e| anyhow!("RPC call failed: Queries.execute_query_batch_swap: {e:?}"))?;
 
         // Parse the result - asset_deltas corresponds to the assets array
         // We need to find the indices for token_in and token_out in the quote's
         // token_addresses
-        if asset_deltas.len() != quote.token_addresses.len() {
-            return Err(crate::infra::dex::balancer::Error::InvalidPath);
-        }
+        ensure!(
+            asset_deltas.len() == quote.token_addresses.len(),
+            "mismatched asset_deltas length: got {}, expected {}",
+            asset_deltas.len(),
+            quote.token_addresses.len()
+        );
 
         let token_in_index = quote
             .token_addresses
             .iter()
             .position(|&addr| addr == order.sell.0)
-            .ok_or(crate::infra::dex::balancer::Error::InvalidPath)?;
+            .ok_or_else(|| {
+                anyhow!(
+                    "token_in index not found in quote.token_addresses (sell token {:?})",
+                    order.sell.0
+                )
+            })?;
         let token_out_index = quote
             .token_addresses
             .iter()
             .position(|&addr| addr == order.buy.0)
-            .ok_or(crate::infra::dex::balancer::Error::InvalidPath)?;
+            .ok_or_else(|| {
+                anyhow!(
+                    "token_out index not found in quote.token_addresses (buy token {:?})",
+                    order.buy.0
+                )
+            })?;
 
         // Get the deltas for token_in and token_out (convert to absolute values)
         let amount_in = U256::from_dec_str(&asset_deltas[token_in_index].abs().to_string())
-            .map_err(|_| crate::infra::dex::balancer::Error::InvalidPath)?;
+            .map_err(|e| {
+                anyhow!(
+                    "failed to parse token_in delta '{}' into U256: {e:?}",
+                    asset_deltas[token_in_index]
+                )
+            })?;
         let amount_out = U256::from_dec_str(&asset_deltas[token_out_index].abs().to_string())
-            .map_err(|_| crate::infra::dex::balancer::Error::InvalidPath)?;
+            .map_err(|e| {
+                anyhow!(
+                    "failed to parse token_out delta '{}' into U256: {e:?}",
+                    asset_deltas[token_out_index]
+                )
+            })?;
 
         Ok(OnChainAmounts {
             swap_amount: amount_in,
@@ -157,14 +173,16 @@ impl OnChainQuerySwapProvider {
         &self,
         order: &dex::Order,
         quote: &dto::Quote,
-    ) -> Result<OnChainAmounts, crate::infra::dex::balancer::Error> {
+    ) -> Result<OnChainAmounts> {
         // Get the V3 batch router (it should be available for V3 quotes)
         let v3_batch_router = self
             .v3_batch_router
             .as_ref()
-            .ok_or(crate::infra::dex::balancer::Error::InvalidPath)?;
+            .context("V3 batch router not configured (required for V3 on-chain query)")?;
 
-        let paths = self.build_v3_swap_data(quote, order, &dex::Slippage::zero())?;
+        let paths = self
+            .build_v3_swap_data(quote, order, &dex::Slippage::zero())
+            .context("failed to build V3 swap paths from quote")?;
 
         // Execute the appropriate query based on order side
         let result = match order.side {
@@ -173,14 +191,18 @@ impl OnChainQuerySwapProvider {
                 v3_batch_router
                     .query_swap_exact_amount_in(&self.web3, paths)
                     .await
-                    .map_err(|_e| crate::infra::dex::balancer::Error::InvalidPath)?
+                    .map_err(|e| {
+                        anyhow!("RPC call failed: Router.query_swap_exact_amount_in: {e:?}")
+                    })?
             }
             order::Side::Buy => {
                 // For buy orders, we know the output amount, query for input amount
                 v3_batch_router
                     .query_swap_exact_amount_out(&self.web3, paths)
                     .await
-                    .map_err(|_e| crate::infra::dex::balancer::Error::InvalidPath)?
+                    .map_err(|e| {
+                        anyhow!("RPC call failed: Router.query_swap_exact_amount_out: {e:?}")
+                    })?
             }
         };
 
@@ -211,7 +233,7 @@ impl OnChainQuerySwapProvider {
         &self,
         order: &dex::Order,
         quote: &dto::Quote,
-    ) -> Result<(v2::SwapKind, Vec<v2::Swap>, v2::Funds), crate::infra::dex::balancer::Error> {
+    ) -> Result<(v2::SwapKind, Vec<v2::Swap>, v2::Funds)> {
         // Determine swap kind based on order side
         let kind = match order.side {
             order::Side::Sell => v2::SwapKind::GivenIn,
@@ -224,14 +246,17 @@ impl OnChainQuerySwapProvider {
             .iter()
             .map(|swap| {
                 Ok(v2::Swap {
-                    pool_id: swap.pool_id.as_v2()?,
+                    pool_id: swap
+                        .pool_id
+                        .as_v2()
+                        .context("invalid V2 pool id format in quote.swap")?,
                     asset_in_index: swap.asset_in_index.into(),
                     asset_out_index: swap.asset_out_index.into(),
                     amount: swap.amount,
                     user_data: swap.user_data.clone(),
                 })
             })
-            .collect::<Result<_, crate::infra::dex::balancer::Error>>()?;
+            .collect::<Result<_>>()?;
 
         // Create funds structure
         let funds = v2::Funds {
@@ -250,7 +275,7 @@ impl OnChainQuerySwapProvider {
         quote: &dto::Quote,
         order: &dex::Order,
         slippage: &dex::Slippage,
-    ) -> Result<Vec<v3::SwapPath>, crate::infra::dex::balancer::Error> {
+    ) -> Result<Vec<v3::SwapPath>> {
         quote
             .paths
             .iter()
@@ -260,7 +285,7 @@ impl OnChainQuerySwapProvider {
                         .tokens
                         .first()
                         .map(|t| t.address)
-                        .ok_or_else(|| crate::infra::dex::balancer::Error::InvalidPath)?,
+                        .ok_or_else(|| anyhow!("path.tokens is empty; token_in missing"))?,
                     input_amount_raw: match order.side {
                         order::Side::Buy => slippage.add(path.input_amount_raw),
                         order::Side::Sell => path.input_amount_raw,
@@ -281,14 +306,16 @@ impl OnChainQuerySwapProvider {
                         .zip(path.pools.iter())
                         .map(|((token_out, is_buffer), pool)| {
                             Ok(v3::SwapPathStep {
-                                pool: pool.as_v3()?,
+                                pool: pool
+                                    .as_v3()
+                                    .context("invalid V3 pool id format in path step")?,
                                 token_out: token_out.address,
                                 is_buffer: *is_buffer,
                             })
                         })
-                        .collect::<Result<_, crate::infra::dex::balancer::Error>>()?,
+                        .collect::<Result<_>>()?,
                 })
             })
-            .collect::<Result<_, crate::infra::dex::balancer::Error>>()
+            .collect::<Result<_>>()
     }
 }

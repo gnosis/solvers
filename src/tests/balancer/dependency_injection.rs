@@ -6,6 +6,7 @@ use {
         infra::dex::balancer::{self, dto, query_swap_provider::OnChainAmounts, QuerySwapProvider},
         tests::{self, mock},
     },
+    anyhow::{anyhow, Result},
     ethereum_types::{H160, U256},
     serde_json::json,
     std::str::FromStr,
@@ -16,8 +17,7 @@ pub struct MockQuerySwapProvider {
     swap_amount: U256,
     return_amount: U256,
     should_error: bool,
-    #[allow(dead_code)]
-    error: Option<crate::infra::dex::balancer::Error>,
+    error_message: Option<String>,
 }
 
 impl MockQuerySwapProvider {
@@ -27,31 +27,30 @@ impl MockQuerySwapProvider {
             swap_amount,
             return_amount,
             should_error: false,
-            error: None,
+            error_message: None,
         }
     }
 
     /// Create a mock provider that returns an error
-    pub fn error(error: crate::infra::dex::balancer::Error) -> Self {
+    pub fn error(msg: &str) -> Self {
         Self {
             swap_amount: U256::zero(),
             return_amount: U256::zero(),
             should_error: true,
-            error: Some(error),
+            error_message: Some(msg.to_string()),
         }
     }
 }
 
 #[async_trait::async_trait]
 impl QuerySwapProvider for MockQuerySwapProvider {
-    async fn query_swap(
-        &self,
-        _order: &dex::Order,
-        _quote: &dto::Quote,
-    ) -> Result<OnChainAmounts, crate::infra::dex::balancer::Error> {
+    async fn query_swap(&self, _order: &dex::Order, _quote: &dto::Quote) -> Result<OnChainAmounts> {
         if self.should_error {
-            Err(crate::infra::dex::balancer::Error::InvalidPath) // Use a simple
-                                                                 // error for testing
+            let msg: String = self
+                .error_message
+                .clone()
+                .unwrap_or_else(|| "mock provider error".to_string());
+            Err(anyhow!(msg))
         } else {
             Ok(OnChainAmounts {
                 swap_amount: self.swap_amount,
@@ -88,7 +87,7 @@ async fn test_mock_provider_success() {
 
 #[tokio::test]
 async fn test_mock_provider_error() {
-    let mock_provider = MockQuerySwapProvider::error(balancer::Error::InvalidPath);
+    let mock_provider = MockQuerySwapProvider::error("invalid path");
 
     let order = dex::Order {
         sell: eth::TokenAddress(H160::from_low_u64_be(1)),
@@ -103,7 +102,11 @@ async fn test_mock_provider_error() {
         .query_swap(&order, &create_dummy_quote())
         .await;
     assert!(result.is_err());
-    assert!(matches!(result.unwrap_err(), balancer::Error::InvalidPath));
+    assert!(result
+        .unwrap_err()
+        .to_string()
+        .to_lowercase()
+        .contains("invalid path"));
 }
 
 #[tokio::test]
