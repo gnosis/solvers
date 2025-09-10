@@ -4,6 +4,7 @@
 
 use {
     crate::domain::{dex, eth},
+    anyhow::{anyhow, Result},
     contracts::{
         ethcontract::{Bytes, I256},
         BalancerQueries,
@@ -119,7 +120,7 @@ impl Queries {
         swaps: Vec<Swap>,
         assets: Vec<H160>,
         funds: Funds,
-    ) -> Result<Vec<I256>, Box<dyn std::error::Error>> {
+    ) -> Result<Vec<I256>> {
         // Create a contract instance with the Web3 client
         let contract = contracts::BalancerQueries::at(web3, self.address().0);
 
@@ -149,7 +150,8 @@ impl Queries {
                 ),
             )
             .call()
-            .await?;
+            .await
+            .map_err(|e| anyhow!("V2 query_batch_swap RPC call failed: {e:?}"))?;
 
         Ok(asset_deltas)
     }
