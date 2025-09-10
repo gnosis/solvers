@@ -168,7 +168,6 @@ async fn test_mock_provider_affects_swap_result() {
     let config = balancer::Config {
         block_stream: None,
         endpoint: format!("http://{}/sor", api.address).parse().unwrap(), // Use mock server address
-        rpc_url: "http://localhost:8545".parse().unwrap(),
         chain_id: eth::ChainId::Mainnet,
         vault: Some(eth::ContractAddress(H160::from_low_u64_be(1))),
         queries: Some(eth::ContractAddress(H160::from_low_u64_be(2))),

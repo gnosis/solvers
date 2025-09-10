@@ -4,7 +4,6 @@ relative-slippage = "0.001" # Percentage in the [0, 1] range
 
 [dex]
 endpoint = "https://balancer.sor.eth/api"
-rpc-url = "http://localhost:8545"
 # Optionally specify custom Balancer Vault and CoW Protocol settlement contract
 # address; omitting these values will use the default addresses:
 # vault = "0xBA12222222228d8Ba445958a75a0704d566BF2C8"

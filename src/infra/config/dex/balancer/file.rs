@@ -19,10 +19,6 @@ struct Config {
     #[serde_as(as = "serde_with::DisplayFromStr")]
     endpoint: reqwest::Url,
 
-    /// The RPC URL for on-chain queries.
-    #[serde_as(as = "serde_with::DisplayFromStr")]
-    rpc_url: reqwest::Url,
-
     /// Optional Balancer V2 Vault contract address. If not specified, the
     /// default Vault contract address will be used.
     vault: Option<H160>,
@@ -93,7 +89,6 @@ pub async fn load(path: &Path) -> super::Config {
     super::Config {
         sor: dex::balancer::Config {
             endpoint: config.endpoint,
-            rpc_url: config.rpc_url,
             vault: config.vault.map(eth::ContractAddress).or(vault_contract),
             v3_batch_router: config
                 .v3_batch_router

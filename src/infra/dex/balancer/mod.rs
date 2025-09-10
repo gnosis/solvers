@@ -43,9 +43,6 @@ pub struct Config {
     /// The URL for the Balancer SOR API.
     pub endpoint: reqwest::Url,
 
-    /// The RPC URL for on-chain queries.
-    pub rpc_url: reqwest::Url,
-
     /// The address of the Balancer V2 Vault contract. For V2, it's used as both
     /// the spender and router.
     pub vault: Option<eth::ContractAddress>,

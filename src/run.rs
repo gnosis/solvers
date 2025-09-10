@@ -49,7 +49,7 @@ async fn run_with(args: cli::Args, bind: Option<oneshot::Sender<SocketAddr>>) {
             let query_swap_provider = Box::new(dex::balancer::OnChainQuerySwapProvider::new(
                 config.sor.queries,
                 config.sor.v3_batch_router,
-                config.sor.rpc_url.clone(),
+                config.base.node_url.clone(),
                 config.sor.settlement,
             ));
             Solver::Dex(solver::Dex::new(
