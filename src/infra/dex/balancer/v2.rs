@@ -91,6 +91,12 @@ impl Vault {
     }
 }
 
+/// BalancerQueries is a helper contract to provide quotes for common
+/// interactions like swaps / joins / exits without submitting a transaction.
+///
+/// Deployed at 0xE39B5e3B6D74016b2F6A9673D7d7493B6DF549d5 on all chains.
+///
+/// Further documentation: https://docs-v2.balancer.fi/reference/contracts/query-functions.html
 pub struct Queries(contracts::BalancerQueries);
 
 impl Queries {
