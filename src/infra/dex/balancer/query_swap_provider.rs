@@ -1,4 +1,14 @@
-//! Query swap provider implementations for on-chain query operations.
+//! This module provides a trait-based abstraction for executing on-chain
+//! queries to get real-time swap amounts from Balancer V2 and V3 contracts. It
+//! serves as a bridge between the SOR (Smart Order Router) API quotes and
+//! actual on-chain contract calls to ensure accurate pricing.
+//!
+//! ## Architecture Overview
+//!
+//! The module follows a trait-based design pattern:
+//! - `QuerySwapProvider`: Trait defining the interface for on-chain queries
+//! - `OnChainQuerySwapProvider`: Concrete implementation that makes real
+//!   blockchain calls
 
 use {
     crate::{
@@ -11,15 +21,17 @@ use {
     ethereum_types::U256,
 };
 
-/// Result from on-chain query containing updated swap amounts
+/// A simple data structure containing the updated swap and return amounts from
+/// on-chain queries.
 #[derive(Debug, Clone)]
 pub struct OnChainAmounts {
     pub swap_amount: U256,
     pub return_amount: U256,
 }
 
-/// Trait for providers that can execute on-chain queries to get updated swap
-/// amounts
+/// Defines the contract for providers that can execute on-chain queries to get
+/// updated swap amounts. This abstraction allows for different implementations
+/// (real blockchain calls, mocked responses, etc.).
 #[async_trait::async_trait]
 pub trait QuerySwapProvider: Send + Sync {
     /// Execute on-chain query to get updated swap amounts for both V2 and V3
@@ -31,6 +43,12 @@ pub trait QuerySwapProvider: Send + Sync {
 }
 
 /// On-chain query swap provider that uses real blockchain calls
+///
+/// The main implementation that:
+/// - Uses BalancerQueries contract for V2 swaps
+/// - Uses BalancerV3BatchRouter contract for V3 swaps
+/// - Handles both sell orders (exact input) and buy orders (exact output)
+/// - Returns updated amounts that reflect current on-chain state
 pub struct OnChainQuerySwapProvider {
     queries: Option<v2::Queries>,
     v3_batch_router: Option<v3::Router>,
