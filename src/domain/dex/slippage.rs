@@ -53,6 +53,11 @@ impl Slippage {
         Self::new("0.01".parse().unwrap())
     }
 
+    /// Returns a zero slippage.
+    pub fn zero() -> Self {
+        Self::new(BigDecimal::zero())
+    }
+
     /// Adds slippage to the specified amount.
     pub fn add(&self, amount: U256) -> U256 {
         let tolerance_amount = shared::compute_absolute_tolerance(amount, &self.0);

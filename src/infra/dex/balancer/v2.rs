@@ -4,6 +4,7 @@
 
 use {
     crate::domain::{dex, eth},
+    anyhow::{anyhow, Result},
     contracts::{
         ethcontract::{Bytes, I256},
         BalancerV2Vault,
@@ -87,5 +88,70 @@ impl Vault {
                 .expect("calldata")
                 .0,
         }]
+    }
+}
+
+/// BalancerQueries is a helper contract to provide quotes for common
+/// interactions like swaps / joins / exits without submitting a transaction.
+///
+/// Deployed at 0xE39B5e3B6D74016b2F6A9673D7d7493B6DF549d5 on all chains.
+///
+/// Further documentation: https://docs-v2.balancer.fi/reference/contracts/query-functions.html
+pub struct Queries(contracts::BalancerQueries);
+
+impl Queries {
+    /// Create a new BalancerQueries contract instance
+    pub fn new(web3: &ethrpc::Web3, address: eth::ContractAddress) -> Self {
+        Self(contracts::BalancerQueries::at(web3, address.0))
+    }
+
+    /// Get the contract address
+    pub fn address(&self) -> eth::ContractAddress {
+        eth::ContractAddress(self.0.address())
+    }
+
+    /// Execute on-chain query and return the actual amounts (high-level
+    /// contract call)
+    pub async fn execute_query_batch_swap(
+        &self,
+        web3: &ethrpc::Web3,
+        kind: SwapKind,
+        swaps: Vec<Swap>,
+        assets: Vec<H160>,
+        funds: Funds,
+    ) -> Result<Vec<I256>> {
+        // Create a contract instance with the Web3 client
+        let contract = contracts::BalancerQueries::at(web3, self.address().0);
+
+        // Execute the query call directly
+        let asset_deltas = contract
+            .methods()
+            .query_batch_swap(
+                kind as _,
+                swaps
+                    .into_iter()
+                    .map(|swap| {
+                        (
+                            Bytes(swap.pool_id.0),
+                            swap.asset_in_index,
+                            swap.asset_out_index,
+                            swap.amount,
+                            Bytes(swap.user_data),
+                        )
+                    })
+                    .collect(),
+                assets,
+                (
+                    funds.sender,
+                    funds.from_internal_balance,
+                    funds.recipient,
+                    funds.to_internal_balance,
+                ),
+            )
+            .call()
+            .await
+            .map_err(|e| anyhow!("V2 query_batch_swap RPC call failed: {e:?}"))?;
+
+        Ok(asset_deltas)
     }
 }
