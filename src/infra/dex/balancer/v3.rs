@@ -67,8 +67,14 @@ pub struct SwapPath {
 }
 
 impl Router {
+    /// Dummy constructor (sufficient for building calldata-only interactions).
     pub fn new(address: eth::ContractAddress) -> Self {
         Self(contracts::dummy_contract!(BalancerV3BatchRouter, address.0))
+    }
+
+    /// RPC-enabled constructor that binds the router to a Web3 instance.
+    pub fn new_with_web3(web3: &ethrpc::Web3, address: eth::ContractAddress) -> Self {
+        Self(contracts::BalancerV3BatchRouter::at(web3, address.0))
     }
 
     pub fn address(&self) -> eth::ContractAddress {

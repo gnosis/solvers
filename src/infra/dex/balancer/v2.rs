@@ -7,7 +7,6 @@ use {
     anyhow::{anyhow, Result},
     contracts::{
         ethcontract::{Bytes, I256},
-        BalancerQueries,
         BalancerV2Vault,
     },
     ethereum_types::{H160, H256, U256},
@@ -102,8 +101,8 @@ pub struct Queries(contracts::BalancerQueries);
 
 impl Queries {
     /// Create a new BalancerQueries contract instance
-    pub fn new(address: eth::ContractAddress) -> Self {
-        Self(contracts::dummy_contract!(BalancerQueries, address.0))
+    pub fn new(web3: &ethrpc::Web3, address: eth::ContractAddress) -> Self {
+        Self(contracts::BalancerQueries::at(web3, address.0))
     }
 
     /// Get the contract address

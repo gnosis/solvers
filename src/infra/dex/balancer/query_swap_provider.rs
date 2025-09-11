@@ -78,10 +78,11 @@ impl OnChainQuerySwapProvider {
         node_url: reqwest::Url,
         settlement: eth::ContractAddress,
     ) -> Self {
+        let web3 = blockchain::rpc(&node_url);
         Self {
-            queries: queries.map(v2::Queries::new),
-            v3_batch_router: v3_batch_router.map(v3::Router::new),
-            web3: blockchain::rpc(&node_url),
+            queries: queries.map(|addr| v2::Queries::new(&web3, addr)),
+            v3_batch_router: v3_batch_router.map(|addr| v3::Router::new_with_web3(&web3, addr)),
+            web3,
             settlement,
         }
     }
