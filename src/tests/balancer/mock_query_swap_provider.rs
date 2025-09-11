@@ -1,4 +1,6 @@
-//! Test to verify that the dependency injection refactoring works correctly.
+//! Tests Balancer SOR integration with a mocked on-chain query provider.
+//! - Uses provider amounts when available; falls back to SOR on errors.
+//! - Asserts the final solution (amounts/prices/callData) reflects inputs.
 
 use {
     crate::{

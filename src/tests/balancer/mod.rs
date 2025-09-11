@@ -1,8 +1,8 @@
 use {crate::tests, std::net::SocketAddr};
 
-mod dependency_injection;
 mod market_order;
 mod minimum_surplus;
+mod mock_query_swap_provider;
 mod not_found;
 mod out_of_price;
 
