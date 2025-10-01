@@ -4,7 +4,13 @@ use {
         infra::blockchain,
     },
     contracts::{
-        alloy::support::Swapper::Swapper::{Allowance, Asset, Interaction},
+        alloy::support::{
+            AnyoneAuthenticator,
+            Swapper::{
+                self,
+                Swapper::{Allowance, Asset, Interaction},
+            },
+        },
         ethcontract::{state_overrides::StateOverride, web3},
     },
     ethereum_types::{Address, U256},
@@ -43,17 +49,14 @@ impl Simulator {
             return Err(Error::SettlementContractIsOwner);
         }
 
-        let swapper = contracts::alloy::support::Swapper::Instance::new(
-            owner.into_alloy(),
-            self.web3.alloy.clone(),
-        );
+        let swapper = Swapper::Instance::new(owner.into_alloy(), self.web3.alloy.clone());
 
         let overrides = HashMap::<_, _>::from_iter([
             // Setup up our trader code that actually executes the settlement
             (
                 swapper.address().into_legacy(),
                 StateOverride {
-                    code: Some(contracts::alloy::support::Swapper::Swapper::DEPLOYED_BYTECODE.clone().into_legacy()),
+                    code: Some(Swapper::Swapper::DEPLOYED_BYTECODE.clone().into_legacy()),
                     ..Default::default()
                 },
             ),
@@ -62,7 +65,11 @@ impl Simulator {
             (
                 self.authenticator.0,
                 StateOverride {
-                    code: Some(contracts::alloy::support::AnyoneAuthenticator::AnyoneAuthenticator::DEPLOYED_BYTECODE.clone().into_legacy()),
+                    code: Some(
+                        AnyoneAuthenticator::AnyoneAuthenticator::DEPLOYED_BYTECODE
+                            .clone()
+                            .into_legacy(),
+                    ),
                     ..Default::default()
                 },
             ),
