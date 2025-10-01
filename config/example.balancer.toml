@@ -8,3 +8,5 @@ endpoint = "https://balancer.sor.eth/api"
 # address; omitting these values will use the default addresses:
 # vault = "0xBA12222222228d8Ba445958a75a0704d566BF2C8"
 # settlement = "0x9008D19f58AAbD9eD0D60971565AA8510560ab41"
+# Optionally specify custom Balancer Queries contract address for on-chain validation:
+# queries = "0xE39B5e3B6D74016b2F6A9673D7d7493B6DF549d5"
