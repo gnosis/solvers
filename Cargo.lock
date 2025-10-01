@@ -68,9 +68,9 @@ checksum = "5c6cb57a04249c6480766f7f7cef5467412af1490f8d1e243141daddada3264f"
 
 [[package]]
 name = "alloy"
-version = "1.0.30"
+version = "1.0.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2e2a5d689ccd182f1d138a61f081841b905034e0089f5278f6c200f2bcdab00a"
+checksum = "7f6cfe35f100bc496007c9a00f90b88bdf565f1421d4c707c9f07e0717e2aaad"
 dependencies = [
  "alloy-consensus",
  "alloy-contract",
@@ -80,11 +80,14 @@ dependencies = [
  "alloy-network",
  "alloy-provider",
  "alloy-rpc-client",
+ "alloy-rpc-types",
+ "alloy-serde",
  "alloy-signer",
  "alloy-signer-aws",
  "alloy-signer-local",
  "alloy-transport",
  "alloy-transport-http",
+ "alloy-trie",
 ]
 
 [[package]]
@@ -100,9 +103,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-consensus"
-version = "1.0.30"
+version = "1.0.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d213580c17d239ae83c0d897ac3315db7cda83d2d4936a9823cc3517552f2e24"
+checksum = "59094911f05dbff1cf5b29046a00ef26452eccc8d47136d50a47c0cf22f00c85"
 dependencies = [
  "alloy-eips",
  "alloy-primitives",
@@ -119,15 +122,16 @@ dependencies = [
  "rand 0.8.5",
  "secp256k1 0.30.0",
  "serde",
+ "serde_json",
  "serde_with",
  "thiserror 2.0.12",
 ]
 
 [[package]]
 name = "alloy-consensus-any"
-version = "1.0.30"
+version = "1.0.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "81443e3b8dccfeac7cd511aced15928c97ff253f4177acbb97de97178e543f6c"
+checksum = "903cb8f728107ca27c816546f15be38c688df3c381d7bd1a4a9f215effc1ddb4"
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
@@ -139,9 +143,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-contract"
-version = "1.0.30"
+version = "1.0.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "de217ab604f1bcfa2e3b0aff86d50812d5931d47522f9f0a949cc263ec2d108e"
+checksum = "03df5cb3b428ac96b386ad64c11d5c6e87a5505682cf1fbd6f8f773e9eda04f6"
 dependencies = [
  "alloy-consensus",
  "alloy-dyn-abi",
@@ -225,9 +229,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-eips"
-version = "1.0.30"
+version = "1.0.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2a15b4b0f6bab47aae017d52bb5a739bda381553c09fb9918b7172721ef5f5de"
+checksum = "ac7f1c9a1ccc7f3e03c36976455751a6166a4f0d2d2c530c3f87dfe7d0cdc836"
 dependencies = [
  "alloy-eip2124",
  "alloy-eip2930",
@@ -259,9 +263,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-json-rpc"
-version = "1.0.30"
+version = "1.0.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f8882ec8e4542cfd02aadc6dccbe90caa73038f60016d936734eb6ced53d2167"
+checksum = "65f763621707fa09cece30b73ecc607eb43fd7a72451fe3b46f645b905086926"
 dependencies = [
  "alloy-primitives",
  "alloy-sol-types",
@@ -274,9 +278,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-network"
-version = "1.0.30"
+version = "1.0.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "51d6d87d588bda509881a7a66ae77c86514bd1193ac30fbff0e0f24db95eb5a5"
+checksum = "2f59a869fa4b4c3a7f08b1c8cb79aec61c29febe6e24a24fe0fcfded8a9b5703"
 dependencies = [
  "alloy-consensus",
  "alloy-consensus-any",
@@ -300,9 +304,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-network-primitives"
-version = "1.0.30"
+version = "1.0.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5b14fa9ba5774e0b30ae6a04176d998211d516c8af69c9c530af7c6c42a8c508"
+checksum = "46e9374c667c95c41177602ebe6f6a2edd455193844f011d973d374b65501b38"
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
@@ -340,9 +344,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-provider"
-version = "1.0.30"
+version = "1.0.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "475a5141313c3665b75d818be97d5fa3eb5e0abb7e832e9767edd94746db28e3"
+checksum = "77818b7348bd5486491a5297579dbfe5f706a81f8e1f5976393025f1e22a7c7d"
 dependencies = [
  "alloy-chains",
  "alloy-consensus",
@@ -401,9 +405,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-rpc-client"
-version = "1.0.30"
+version = "1.0.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "25289674cd8c58fcca2568b5350423cb0dd7bca8c596c5e2869bfe4c5c57ed14"
+checksum = "2430d5623e428dd012c6c2156ae40b7fe638d6fca255e3244e0fba51fa698e93"
 dependencies = [
  "alloy-json-rpc",
  "alloy-primitives",
@@ -423,10 +427,22 @@ dependencies = [
 ]
 
 [[package]]
-name = "alloy-rpc-types-any"
-version = "1.0.30"
+name = "alloy-rpc-types"
+version = "1.0.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "01bac57c987c93773787619e20f89167db74d460a2d1d40f591d94fb7c22c379"
+checksum = "e9e131624d08a25cfc40557041e7dc42e1182fa1153e7592d120f769a1edce56"
+dependencies = [
+ "alloy-primitives",
+ "alloy-rpc-types-eth",
+ "alloy-serde",
+ "serde",
+]
+
+[[package]]
+name = "alloy-rpc-types-any"
+version = "1.0.37"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "07429a1099cd17227abcddb91b5e38c960aaeb02a6967467f5bb561fbe716ac6"
 dependencies = [
  "alloy-consensus-any",
  "alloy-rpc-types-eth",
@@ -435,9 +451,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-rpc-types-eth"
-version = "1.0.30"
+version = "1.0.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1cd1e1b4dcdf13eaa96343e5c0dafc2d2e8ce5d20b90347169d46a1df0dec210"
+checksum = "db46b0901ee16bbb68d986003c66dcb74a12f9d9b3c44f8e85d51974f2458f0f"
 dependencies = [
  "alloy-consensus",
  "alloy-consensus-any",
@@ -456,9 +472,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-serde"
-version = "1.0.30"
+version = "1.0.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f1b3b1078b8775077525bc9fe9f6577e815ceaecd6c412a4f3b4d8aa2836e8f6"
+checksum = "5413814be7a22fbc81e0f04a2401fcc3eb25e56fd53b04683e8acecc6e1fe01b"
 dependencies = [
  "alloy-primitives",
  "serde",
@@ -467,9 +483,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-signer"
-version = "1.0.30"
+version = "1.0.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "10ab1b8d4649bf7d0db8ab04e31658a6cc20364d920795484d886c35bed3bab4"
+checksum = "53410a18a61916e2c073a6519499514e027b01e77eeaf96acd1df7cf96ef6bb2"
 dependencies = [
  "alloy-primitives",
  "async-trait",
@@ -482,9 +498,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-signer-aws"
-version = "1.0.30"
+version = "1.0.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a46118173eb381b2911202a83dc4f39267027b0fe7d3533449f5e4ebc0eadcab"
+checksum = "58eaf63923ca3eade1181958f002ad4cbdf26a387061979e084b0f2a84fbba0d"
 dependencies = [
  "alloy-consensus",
  "alloy-network",
@@ -501,9 +517,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-signer-local"
-version = "1.0.30"
+version = "1.0.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7bdeec36c8d9823102b571b3eab8b323e053dc19c12da14a9687bd474129bf2a"
+checksum = "e6006c4cbfa5d08cadec1fcabea6cb56dc585a30a9fce40bcf81e307d6a71c8e"
 dependencies = [
  "alloy-consensus",
  "alloy-network",
@@ -590,9 +606,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-transport"
-version = "1.0.30"
+version = "1.0.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dce5129146a76ca6139a19832c75ad408857a56bcd18cd2c684183b8eacd78d8"
+checksum = "d94ee404368a3d9910dfe61b203e888c6b0e151a50e147f95da8baff9f9c7763"
 dependencies = [
  "alloy-json-rpc",
  "alloy-primitives",
@@ -614,9 +630,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-transport-http"
-version = "1.0.30"
+version = "1.0.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e2379d998f46d422ec8ef2b61603bc28cda931e5e267aea1ebe71f62da61d101"
+checksum = "a2f8a6338d594f6c6481292215ee8f2fd7b986c80aba23f3f44e761a8658de78"
 dependencies = [
  "alloy-json-rpc",
  "alloy-transport",
@@ -645,9 +661,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-tx-macros"
-version = "1.0.30"
+version = "1.0.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3b5becb9c269a7d05a2f28d549f86df5a5dbc923e2667eff84fdecac8cda534c"
+checksum = "e64c09ec565a90ed8390d82aa08cd3b22e492321b96cb4a3d4f58414683c9e2f"
 dependencies = [
  "alloy-primitives",
  "darling 0.21.3",
@@ -729,7 +745,7 @@ checksum = "59d2a3357dde987206219e78ecfbbb6e8dad06cbb65292758d3270e6254f7355"
 [[package]]
 name = "app-data"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.326.0#7ace07f9c24442fe3441bccd11c9db5fc86e54ba"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.329.4#7092656263a5bdd30f2b976a1b06f3729118d5c6"
 dependencies = [
  "anyhow",
  "bytes-hex",
@@ -1578,7 +1594,7 @@ dependencies = [
 [[package]]
 name = "bytes-hex"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.326.0#7ace07f9c24442fe3441bccd11c9db5fc86e54ba"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.329.4#7092656263a5bdd30f2b976a1b06f3729118d5c6"
 dependencies = [
  "hex",
  "serde",
@@ -1647,7 +1663,7 @@ checksum = "613afe47fcd5fac7ccf1db93babcb082c5994d996f20b8b159f2ad1658eb5724"
 [[package]]
 name = "chain"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.326.0#7ace07f9c24442fe3441bccd11c9db5fc86e54ba"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.329.4#7092656263a5bdd30f2b976a1b06f3729118d5c6"
 dependencies = [
  "derive_more 1.0.0",
  "ethcontract",
@@ -1803,7 +1819,7 @@ dependencies = [
 [[package]]
 name = "contracts"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.326.0#7ace07f9c24442fe3441bccd11c9db5fc86e54ba"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.329.4#7092656263a5bdd30f2b976a1b06f3729118d5c6"
 dependencies = [
  "alloy",
  "anyhow",
@@ -1812,6 +1828,7 @@ dependencies = [
  "maplit",
  "paste",
  "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -2055,7 +2072,7 @@ dependencies = [
 [[package]]
 name = "database"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.326.0#7ace07f9c24442fe3441bccd11c9db5fc86e54ba"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.329.4#7092656263a5bdd30f2b976a1b06f3729118d5c6"
 dependencies = [
  "bigdecimal",
  "chrono",
@@ -2325,7 +2342,7 @@ dependencies = [
 [[package]]
 name = "ethcontract"
 version = "0.25.9"
-source = "git+https://github.com/cowprotocol/ethcontract-rs?rev=8817f4ba868e686f21cda886d6c8b75834eb51f2#8817f4ba868e686f21cda886d6c8b75834eb51f2"
+source = "git+https://github.com/cowprotocol/ethcontract-rs?rev=8e112a88988040cde6110379ee6d1be768a13244#8e112a88988040cde6110379ee6d1be768a13244"
 dependencies = [
  "arrayvec",
  "aws-config",
@@ -2351,7 +2368,7 @@ dependencies = [
 [[package]]
 name = "ethcontract-common"
 version = "0.25.9"
-source = "git+https://github.com/cowprotocol/ethcontract-rs?rev=8817f4ba868e686f21cda886d6c8b75834eb51f2#8817f4ba868e686f21cda886d6c8b75834eb51f2"
+source = "git+https://github.com/cowprotocol/ethcontract-rs?rev=8e112a88988040cde6110379ee6d1be768a13244#8e112a88988040cde6110379ee6d1be768a13244"
 dependencies = [
  "ethabi",
  "hex",
@@ -2366,7 +2383,7 @@ dependencies = [
 [[package]]
 name = "ethcontract-derive"
 version = "0.25.9"
-source = "git+https://github.com/cowprotocol/ethcontract-rs?rev=8817f4ba868e686f21cda886d6c8b75834eb51f2#8817f4ba868e686f21cda886d6c8b75834eb51f2"
+source = "git+https://github.com/cowprotocol/ethcontract-rs?rev=8e112a88988040cde6110379ee6d1be768a13244#8e112a88988040cde6110379ee6d1be768a13244"
 dependencies = [
  "anyhow",
  "ethcontract-common",
@@ -2379,7 +2396,7 @@ dependencies = [
 [[package]]
 name = "ethcontract-generate"
 version = "0.25.9"
-source = "git+https://github.com/cowprotocol/ethcontract-rs?rev=8817f4ba868e686f21cda886d6c8b75834eb51f2#8817f4ba868e686f21cda886d6c8b75834eb51f2"
+source = "git+https://github.com/cowprotocol/ethcontract-rs?rev=8e112a88988040cde6110379ee6d1be768a13244#8e112a88988040cde6110379ee6d1be768a13244"
 dependencies = [
  "Inflector",
  "anyhow",
@@ -2393,7 +2410,7 @@ dependencies = [
 [[package]]
 name = "ethcontract-mock"
 version = "0.25.9"
-source = "git+https://github.com/cowprotocol/ethcontract-rs?rev=8817f4ba868e686f21cda886d6c8b75834eb51f2#8817f4ba868e686f21cda886d6c8b75834eb51f2"
+source = "git+https://github.com/cowprotocol/ethcontract-rs?rev=8e112a88988040cde6110379ee6d1be768a13244#8e112a88988040cde6110379ee6d1be768a13244"
 dependencies = [
  "ethcontract",
  "hex",
@@ -2419,7 +2436,7 @@ dependencies = [
 [[package]]
 name = "ethrpc"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.326.0#7ace07f9c24442fe3441bccd11c9db5fc86e54ba"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.329.4#7092656263a5bdd30f2b976a1b06f3729118d5c6"
 dependencies = [
  "alloy",
  "anyhow",
@@ -2435,6 +2452,7 @@ dependencies = [
  "primitive-types",
  "prometheus",
  "prometheus-metric-storage",
+ "rand 0.8.5",
  "reqwest 0.11.27",
  "scopeguard",
  "serde",
@@ -3188,22 +3206,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "hyper-tls"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "70206fc6890eaca9fde8a0bf71caa2ddfc9fe045ac9e5c70df101a7dbde866e0"
-dependencies = [
- "bytes",
- "http-body-util",
- "hyper 1.6.0",
- "hyper-util",
- "native-tls",
- "tokio",
- "tokio-native-tls",
- "tower-service",
-]
-
-[[package]]
 name = "hyper-util"
 version = "0.1.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3803,7 +3805,7 @@ dependencies = [
 [[package]]
 name = "model"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.326.0#7ace07f9c24442fe3441bccd11c9db5fc86e54ba"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.329.4#7092656263a5bdd30f2b976a1b06f3729118d5c6"
 dependencies = [
  "anyhow",
  "app-data",
@@ -4020,7 +4022,7 @@ dependencies = [
 [[package]]
 name = "number"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.326.0#7ace07f9c24442fe3441bccd11c9db5fc86e54ba"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.329.4#7092656263a5bdd30f2b976a1b06f3729118d5c6"
 dependencies = [
  "alloy",
  "anyhow",
@@ -4057,7 +4059,7 @@ dependencies = [
 [[package]]
 name = "observe"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.326.0#7ace07f9c24442fe3441bccd11c9db5fc86e54ba"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.329.4#7092656263a5bdd30f2b976a1b06f3729118d5c6"
 dependencies = [
  "async-trait",
  "atty",
@@ -4215,12 +4217,13 @@ dependencies = [
 [[package]]
 name = "order-validation"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.326.0#7ace07f9c24442fe3441bccd11c9db5fc86e54ba"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.329.4#7092656263a5bdd30f2b976a1b06f3729118d5c6"
 dependencies = [
  "alloy",
  "contracts",
  "ethcontract",
  "ethrpc",
+ "moka",
  "thiserror 1.0.61",
  "tokio",
  "tracing",
@@ -4777,7 +4780,7 @@ dependencies = [
 [[package]]
 name = "rate-limit"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.326.0#7ace07f9c24442fe3441bccd11c9db5fc86e54ba"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.329.4#7092656263a5bdd30f2b976a1b06f3729118d5c6"
 dependencies = [
  "anyhow",
  "futures",
@@ -4886,7 +4889,7 @@ dependencies = [
  "http 0.2.12",
  "http-body 0.4.6",
  "hyper 0.14.29",
- "hyper-tls 0.5.0",
+ "hyper-tls",
  "ipnet",
  "js-sys",
  "log",
@@ -4895,7 +4898,7 @@ dependencies = [
  "once_cell",
  "percent-encoding",
  "pin-project-lite",
- "rustls-pemfile 1.0.4",
+ "rustls-pemfile",
  "serde",
  "serde_json",
  "serde_urlencoded",
@@ -4927,23 +4930,19 @@ dependencies = [
  "http-body 1.0.1",
  "http-body-util",
  "hyper 1.6.0",
- "hyper-tls 0.6.0",
  "hyper-util",
  "ipnet",
  "js-sys",
  "log",
  "mime",
- "native-tls",
  "once_cell",
  "percent-encoding",
  "pin-project-lite",
- "rustls-pemfile 2.2.0",
  "serde",
  "serde_json",
  "serde_urlencoded",
  "sync_wrapper 1.0.2",
  "tokio",
- "tokio-native-tls",
  "tower 0.5.2",
  "tower-service",
  "url",
@@ -5154,7 +5153,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a9aace74cb666635c918e9c12bc0d348266037aa8eb599b5cba565709a8dff00"
 dependencies = [
  "openssl-probe",
- "rustls-pemfile 1.0.4",
+ "rustls-pemfile",
  "schannel",
  "security-framework",
 ]
@@ -5166,24 +5165,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1c74cae0a4cf6ccbbf5f359f08efdf8ee7e1dc532573bf0db71968cb56b1448c"
 dependencies = [
  "base64 0.21.7",
-]
-
-[[package]]
-name = "rustls-pemfile"
-version = "2.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dce314e5fee3f39953d46bb63bb8a46d40c2f8fb7cc5a3b6cab2bde9721d6e50"
-dependencies = [
- "rustls-pki-types",
-]
-
-[[package]]
-name = "rustls-pki-types"
-version = "1.12.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "229a4a4c221013e7e1f1a043678c5cc39fe5171437c88fb47151a21e6f5b5c79"
-dependencies = [
- "zeroize",
 ]
 
 [[package]]
@@ -5360,18 +5341,28 @@ dependencies = [
 
 [[package]]
 name = "serde"
-version = "1.0.219"
+version = "1.0.228"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5f0e2c6ed6606019b4e29e69dbaba95b11854410e5347d525002456dbbb786b6"
+checksum = "9a8e94ea7f378bd32cbbd37198a4a91436180c5bb472411e48b5ec2e2124ae9e"
+dependencies = [
+ "serde_core",
+ "serde_derive",
+]
+
+[[package]]
+name = "serde_core"
+version = "1.0.228"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "41d385c7d4ca58e59fc732af25c3983b67ac852c1a25000afe1175de458b67ad"
 dependencies = [
  "serde_derive",
 ]
 
 [[package]]
 name = "serde_derive"
-version = "1.0.219"
+version = "1.0.228"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5b0276cf7f2c73365f7157c8123c21cd9a50fbbd844757af28ca1f5925fc2a00"
+checksum = "d540f220d3187173da220f885ab66608367b6574e925011a9353e4badda91d79"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -5538,7 +5529,7 @@ dependencies = [
 [[package]]
 name = "shared"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.326.0#7ace07f9c24442fe3441bccd11c9db5fc86e54ba"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.329.4#7092656263a5bdd30f2b976a1b06f3729118d5c6"
 dependencies = [
  "alloy",
  "anyhow",
@@ -5679,6 +5670,7 @@ dependencies = [
 name = "solvers"
 version = "0.0.1"
 dependencies = [
+ "alloy",
  "anyhow",
  "async-trait",
  "axum",
@@ -5727,7 +5719,7 @@ dependencies = [
 [[package]]
 name = "solvers-dto"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.326.0#7ace07f9c24442fe3441bccd11c9db5fc86e54ba"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.329.4#7092656263a5bdd30f2b976a1b06f3729118d5c6"
 dependencies = [
  "app-data",
  "bigdecimal",
@@ -6182,7 +6174,7 @@ checksum = "3369f5ac52d5eb6ab48c6b4ffdc8efbcad6b89c765749064ba298f2c68a16a76"
 [[package]]
 name = "testlib"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.326.0#7ace07f9c24442fe3441bccd11c9db5fc86e54ba"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.329.4#7092656263a5bdd30f2b976a1b06f3729118d5c6"
 dependencies = [
  "anyhow",
  "ethcontract",
