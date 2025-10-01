@@ -3,6 +3,7 @@ use {
         domain::{dex, eth},
         infra::blockchain,
     },
+    alloy::primitives::U256,
     contracts::{
         alloy::support::{
             AnyoneAuthenticator,
@@ -13,7 +14,6 @@ use {
         },
         ethcontract::{state_overrides::StateOverride, web3},
     },
-    ethereum_types::{Address, U256},
     ethrpc::alloy::conversions::{IntoAlloy, IntoLegacy},
     std::collections::HashMap,
 };
@@ -43,7 +43,11 @@ impl Simulator {
     /// Simulate the gas needed by a single order DEX swap.
     ///
     /// This will return a `None` if the gas simulation is unavailable.
-    pub async fn gas(&self, owner: Address, swap: &dex::Swap) -> Result<eth::Gas, Error> {
+    pub async fn gas(
+        &self,
+        owner: ethereum_types::Address,
+        swap: &dex::Swap,
+    ) -> Result<eth::Gas, Error> {
         if owner == self.settlement.0 {
             // we can't have both the settlement and swapper contracts at the same address
             return Err(Error::SettlementContractIsOwner);
@@ -80,7 +84,7 @@ impl Simulator {
             .iter()
             .map(|call| Interaction {
                 target: call.to.0.into_alloy(),
-                value: U256::zero().into_alloy(),
+                value: U256::ZERO,
                 callData: alloy::primitives::Bytes::copy_from_slice(&call.calldata),
             })
             .collect();
