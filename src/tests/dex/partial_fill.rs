@@ -141,7 +141,7 @@ async fn tested_amounts_adjust_depending_on_response() {
         req: mock::http::RequestBody::Any,
         res: {
             json!({
-                "id": 1,
+                "id": 0,
                 "jsonrpc": "2.0",
                 "result": "0x0000000000000000000000000000000000000000000000000000000000015B3C"
             })
@@ -528,7 +528,7 @@ async fn moves_surplus_fee_to_buy_token() {
         req: mock::http::RequestBody::Any,
         res: {
             json!({
-                "id": 1,
+                "id": 0,
                 "jsonrpc": "2.0",
                 // If the simulation logic returns 0 it means that the user did not have the
                 // required balance. This could be caused by a pre-interaction that acquires the
