@@ -227,7 +227,7 @@ fn post(
     let expectation = state.expectations.lock().unwrap().pop();
 
     let assertions = move || {
-        let (expected_path, expected_req, res) = match expectation {
+        let (expected_path, expected_req, mut res) = match expectation {
             Some(Expectation::Post { path, req, res }) => (path, req, res),
             Some(other) => panic!("expected POST request but got {other:?}"),
             None => panic!("got another POST request, but didn't expect any more"),
@@ -246,6 +246,14 @@ fn post(
             }
             RequestBody::Any => (),
         }
+
+        // If this is a JSON-RPC request, echo the request ID back in the response
+        if let Some(req_id) = req.get("id") {
+            if let Some(res_obj) = res.as_object_mut() {
+                res_obj.insert("id".to_string(), req_id.clone());
+            }
+        }
+
         res
     };
 
