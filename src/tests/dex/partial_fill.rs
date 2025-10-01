@@ -136,17 +136,33 @@ async fn tested_amounts_adjust_depending_on_response() {
     ])
     .await;
 
-    let simulation_node = mock::http::setup(vec![mock::http::Expectation::Post {
-        path: mock::http::Path::Any,
-        req: mock::http::RequestBody::Any,
-        res: {
-            json!({
-                "id": 0,
-                "jsonrpc": "2.0",
-                "result": "0x0000000000000000000000000000000000000000000000000000000000015B3C"
-            })
+    let simulation_node = mock::http::setup(vec![
+        // First call: query_batch_swap to get asset deltas
+        mock::http::Expectation::Post {
+            path: mock::http::Path::Any,
+            req: mock::http::RequestBody::Any,
+            res: {
+                json!({
+                    "id": 0,
+                    "jsonrpc": "2.0",
+                    // Returns array of asset deltas: [-1 WETH, +227.598... BAL]
+                    "result": "0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000002fffffffffffffffffffffffffffffffffffffffffffffffff21f494c589c000000000000000000000000000000000000000000000000000c569150947c02824e"
+                })
+            },
         },
-    }])
+        // Second call: gas simulation
+        mock::http::Expectation::Post {
+            path: mock::http::Path::Any,
+            req: mock::http::RequestBody::Any,
+            res: {
+                json!({
+                    "id": 0,
+                    "jsonrpc": "2.0",
+                    "result": "0x0000000000000000000000000000000000000000000000000000000000015B3C"
+                })
+            },
+        },
+    ])
     .await;
 
     let config = tests::Config::String(format!(
@@ -523,22 +539,38 @@ async fn moves_surplus_fee_to_buy_token() {
     ])
     .await;
 
-    let simulation_node = mock::http::setup(vec![mock::http::Expectation::Post {
-        path: mock::http::Path::Any,
-        req: mock::http::RequestBody::Any,
-        res: {
-            json!({
-                "id": 0,
-                "jsonrpc": "2.0",
-                // If the simulation logic returns 0 it means that the user did not have the
-                // required balance. This could be caused by a pre-interaction that acquires the
-                // necessary sell_token before the trade which is currently not supported by the
-                // simulation loic.
-                // In that case we fall back to the heuristic gas price we had in the past.
-                "result": "0x0000000000000000000000000000000000000000000000000000000000000000"
-            })
+    let simulation_node = mock::http::setup(vec![
+        // First call: query_batch_swap to get asset deltas
+        mock::http::Expectation::Post {
+            path: mock::http::Path::Any,
+            req: mock::http::RequestBody::Any,
+            res: {
+                json!({
+                    "id": 0,
+                    "jsonrpc": "2.0",
+                    // Returns array of asset deltas: [-1 WETH, +227.598... BAL]
+                    "result": "0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000002fffffffffffffffffffffffffffffffffffffffffffffffff21f494c589c000000000000000000000000000000000000000000000000000c569150947c02824e"
+                })
+            },
         },
-    }])
+        // Second call: gas simulation
+        mock::http::Expectation::Post {
+            path: mock::http::Path::Any,
+            req: mock::http::RequestBody::Any,
+            res: {
+                json!({
+                    "id": 0,
+                    "jsonrpc": "2.0",
+                    // If the simulation logic returns 0 it means that the user did not have the
+                    // required balance. This could be caused by a pre-interaction that acquires the
+                    // necessary sell_token before the trade which is currently not supported by the
+                    // simulation loic.
+                    // In that case we fall back to the heuristic gas price we had in the past.
+                    "result": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                })
+            },
+        },
+    ])
     .await;
 
     let config = tests::Config::String(format!(
