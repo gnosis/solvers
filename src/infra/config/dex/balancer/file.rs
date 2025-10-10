@@ -4,8 +4,9 @@ use {
         infra::{self, config::dex::file, dex},
         util::serialize,
     },
-    contracts::{BalancerQueries, BalancerV2Vault, BalancerV3BatchRouter},
+    contracts::{alloy::BalancerQueries, BalancerV2Vault, BalancerV3BatchRouter},
     ethereum_types::H160,
+    ethrpc::alloy::conversions::IntoLegacy,
     serde::Deserialize,
     serde_with::serde_as,
     std::path::Path,
@@ -74,9 +75,10 @@ pub async fn load(path: &Path) -> super::Config {
         )
     });
     let queries_contract = enabled_api_versions.contains(&ApiVersion::V2).then(|| {
-        infra::contracts::contract_address_for_chain(
-            config.chain_id,
-            BalancerQueries::raw_contract(),
+        eth::ContractAddress(
+            BalancerQueries::deployment_address(&(config.chain_id as u64))
+                .expect("Balancer Queries contract not found for chain")
+                .into_legacy(),
         )
     });
     let batch_router = enabled_api_versions.contains(&ApiVersion::V3).then(|| {

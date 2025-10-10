@@ -4,12 +4,15 @@
 
 use {
     crate::domain::{dex, eth},
+    alloy::primitives::Address,
     anyhow::{anyhow, Result},
     contracts::{
+        alloy::BalancerQueries::IVault::{BatchSwapStep, FundManagement},
         ethcontract::{Bytes, I256},
         BalancerV2Vault,
     },
     ethereum_types::{H160, H256, U256},
+    ethrpc::alloy::conversions::IntoAlloy,
 };
 
 pub struct Vault(BalancerV2Vault);
@@ -97,17 +100,20 @@ impl Vault {
 /// Deployed at 0xE39B5e3B6D74016b2F6A9673D7d7493B6DF549d5 on all chains.
 ///
 /// Further documentation: https://docs-v2.balancer.fi/reference/contracts/query-functions.html
-pub struct Queries(contracts::BalancerQueries);
+pub struct Queries(contracts::alloy::BalancerQueries::Instance);
 
 impl Queries {
     /// Create a new BalancerQueries contract instance
     pub fn new(web3: &ethrpc::Web3, address: eth::ContractAddress) -> Self {
-        Self(contracts::BalancerQueries::at(web3, address.0))
+        Self(contracts::alloy::BalancerQueries::Instance::new(
+            address.0.into_alloy(),
+            web3.alloy.clone(),
+        ))
     }
 
     /// Get the contract address
-    pub fn address(&self) -> eth::ContractAddress {
-        eth::ContractAddress(self.0.address())
+    pub fn address(&self) -> Address {
+        *self.0.address()
     }
 
     /// Execute on-chain query and return the actual amounts (high-level
@@ -119,34 +125,32 @@ impl Queries {
         swaps: Vec<Swap>,
         assets: Vec<H160>,
         funds: Funds,
-    ) -> Result<Vec<I256>> {
+    ) -> Result<Vec<alloy::primitives::I256>> {
         // Create a contract instance with the Web3 client
-        let contract = contracts::BalancerQueries::at(web3, self.address().0);
+        let contract =
+            contracts::alloy::BalancerQueries::Instance::new(self.address(), web3.alloy.clone());
 
         // Execute the query call directly
         let asset_deltas = contract
-            .methods()
-            .query_batch_swap(
+            .queryBatchSwap(
                 kind as _,
                 swaps
                     .into_iter()
-                    .map(|swap| {
-                        (
-                            Bytes(swap.pool_id.0),
-                            swap.asset_in_index,
-                            swap.asset_out_index,
-                            swap.amount,
-                            Bytes(swap.user_data),
-                        )
+                    .map(|swap| BatchSwapStep {
+                        poolId: alloy::primitives::FixedBytes(swap.pool_id.0),
+                        assetInIndex: swap.asset_in_index.into_alloy(),
+                        assetOutIndex: swap.asset_out_index.into_alloy(),
+                        amount: swap.amount.into_alloy(),
+                        userData: alloy::primitives::Bytes::copy_from_slice(&swap.user_data),
                     })
                     .collect(),
-                assets,
-                (
-                    funds.sender,
-                    funds.from_internal_balance,
-                    funds.recipient,
-                    funds.to_internal_balance,
-                ),
+                assets.into_iter().map(IntoAlloy::into_alloy).collect(),
+                FundManagement {
+                    sender: funds.sender.into_alloy(),
+                    fromInternalBalance: funds.from_internal_balance,
+                    recipient: funds.recipient.into_alloy(),
+                    toInternalBalance: funds.to_internal_balance,
+                },
             )
             .call()
             .await
