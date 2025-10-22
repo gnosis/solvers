@@ -4,19 +4,21 @@
 
 use {
     crate::domain::{dex, eth},
-    contracts::{ethcontract::Bytes, BalancerV3BatchRouter, Permit2 as Permit2Contract},
+    alloy::{primitives::ruint::UintTryFrom, sol_types::SolCall},
+    contracts::alloy::{BalancerV3BatchRouter, Permit2 as Permit2Contract},
     ethereum_types::{H160, U256},
+    ethrpc::alloy::conversions::IntoAlloy,
 };
 
-pub struct Permit2(Permit2Contract);
+pub struct Permit2(eth::ContractAddress);
 
 impl Permit2 {
     pub fn new(address: eth::ContractAddress) -> Self {
-        Self(contracts::dummy_contract!(Permit2Contract, address.0))
+        Self(address)
     }
 
     pub fn address(&self) -> eth::ContractAddress {
-        eth::ContractAddress(self.0.address())
+        self.0
     }
 
     // Creates a interaction call to approve an addresss
@@ -28,27 +30,26 @@ impl Permit2 {
         token_in: H160,
         max_input: U256,
     ) -> dex::Call {
-        let to = self.address();
-
-        // expiration = 0 in permit2 means that the tokens are allowed to be spent on
-        // the same block as the approval, this is enough for a settlement
-        let expiration = 0;
-
         // Transfers are done via Permit2, so we approve the balancer v3 router to spend
         // the input tokens
-        let call = self.0.approve(token_in, spender, max_input, expiration);
+        let calldata = Permit2Contract::Permit2::approveCall {
+            token: token_in.into_alloy(),
+            spender: spender.into_alloy(),
+            amount: UintTryFrom::uint_try_from(max_input.into_alloy()).unwrap(),
+            // expiration = 0 in permit2 means that the tokens are allowed to be spent on
+            // the same block as the approval, this is enough for a settlement
+            expiration: Default::default(),
+        }
+        .abi_encode();
 
-        // As ethercontract-rs encodes the last argument (expiration) as a u64,
-        // we need to add 24 bytes to pad it into a u256 (which is the expected for EVM
-        // arguments) TODO: use another library to avoid manually adding bytes
-        let mut calldata = call.tx.data.unwrap().0;
-        calldata.extend_from_slice(&[0u8; 24]);
-
-        dex::Call { to, calldata }
+        dex::Call {
+            to: self.address(),
+            calldata,
+        }
     }
 }
 
-pub struct Router(BalancerV3BatchRouter);
+pub struct Router(eth::ContractAddress);
 
 pub struct SwapPathStep {
     pub pool: H160,
@@ -67,11 +68,11 @@ pub struct SwapPath {
 
 impl Router {
     pub fn new(address: eth::ContractAddress) -> Self {
-        Self(contracts::dummy_contract!(BalancerV3BatchRouter, address.0))
+        Self(address)
     }
 
     pub fn address(&self) -> eth::ContractAddress {
-        eth::ContractAddress(self.0.address())
+        self.0
     }
 
     pub fn swap_exact_amount_in(
@@ -84,18 +85,37 @@ impl Router {
         let permit2_approval_call =
             permit2.create_approval_call(self.address().0, token_in, max_input);
 
-        let swap_call = self.0.swap_exact_in(
-            Self::encode_paths(paths),
-            Self::deadline(),
-            Self::weth_is_eth(),
-            Self::user_data(),
-        );
+        let swap_call = BalancerV3BatchRouter::BalancerV3BatchRouter::swapExactInCall {
+            paths: paths
+                .into_iter()
+                .map(
+                    |path| BalancerV3BatchRouter::IBatchRouter::SwapPathExactAmountIn {
+                        tokenIn: path.token_in.into_alloy(),
+                        steps: path
+                            .steps
+                            .into_iter()
+                            .map(|step| BalancerV3BatchRouter::IBatchRouter::SwapPathStep {
+                                pool: step.pool.into_alloy(),
+                                tokenOut: step.token_out.into_alloy(),
+                                isBuffer: step.is_buffer,
+                            })
+                            .collect(),
+                        exactAmountIn: path.input_amount_raw.into_alloy(),
+                        minAmountOut: path.output_amount_raw.into_alloy(),
+                    },
+                )
+                .collect(),
+            deadline: Self::deadline(),
+            wethIsEth: Self::weth_is_eth(),
+            userData: Self::user_data(),
+        }
+        .abi_encode();
 
         vec![
             permit2_approval_call,
             dex::Call {
                 to: self.address(),
-                calldata: swap_call.tx.data.unwrap().0,
+                calldata: swap_call,
             },
         ]
     }
@@ -110,46 +130,45 @@ impl Router {
         let permit2_approval_call =
             permit2.create_approval_call(self.address().0, token_in, max_input);
 
-        let swap_call = self.0.swap_exact_out(
-            Self::encode_paths(paths),
-            Self::deadline(),
-            Self::weth_is_eth(),
-            Self::user_data(),
-        );
+        let swap_call = BalancerV3BatchRouter::BalancerV3BatchRouter::swapExactOutCall {
+            paths: paths
+                .into_iter()
+                .map(
+                    |path| BalancerV3BatchRouter::IBatchRouter::SwapPathExactAmountOut {
+                        tokenIn: path.token_in.into_alloy(),
+                        steps: path
+                            .steps
+                            .into_iter()
+                            .map(|step| BalancerV3BatchRouter::IBatchRouter::SwapPathStep {
+                                pool: step.pool.into_alloy(),
+                                tokenOut: step.token_out.into_alloy(),
+                                isBuffer: step.is_buffer,
+                            })
+                            .collect(),
+                        maxAmountIn: path.input_amount_raw.into_alloy(),
+                        exactAmountOut: path.output_amount_raw.into_alloy(),
+                    },
+                )
+                .collect(),
+            deadline: Self::deadline(),
+            wethIsEth: Self::weth_is_eth(),
+            userData: Self::user_data(),
+        }
+        .abi_encode();
 
         vec![
             permit2_approval_call,
             dex::Call {
                 to: self.address(),
-                calldata: swap_call.tx.data.unwrap().0,
+                calldata: swap_call,
             },
         ]
     }
 
-    /// Converts rust struct with readable fields into tuple arguments used by
-    /// the smart contract bindings.
-    #[allow(clippy::type_complexity)]
-    fn encode_paths(paths: Vec<SwapPath>) -> Vec<(H160, Vec<(H160, H160, bool)>, U256, U256)> {
-        paths
-            .into_iter()
-            .map(|path| {
-                (
-                    path.token_in,
-                    path.steps
-                        .into_iter()
-                        .map(|s| (s.pool, s.token_out, s.is_buffer))
-                        .collect(),
-                    path.input_amount_raw,
-                    path.output_amount_raw,
-                )
-            })
-            .collect()
-    }
-
     /// Returns a `deadline` value that is sufficiently large with as many 0's
     /// as possible for some small gas savings (i.e. b1000...0000).
-    fn deadline() -> U256 {
-        U256::one() << 255
+    fn deadline() -> alloy::primitives::U256 {
+        alloy::primitives::U256::ONE.wrapping_shl(255)
     }
 
     /// Returns value for the `wethIsEth` argument. If that is true, incoming
@@ -162,7 +181,7 @@ impl Router {
 
     /// Returns a value for the `userData` argument. The balancer SDK populates
     /// that with an empty value so we are doing that as well.
-    fn user_data() -> Bytes<Vec<u8>> {
+    fn user_data() -> alloy::primitives::Bytes {
         Default::default()
     }
 }

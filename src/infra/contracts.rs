@@ -1,4 +1,4 @@
-use crate::domain::eth;
+use {crate::domain::eth, contracts::alloy::Permit2, ethrpc::alloy::conversions::IntoLegacy};
 
 #[derive(Clone, Debug)]
 pub struct Contracts {
@@ -18,7 +18,11 @@ impl Contracts {
                 chain,
                 contracts::GPv2AllowListAuthentication::raw_contract(),
             ),
-            permit2: contract_address_for_chain(chain, contracts::Permit2::raw_contract()),
+            permit2: eth::ContractAddress(
+                Permit2::deployment_address(&chain.value().as_u64())
+                    .expect("all contracts have an address")
+                    .into_legacy(),
+            ),
         }
     }
 }

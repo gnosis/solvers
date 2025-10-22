@@ -4,8 +4,9 @@ use {
         infra::{self, config::dex::file, dex},
         util::serialize,
     },
-    contracts::BalancerV2Vault,
+    contracts::alloy::{BalancerV2Vault, BalancerV3BatchRouter},
     ethereum_types::H160,
+    ethrpc::alloy::conversions::IntoLegacy,
     serde::Deserialize,
     serde_with::serde_as,
     std::path::Path,
@@ -62,28 +63,25 @@ impl ApiVersion {
 pub async fn load(path: &Path) -> super::Config {
     let (base, config) = file::load::<Config>(path).await;
     let contracts = infra::contracts::Contracts::for_chain(config.chain_id);
+    let chain_id = config.chain_id.value().as_u64();
     let enabled_api_versions = config.enabled_api_versions.unwrap_or_else(ApiVersion::all);
-    let vault_contract = enabled_api_versions.contains(&ApiVersion::V2).then(|| {
-        infra::contracts::contract_address_for_chain(
-            config.chain_id,
-            BalancerV2Vault::raw_contract(),
-        )
-    });
-    let batch_router = enabled_api_versions.contains(&ApiVersion::V3).then(|| {
-        infra::contracts::contract_address_for_chain(
-            config.chain_id,
-            contracts::BalancerV3BatchRouter::raw_contract(),
-        )
-    });
+    let vault_contract = enabled_api_versions
+        .contains(&ApiVersion::V2)
+        .then(|| BalancerV2Vault::deployment_address(&chain_id).map(IntoLegacy::into_legacy))
+        .flatten();
+    let batch_router = enabled_api_versions
+        .contains(&ApiVersion::V3)
+        .then(|| BalancerV3BatchRouter::deployment_address(&chain_id).map(IntoLegacy::into_legacy))
+        .flatten();
 
     super::Config {
         sor: dex::balancer::Config {
             endpoint: config.endpoint,
-            vault: config.vault.map(eth::ContractAddress).or(vault_contract),
+            vault: config.vault.or(vault_contract).map(eth::ContractAddress),
             v3_batch_router: config
                 .v3_batch_router
-                .map(eth::ContractAddress)
-                .or(batch_router),
+                .or(batch_router)
+                .map(eth::ContractAddress),
             permit2: config
                 .permit2
                 .map(eth::ContractAddress)
