@@ -79,29 +79,5 @@ impl Vault {
             to: self.address(),
             calldata,
         }]
-
-        //         vec![dex::Call {
-        //             to: self.address(),
-        //             calldata: self
-        //                 .0
-        //                 .methods()
-        //                 .batch_swap(
-        //                     kind as _,
-        //                     assets,
-        //                     (
-        //                         funds.sender,
-        //                         funds.from_internal_balance,
-        //                         funds.recipient,
-        //                         funds.to_internal_balance,
-        //                     ),
-        //                     limits,
-        //                     // `deadline`:
-        //                     U256::one() << 255,
-        //                 )
-        //                 .tx
-        //                 .data
-        //                 .expect("calldata")
-        //                 .0,
-        //         }]
     }
 }
