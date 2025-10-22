@@ -1844,15 +1844,14 @@ dependencies = [
 
 [[package]]
 name = "const-hex"
-version = "1.14.1"
+version = "1.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "83e22e0ed40b96a48d3db274f72fd365bd78f67af39b6bbd47e8a15e1c6207ff"
+checksum = "3bb320cac8a0750d7f25280aa97b09c26edfe161164238ecbbb31092b079e735"
 dependencies = [
  "cfg-if",
  "cpufeatures",
- "hex",
  "proptest",
- "serde",
+ "serde_core",
 ]
 
 [[package]]
@@ -1893,6 +1892,19 @@ dependencies = [
  "maplit",
  "paste",
  "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "contracts"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?branch=main#7abfda18c96c4c61c32806b3bc9dc0ddd253fb1e"
+dependencies = [
+ "alloy",
+ "anyhow",
+ "ethcontract",
+ "ethcontract-generate",
+ "paste",
  "serde_json",
 ]
 
@@ -2538,14 +2550,45 @@ dependencies = [
  "alloy",
  "anyhow",
  "async-trait",
- "contracts",
+ "contracts 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.331.0)",
  "ethcontract",
  "futures",
  "hex",
  "hex-literal",
  "itertools 0.14.0",
  "mockall 0.12.1",
- "observe",
+ "observe 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.331.0)",
+ "primitive-types",
+ "prometheus",
+ "prometheus-metric-storage",
+ "rand 0.8.5",
+ "reqwest 0.11.27",
+ "scopeguard",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-stream",
+ "tower 0.4.13",
+ "tracing",
+ "url",
+ "web3",
+]
+
+[[package]]
+name = "ethrpc"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?branch=main#7abfda18c96c4c61c32806b3bc9dc0ddd253fb1e"
+dependencies = [
+ "alloy",
+ "anyhow",
+ "async-trait",
+ "const-hex",
+ "ethcontract",
+ "futures",
+ "hex-literal",
+ "itertools 0.14.0",
+ "mockall 0.12.1",
+ "observe 0.1.0 (git+https://github.com/cowprotocol/services.git?branch=main)",
  "primitive-types",
  "prometheus",
  "prometheus-metric-storage",
@@ -3083,9 +3126,6 @@ name = "hex"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
-dependencies = [
- "serde",
-]
 
 [[package]]
 name = "hex-conservative"
@@ -4207,6 +4247,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "observe"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?branch=main#7abfda18c96c4c61c32806b3bc9dc0ddd253fb1e"
+dependencies = [
+ "async-trait",
+ "atty",
+ "chrono",
+ "console-subscriber",
+ "futures",
+ "opentelemetry",
+ "opentelemetry-otlp",
+ "opentelemetry_sdk",
+ "pin-project-lite",
+ "prometheus",
+ "prometheus-metric-storage",
+ "scopeguard",
+ "serde",
+ "serde_json",
+ "time",
+ "tokio",
+ "tracing",
+ "tracing-opentelemetry",
+ "tracing-serde",
+ "tracing-subscriber",
+ "warp",
+]
+
+[[package]]
 name = "once_cell"
 version = "1.21.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4342,8 +4410,8 @@ version = "0.1.0"
 source = "git+https://github.com/cowprotocol/services.git?tag=v2.331.0#a532c612ca93e95f8abb896bf257b5ff7c455071"
 dependencies = [
  "alloy",
- "contracts",
- "ethrpc",
+ "contracts 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.331.0)",
+ "ethrpc 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.331.0)",
  "futures",
  "moka",
  "thiserror 1.0.61",
@@ -4907,7 +4975,7 @@ dependencies = [
  "anyhow",
  "futures",
  "humantime",
- "observe",
+ "observe 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.331.0)",
  "prometheus",
  "prometheus-metric-storage",
  "reqwest 0.11.27",
@@ -5664,13 +5732,13 @@ dependencies = [
  "chain",
  "chrono",
  "clap",
- "contracts",
+ "contracts 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.331.0)",
  "dashmap",
  "database",
  "derivative",
  "derive_more 1.0.0",
  "ethcontract",
- "ethrpc",
+ "ethrpc 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.331.0)",
  "futures",
  "gas-estimation",
  "hex",
@@ -5683,7 +5751,7 @@ dependencies = [
  "model",
  "num",
  "number",
- "observe",
+ "observe 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.331.0)",
  "order-validation",
  "primitive-types",
  "prometheus",
@@ -5801,9 +5869,9 @@ dependencies = [
  "bigdecimal",
  "chrono",
  "clap",
- "contracts",
+ "contracts 0.1.0 (git+https://github.com/cowprotocol/services.git?branch=main)",
  "ethereum-types",
- "ethrpc",
+ "ethrpc 0.1.0 (git+https://github.com/cowprotocol/services.git?branch=main)",
  "futures",
  "glob",
  "hex",
@@ -5816,7 +5884,7 @@ dependencies = [
  "moka",
  "num",
  "number",
- "observe",
+ "observe 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.331.0)",
  "prometheus",
  "prometheus-metric-storage",
  "rate-limit",
