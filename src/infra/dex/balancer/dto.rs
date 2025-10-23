@@ -148,6 +148,7 @@ pub(super) enum Chain {
     Gnosis,
     Mainnet,
     Optimism,
+    Plasma,
     Polygon,
     #[allow(dead_code)]
     Mode,
@@ -171,7 +172,10 @@ impl Chain {
             eth::ChainId::Avalanche => Ok(Self::Avalanche),
             eth::ChainId::Polygon => Ok(Self::Polygon),
             eth::ChainId::Optimism => Ok(Self::Optimism),
-            eth::ChainId::Bnb | eth::ChainId::Goerli => Err(Error::UnsupportedChainId(chain_id)),
+            eth::ChainId::Plasma => Ok(Self::Plasma),
+            eth::ChainId::Bnb | eth::ChainId::Goerli | eth::ChainId::Linea => {
+                Err(Error::UnsupportedChainId(chain_id))
+            }
         }
     }
 }
