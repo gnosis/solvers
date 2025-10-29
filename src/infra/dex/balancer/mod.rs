@@ -9,9 +9,19 @@ use {
         infra::{config::dex::balancer::file::ApiVersion, dex::balancer::dto::Chain},
         util,
     },
-    contracts::ethcontract::I256,
-    ethereum_types::U256,
-    ethrpc::block_stream::CurrentBlockWatcher,
+    alloy::primitives::{Address, Bytes, FixedBytes, I256, U256},
+    contracts::alloy::{
+        BalancerV2Vault::IVault::{BatchSwapStep, FundManagement},
+        BalancerV3BatchRouter::IBatchRouter::{
+            SwapPathExactAmountIn,
+            SwapPathExactAmountOut,
+            SwapPathStep,
+        },
+    },
+    ethrpc::{
+        alloy::conversions::{IntoAlloy, IntoLegacy},
+        block_stream::CurrentBlockWatcher,
+    },
     std::sync::atomic::{self, AtomicU64},
     tracing::Instrument,
 };
@@ -27,7 +37,7 @@ pub struct Sor {
     v2_vault: Option<v2::Vault>,
     v3_batch_router: Option<v3::Router>,
     permit2: v3::Permit2,
-    settlement: eth::ContractAddress,
+    settlement: Address,
     chain_id: Chain,
 }
 
@@ -40,17 +50,17 @@ pub struct Config {
 
     /// The address of the Balancer V2 Vault contract. For V2, it's used as both
     /// the spender and router.
-    pub vault: Option<eth::ContractAddress>,
+    pub vault: Option<Address>,
 
     /// The address of the Balancer V3 BatchRouter contract.
     /// Not supported on some chains.
-    pub v3_batch_router: Option<eth::ContractAddress>,
+    pub v3_batch_router: Option<Address>,
 
     /// The address of the Permit2 contract.
-    pub permit2: eth::ContractAddress,
+    pub permit2: Address,
 
     /// The address of the Settlement contract.
-    pub settlement: eth::ContractAddress,
+    pub settlement: Address,
 
     /// For which chain the solver is configured.
     pub chain_id: eth::ChainId,
@@ -111,18 +121,24 @@ impl Sor {
             order::Side::Sell => (input, slippage.sub(output)),
         };
 
-        let gas = U256::from(quote.swaps.len()) * Self::GAS_PER_SWAP;
+        let gas = U256::from(quote.swaps.len()) * U256::from(Self::GAS_PER_SWAP);
         let (spender, calls) = match quote.protocol_version {
             dto::ProtocolVersion::V2 => (
                 v2_vault.address(),
-                self.encode_v2_swap(order, &quote, max_input, min_output, v2_vault)?,
+                self.encode_v2_swap(
+                    order,
+                    &quote,
+                    max_input.into_alloy(),
+                    min_output.into_alloy(),
+                    v2_vault,
+                )?,
             ),
             dto::ProtocolVersion::V3 => {
                 // In Balancer v3, the spender must be the Permit2 contract, as it's the one
                 // doing the transfer of funds from the settlement
                 (
                     self.permit2.address(),
-                    self.encode_v3_swap(order, &quote, max_input, slippage)?,
+                    self.encode_v3_swap(order, &quote, max_input.into_alloy(), slippage)?,
                 )
             }
         };
@@ -141,7 +157,7 @@ impl Sor {
                 spender,
                 amount: dex::Amount::new(max_input),
             },
-            gas: eth::Gas(gas),
+            gas: eth::Gas(gas.into_legacy()),
         })
     }
 
@@ -161,21 +177,25 @@ impl Sor {
             .swaps
             .iter()
             .map(|swap| {
-                Ok(v2::Swap {
-                    pool_id: swap.pool_id.as_v2()?,
-                    asset_in_index: swap.asset_in_index.into(),
-                    asset_out_index: swap.asset_out_index.into(),
-                    amount: swap.amount,
-                    user_data: swap.user_data.clone(),
+                Ok(BatchSwapStep {
+                    poolId: FixedBytes(swap.pool_id.as_v2()?.0),
+                    assetInIndex: U256::from(swap.asset_in_index),
+                    assetOutIndex: U256::from(swap.asset_out_index),
+                    amount: swap.amount.into_alloy(),
+                    userData: Bytes::copy_from_slice(&swap.user_data),
                 })
             })
             .collect::<Result<_, Error>>()?;
-        let assets = quote.token_addresses.clone();
-        let funds = v2::Funds {
-            sender: self.settlement.0,
-            from_internal_balance: false,
-            recipient: self.settlement.0,
-            to_internal_balance: false,
+        let assets = quote
+            .token_addresses
+            .iter()
+            .map(|addr| addr.into_alloy())
+            .collect();
+        let funds = FundManagement {
+            sender: self.settlement,
+            fromInternalBalance: false,
+            recipient: self.settlement,
+            toInternalBalance: false,
         };
         let limits = quote
             .token_addresses
@@ -191,7 +211,7 @@ impl Sor {
                         .checked_neg()
                         .expect("positive integer can't overflow negation")
                 } else {
-                    I256::zero()
+                    I256::ZERO
                 }
             })
             .collect();
@@ -210,23 +230,23 @@ impl Sor {
         let Some(v3_batch_router) = &self.v3_batch_router else {
             return Err(Error::DisabledApiVersion(ApiVersion::V3));
         };
-        let paths = quote
+        let paths_in = quote
             .paths
             .iter()
             .map(|path| {
-                Ok(v3::SwapPath {
-                    token_in: path
+                Ok(SwapPathExactAmountIn {
+                    tokenIn: path
                         .tokens
                         .first()
-                        .map(|t| t.address)
+                        .map(|t| t.address.into_alloy())
                         .ok_or_else(|| Error::InvalidPath)?,
-                    input_amount_raw: match order.side {
-                        Side::Buy => slippage.add(path.input_amount_raw),
-                        Side::Sell => path.input_amount_raw,
+                    exactAmountIn: match order.side {
+                        Side::Buy => slippage.add(path.input_amount_raw).into_alloy(),
+                        Side::Sell => path.input_amount_raw.into_alloy(),
                     },
-                    output_amount_raw: match order.side {
-                        Side::Buy => path.output_amount_raw,
-                        Side::Sell => slippage.sub(path.output_amount_raw),
+                    minAmountOut: match order.side {
+                        Side::Buy => path.output_amount_raw.into_alloy(),
+                        Side::Sell => slippage.sub(path.output_amount_raw).into_alloy(),
                     },
 
                     // A path step consists of 1 item of 3 different arrays at the correct
@@ -239,10 +259,50 @@ impl Sor {
                         .zip(path.is_buffer.iter())
                         .zip(path.pools.iter())
                         .map(|((token_out, is_buffer), pool)| {
-                            Ok(v3::SwapPathStep {
-                                pool: pool.as_v3()?,
-                                token_out: token_out.address,
-                                is_buffer: *is_buffer,
+                            Ok(SwapPathStep {
+                                pool: pool.as_v3()?.into_alloy(),
+                                tokenOut: token_out.address.into_alloy(),
+                                isBuffer: *is_buffer,
+                            })
+                        })
+                        .collect::<Result<_, Error>>()?,
+                })
+            })
+            .collect::<Result<_, Error>>()?;
+
+        let paths_out = quote
+            .paths
+            .iter()
+            .map(|path| {
+                Ok(SwapPathExactAmountOut {
+                    tokenIn: path
+                        .tokens
+                        .first()
+                        .map(|t| t.address.into_alloy())
+                        .ok_or_else(|| Error::InvalidPath)?,
+                    maxAmountIn: match order.side {
+                        Side::Buy => slippage.add(path.input_amount_raw).into_alloy(),
+                        Side::Sell => path.input_amount_raw.into_alloy(),
+                    },
+                    exactAmountOut: match order.side {
+                        Side::Buy => path.output_amount_raw.into_alloy(),
+                        Side::Sell => slippage.sub(path.output_amount_raw).into_alloy(),
+                    },
+
+                    // A path step consists of 1 item of 3 different arrays at the correct
+                    // index. `tokens` contains 1 item more where the first one needs
+                    // to be skipped.
+                    steps: path
+                        .tokens
+                        .iter()
+                        .skip(1)
+                        .zip(path.is_buffer.iter())
+                        .zip(path.pools.iter())
+                        .map(|((token_out, is_buffer), pool)| {
+                            Ok(SwapPathStep {
+                                pool: pool.as_v3()?.into_alloy(),
+                                tokenOut: token_out.address.into_alloy(),
+                                isBuffer: *is_buffer,
                             })
                         })
                         .collect::<Result<_, Error>>()?,
@@ -252,15 +312,15 @@ impl Sor {
 
         Ok(match order.side {
             Side::Buy => v3_batch_router.swap_exact_amount_out(
-                paths,
+                paths_out,
                 &self.permit2,
-                quote.token_in,
+                quote.token_in.into_alloy(),
                 max_input,
             ),
             Side::Sell => v3_batch_router.swap_exact_amount_in(
-                paths,
+                paths_in,
                 &self.permit2,
-                quote.token_in,
+                quote.token_in.into_alloy(),
                 max_input,
             ),
         })

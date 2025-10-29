@@ -3,89 +3,59 @@
 //! bindings, defining structs with named fields instead of using tuples.
 
 use {
-    crate::domain::{dex, eth},
-    contracts::{
-        ethcontract::{Bytes, I256},
-        BalancerV2Vault,
+    crate::domain::dex,
+    alloy::{
+        primitives::{Address, I256, U256},
+        sol_types::SolInterface,
     },
-    ethereum_types::{H160, H256, U256},
+    contracts::alloy::{
+        BalancerV2Vault,
+        BalancerV2Vault::IVault::{BatchSwapStep, FundManagement},
+    },
 };
 
-pub struct Vault(BalancerV2Vault);
+pub struct Vault(Address);
 
+// In solidity this is not represented as an enum, but rather as a wrapper of
+// u8.
 #[repr(u8)]
 pub enum SwapKind {
     GivenIn = 0,
     GivenOut = 1,
 }
 
-pub struct Swap {
-    pub pool_id: H256,
-    pub asset_in_index: U256,
-    pub asset_out_index: U256,
-    pub amount: U256,
-    pub user_data: Vec<u8>,
-}
-
-pub struct Funds {
-    pub sender: H160,
-    pub from_internal_balance: bool,
-    pub recipient: H160,
-    pub to_internal_balance: bool,
-}
-
 impl Vault {
-    pub fn new(address: eth::ContractAddress) -> Self {
-        Self(contracts::dummy_contract!(BalancerV2Vault, address.0))
+    pub fn new(address: Address) -> Self {
+        Self(address)
     }
 
-    pub fn address(&self) -> eth::ContractAddress {
-        eth::ContractAddress(self.0.address())
+    pub fn address(&self) -> Address {
+        self.0
     }
 
     pub fn batch_swap(
         &self,
         kind: SwapKind,
-        swaps: Vec<Swap>,
-        assets: Vec<H160>,
-        funds: Funds,
+        swaps: Vec<BatchSwapStep>,
+        assets: Vec<Address>,
+        funds: FundManagement,
         limits: Vec<I256>,
     ) -> Vec<dex::Call> {
+        let calldata = BalancerV2Vault::BalancerV2Vault::BalancerV2VaultCalls::batchSwap(
+            BalancerV2Vault::BalancerV2Vault::batchSwapCall {
+                kind: kind as _,
+                swaps,
+                assets,
+                funds,
+                limits,
+                deadline: U256::ONE << 255,
+            },
+        )
+        .abi_encode();
+
         vec![dex::Call {
             to: self.address(),
-            calldata: self
-                .0
-                .methods()
-                .batch_swap(
-                    kind as _,
-                    swaps
-                        .into_iter()
-                        .map(|swap| {
-                            (
-                                Bytes(swap.pool_id.0),
-                                swap.asset_in_index,
-                                swap.asset_out_index,
-                                swap.amount,
-                                Bytes(swap.user_data),
-                            )
-                        })
-                        .collect(),
-                    assets,
-                    (
-                        funds.sender,
-                        funds.from_internal_balance,
-                        funds.recipient,
-                        funds.to_internal_balance,
-                    ),
-                    limits,
-                    // `deadline`: Sufficiently large value with as many 0's as possible for some
-                    // small gas savings.
-                    U256::one() << 255,
-                )
-                .tx
-                .data
-                .expect("calldata")
-                .0,
+            calldata,
         }]
     }
 }

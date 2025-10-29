@@ -4,6 +4,7 @@ use {
         infra::{config::dex::file, contracts, dex::oneinch},
         util::serialize,
     },
+    ethrpc::alloy::conversions::IntoLegacy,
     serde::Deserialize,
     serde_with::serde_as,
     std::path::Path,
@@ -53,7 +54,7 @@ pub async fn load(path: &Path) -> super::Config {
 
     super::Config {
         oneinch: oneinch::Config {
-            settlement,
+            settlement: eth::ContractAddress(settlement.into_legacy()),
             endpoint: config.endpoint,
             liquidity: match (config.include_liquidity, config.exclude_liquidity) {
                 (Some(include_liquidity), None) => oneinch::Liquidity::Only(include_liquidity),

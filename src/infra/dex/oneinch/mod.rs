@@ -4,7 +4,7 @@ use {
         util,
     },
     ethereum_types::H160,
-    ethrpc::block_stream::CurrentBlockWatcher,
+    ethrpc::{alloy::conversions::IntoAlloy, block_stream::CurrentBlockWatcher},
     std::{
         sync::atomic::{self, AtomicU64},
         time::{Duration, Instant},
@@ -155,7 +155,7 @@ impl OneInch {
 
         Ok(dex::Swap {
             calls: vec![dex::Call {
-                to: eth::ContractAddress(swap.tx.to),
+                to: swap.tx.to.into_alloy(),
                 calldata: swap.tx.data,
             }],
             input: eth::Asset {
@@ -167,7 +167,7 @@ impl OneInch {
                 amount: swap.to_token_amount,
             },
             allowance: dex::Allowance {
-                spender: self.spender,
+                spender: self.spender.0.into_alloy(),
                 amount: dex::Amount::new(swap.from_token_amount),
             },
             gas: eth::Gas(swap.tx.gas.into()),
