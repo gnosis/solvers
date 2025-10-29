@@ -6,7 +6,7 @@ use {
     crate::domain::dex,
     alloy::{
         primitives::{Address, I256, U256},
-        sol_types::SolInterface,
+        sol_types::SolCall,
     },
     contracts::alloy::{
         BalancerV2Vault,
@@ -41,16 +41,14 @@ impl Vault {
         funds: FundManagement,
         limits: Vec<I256>,
     ) -> Vec<dex::Call> {
-        let calldata = BalancerV2Vault::BalancerV2Vault::BalancerV2VaultCalls::batchSwap(
-            BalancerV2Vault::BalancerV2Vault::batchSwapCall {
-                kind: kind as _,
-                swaps,
-                assets,
-                funds,
-                limits,
-                deadline: U256::ONE << 255,
-            },
-        )
+        let calldata = BalancerV2Vault::BalancerV2Vault::batchSwapCall {
+            kind: kind as _,
+            swaps,
+            assets,
+            funds,
+            limits,
+            deadline: U256::ONE << 255,
+        }
         .abi_encode();
 
         vec![dex::Call {
