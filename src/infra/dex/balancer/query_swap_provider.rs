@@ -15,7 +15,11 @@ use {
         domain::{dex, eth, order},
         infra::{
             blockchain,
-            dex::balancer::{dto, v2, v2::BalancerQueriesExt, v3},
+            dex::balancer::{
+                dto,
+                v2::{self, BalancerQueriesExt},
+                v3,
+            },
         },
     },
     anyhow::{Context, Result, anyhow, ensure},
