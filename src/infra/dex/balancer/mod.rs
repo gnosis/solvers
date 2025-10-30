@@ -9,9 +9,19 @@ use {
         infra::{config::dex::balancer::file::ApiVersion, dex::balancer::dto::Chain},
         util,
     },
-    contracts::ethcontract::I256,
-    ethereum_types::U256,
-    ethrpc::block_stream::CurrentBlockWatcher,
+    alloy::primitives::{Address, Bytes, FixedBytes, I256, U256},
+    contracts::alloy::{
+        BalancerV2Vault::IVault::{BatchSwapStep, FundManagement},
+        BalancerV3BatchRouter::IBatchRouter::{
+            SwapPathExactAmountIn,
+            SwapPathExactAmountOut,
+            SwapPathStep,
+        },
+    },
+    ethrpc::{
+        alloy::conversions::{IntoAlloy, IntoLegacy},
+        block_stream::CurrentBlockWatcher,
+    },
     std::sync::atomic::{self, AtomicU64},
     tracing::Instrument,
 };
@@ -31,7 +41,7 @@ pub struct Sor {
     v2_vault: Option<v2::Vault>,
     v3_batch_router: Option<v3::Router>,
     permit2: v3::Permit2,
-    settlement: eth::ContractAddress,
+    settlement: Address,
     chain_id: Chain,
     query_swap_provider: Box<dyn QuerySwapProvider>,
 }
@@ -45,20 +55,20 @@ pub struct Config {
 
     /// The address of the Balancer V2 Vault contract. For V2, it's used as both
     /// the spender and router.
-    pub vault: Option<eth::ContractAddress>,
+    pub vault: Option<Address>,
 
     /// The address of the Balancer V3 BatchRouter contract.
     /// Not supported on some chains.
-    pub v3_batch_router: Option<eth::ContractAddress>,
+    pub v3_batch_router: Option<Address>,
 
     /// The address of the Balancer Queries contract for on-chain swap queries.
     pub queries: Option<eth::ContractAddress>,
 
     /// The address of the Permit2 contract.
-    pub permit2: eth::ContractAddress,
+    pub permit2: Address,
 
     /// The address of the Settlement contract.
-    pub settlement: eth::ContractAddress,
+    pub settlement: Address,
 
     /// For which chain the solver is configured.
     pub chain_id: eth::ChainId,
@@ -144,18 +154,24 @@ impl Sor {
             order::Side::Sell => (input, slippage.sub(output)),
         };
 
-        let gas = U256::from(quote.swaps.len()) * Self::GAS_PER_SWAP;
+        let gas = U256::from(quote.swaps.len()) * U256::from(Self::GAS_PER_SWAP);
         let (spender, calls) = match quote.protocol_version {
             dto::ProtocolVersion::V2 => (
                 v2_vault.address(),
-                self.encode_v2_swap(order, &quote, max_input, min_output, v2_vault)?,
+                self.encode_v2_swap(
+                    order,
+                    &quote,
+                    max_input.into_alloy(),
+                    min_output.into_alloy(),
+                    v2_vault,
+                )?,
             ),
             dto::ProtocolVersion::V3 => {
                 // In Balancer v3, the spender must be the Permit2 contract, as it's the one
                 // doing the transfer of funds from the settlement
                 (
                     self.permit2.address(),
-                    self.encode_v3_swap(order, &quote, max_input, slippage)?,
+                    self.encode_v3_swap(order, &quote, max_input.into_alloy(), slippage)?,
                 )
             }
         };
@@ -174,7 +190,7 @@ impl Sor {
                 spender,
                 amount: dex::Amount::new(max_input),
             },
-            gas: eth::Gas(gas),
+            gas: eth::Gas(gas.into_legacy()),
         })
     }
 
@@ -202,7 +218,7 @@ impl Sor {
                         .checked_neg()
                         .expect("positive integer can't overflow negation")
                 } else {
-                    I256::zero()
+                    I256::ZERO
                 }
             })
             .collect();
@@ -287,21 +303,8 @@ impl Sor {
         quote
             .paths
             .iter()
-            .map(|path| {
-                Ok(v3::SwapPath {
-                    token_in: path
-                        .tokens
-                        .first()
-                        .map(|t| t.address)
-                        .ok_or_else(|| Error::InvalidPath)?,
-                    input_amount_raw: match order.side {
-                        Side::Buy => slippage.add(path.input_amount_raw),
-                        Side::Sell => path.input_amount_raw,
-                    },
-                    output_amount_raw: match order.side {
-                        Side::Buy => path.output_amount_raw,
-                        Side::Sell => slippage.sub(path.output_amount_raw),
-                    },
+            .map(|path| path_to_exact_amount_in(path, order.side, slippage))
+            .collect::<Result<_, Error>>()?;
 
                     // A path step consists of 1 item of 3 different arrays at the correct
                     // index. `tokens` contains 1 item more where the first one needs
@@ -335,6 +338,76 @@ impl Sor {
         .await?;
         Ok(response.data.sor_get_swap_paths)
     }
+}
+
+/// Converts a Balancer API path into a `SwapPathExactAmountIn` struct for V3
+/// batch swaps.
+fn path_to_exact_amount_in(
+    path: &dto::Path,
+    side: Side,
+    slippage: &dex::Slippage,
+) -> Result<SwapPathExactAmountIn, Error> {
+    Ok(SwapPathExactAmountIn {
+        tokenIn: path
+            .tokens
+            .first()
+            .map(|t| t.address.into_alloy())
+            .ok_or(Error::InvalidPath)?,
+        exactAmountIn: match side {
+            Side::Buy => slippage.add(path.input_amount_raw).into_alloy(),
+            Side::Sell => path.input_amount_raw.into_alloy(),
+        },
+        minAmountOut: match side {
+            Side::Buy => path.output_amount_raw.into_alloy(),
+            Side::Sell => slippage.sub(path.output_amount_raw).into_alloy(),
+        },
+        steps: convert_path_steps(path)?,
+    })
+}
+
+/// Converts a Balancer API path into a `SwapPathExactAmountOut` struct for V3
+/// batch swaps.
+fn path_to_exact_amount_out(
+    path: &dto::Path,
+    side: Side,
+    slippage: &dex::Slippage,
+) -> Result<SwapPathExactAmountOut, Error> {
+    Ok(SwapPathExactAmountOut {
+        tokenIn: path
+            .tokens
+            .first()
+            .map(|t| t.address.into_alloy())
+            .ok_or(Error::InvalidPath)?,
+        maxAmountIn: match side {
+            Side::Buy => slippage.add(path.input_amount_raw).into_alloy(),
+            Side::Sell => path.input_amount_raw.into_alloy(),
+        },
+        exactAmountOut: match side {
+            Side::Buy => path.output_amount_raw.into_alloy(),
+            Side::Sell => slippage.sub(path.output_amount_raw).into_alloy(),
+        },
+        steps: convert_path_steps(path)?,
+    })
+}
+
+/// Converts the path steps from a Balancer API path into the format expected by
+/// the V3 batch router. A path step consists of 1 item from 3 different arrays
+/// at the correct index. `tokens` contains 1 item more where the first one
+/// needs to be skipped.
+fn convert_path_steps(path: &dto::Path) -> Result<Vec<SwapPathStep>, Error> {
+    path.tokens
+        .iter()
+        .skip(1)
+        .zip(path.is_buffer.iter())
+        .zip(path.pools.iter())
+        .map(|((token_out, is_buffer), pool)| {
+            Ok(SwapPathStep {
+                pool: pool.as_v3()?.into_alloy(),
+                tokenOut: token_out.address.into_alloy(),
+                isBuffer: *is_buffer,
+            })
+        })
+        .collect()
 }
 
 #[derive(Debug, thiserror::Error)]

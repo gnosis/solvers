@@ -3,6 +3,7 @@ use {
         domain::{dex::*, eth::*},
         infra::dex::okx as okx_dex,
     },
+    alloy::primitives::address,
     ethereum_types::H160,
     std::{env, str::FromStr},
 };
@@ -50,7 +51,7 @@ async fn swap_sell() {
     assert_eq!(swap.output.token, order.buy);
     assert_eq!(
         swap.allowance.spender,
-        ContractAddress(H160::from_str("0x40aA958dd87FC8305b97f2BA922CDdCa374bcD7f").unwrap())
+        address!("0x40aA958dd87FC8305b97f2BA922CDdCa374bcD7f")
     );
 }
 

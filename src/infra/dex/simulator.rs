@@ -83,7 +83,7 @@ impl Simulator {
             .calls
             .iter()
             .map(|call| Interaction {
-                target: call.to.0.into_alloy(),
+                target: call.to,
                 value: U256::ZERO,
                 callData: alloy::primitives::Bytes::copy_from_slice(&call.calldata),
             })
@@ -97,7 +97,7 @@ impl Simulator {
             amount: swap.output.amount.into_alloy(),
         };
         let allowance = Allowance {
-            spender: swap.allowance.spender.0.into_alloy(),
+            spender: swap.allowance.spender,
             amount: swap.allowance.amount.get().into_alloy(),
         };
         let gas = swapper

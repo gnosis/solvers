@@ -8,7 +8,9 @@ use {
         infra,
         util,
     },
+    alloy::primitives::Address,
     ethereum_types::U256,
+    ethrpc::alloy::conversions::IntoLegacy,
     std::fmt::{self, Debug, Formatter},
 };
 
@@ -59,7 +61,7 @@ impl Order {
 /// An on-chain Ethereum call for executing a DEX swap.
 pub struct Call {
     /// The address that gets called on-chain.
-    pub to: eth::ContractAddress,
+    pub to: Address,
     /// The associated calldata for the on-chain call.
     pub calldata: Vec<u8>,
 }
@@ -96,7 +98,7 @@ pub struct Swap {
 impl Swap {
     pub fn allowance(&self) -> solution::Allowance {
         solution::Allowance {
-            spender: self.allowance.spender.0,
+            spender: self.allowance.spender.into_legacy(),
             asset: eth::Asset {
                 token: self.input.token,
                 amount: self.allowance.amount.0,
@@ -135,7 +137,7 @@ impl Swap {
             .into_iter()
             .map(|call| {
                 solution::Interaction::Custom(solution::CustomInteraction {
-                    target: call.to.0,
+                    target: call.to.into_legacy(),
                     value: eth::Ether::default(),
                     calldata: call.calldata,
                     inputs: vec![self.input],
@@ -177,7 +179,7 @@ impl Swap {
 pub struct Allowance {
     /// The spender address that requires an allowance in order to execute a
     /// swap.
-    pub spender: eth::ContractAddress,
+    pub spender: Address,
     /// The amount, in tokens, of the required allowance.
     pub amount: Amount,
 }

@@ -5,7 +5,7 @@ use {
     },
     base64::prelude::*,
     chrono::SecondsFormat,
-    ethrpc::block_stream::CurrentBlockWatcher,
+    ethrpc::{alloy::conversions::IntoAlloy, block_stream::CurrentBlockWatcher},
     futures::TryFutureExt,
     hmac::{Hmac, Mac},
     hyper::{StatusCode, header::HeaderValue},
@@ -128,7 +128,7 @@ impl Okx {
 
         Ok(dex::Swap {
             calls: vec![dex::Call {
-                to: eth::ContractAddress(swap_response.tx.to),
+                to: swap_response.tx.to.into_alloy(),
                 calldata: swap_response.tx.data.clone(),
             }],
             input: eth::Asset {
@@ -148,7 +148,7 @@ impl Okx {
                 amount: swap_response.router_result.to_token_amount,
             },
             allowance: dex::Allowance {
-                spender: dex_contract_address,
+                spender: dex_contract_address.0.into_alloy(),
                 amount: dex::Amount::new(swap_response.router_result.from_token_amount),
             },
             gas: eth::Gas(gas),

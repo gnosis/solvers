@@ -1,12 +1,12 @@
+use ethrpc::alloy::conversions::IntoAlloy;
 use {
     crate::{
         domain::eth,
         infra::{self, config::dex::file, dex},
         util::serialize,
     },
-    contracts::{BalancerV2Vault, BalancerV3BatchRouter, alloy::BalancerQueries},
-    ethereum_types::H160,
-    ethrpc::alloy::conversions::IntoLegacy,
+    alloy::primitives::Address,
+    contracts::alloy::{BalancerV2Vault, BalancerV3BatchRouter, BalancerQueries},
     serde::Deserialize,
     serde_with::serde_as,
     std::path::Path,
@@ -22,11 +22,11 @@ struct Config {
 
     /// Optional Balancer V2 Vault contract address. If not specified, the
     /// default Vault contract address will be used.
-    vault: Option<H160>,
+    vault: Option<Address>,
 
     /// Optional Balancer V3 BatchRouter contract address. If not specified, the
     /// default contract address will be used.
-    v3_batch_router: Option<H160>,
+    v3_batch_router: Option<Address>,
 
     /// Optional Balancer Queries contract address. If not specified, the
     /// default contract address will be used.
@@ -34,7 +34,7 @@ struct Config {
 
     /// Optional Permit2 contract address. If not specified, the
     /// default contract address will be used.
-    permit2: Option<H160>,
+    permit2: Option<Address>,
 
     /// Chain ID used to automatically determine contract addresses and send to
     /// the SOR API.
@@ -68,24 +68,17 @@ pub async fn load(path: &Path) -> super::Config {
     let (base, config) = file::load::<Config>(path).await;
     let contracts = infra::contracts::Contracts::for_chain(config.chain_id);
     let enabled_api_versions = config.enabled_api_versions.unwrap_or_else(ApiVersion::all);
-    let vault_contract = enabled_api_versions.contains(&ApiVersion::V2).then(|| {
-        infra::contracts::contract_address_for_chain(
-            config.chain_id,
-            BalancerV2Vault::raw_contract(),
-        )
-    });
+    let vault_contract = enabled_api_versions
+        .contains(&ApiVersion::V2)
+        .then(|| BalancerV2Vault::deployment_address(&config.chain_id.value().as_u64()))
+        .flatten();
+    let batch_router = enabled_api_versions
+        .contains(&ApiVersion::V3)
+        .then(|| BalancerV3BatchRouter::deployment_address(&config.chain_id.value().as_u64()))
+        .flatten();
     let queries_contract = enabled_api_versions.contains(&ApiVersion::V2).then(|| {
-        eth::ContractAddress(
-            BalancerQueries::deployment_address(&(config.chain_id as u64))
-                .expect("Balancer Queries contract not found for chain")
-                .into_legacy(),
-        )
-    });
-    let batch_router = enabled_api_versions.contains(&ApiVersion::V3).then(|| {
-        infra::contracts::contract_address_for_chain(
-            config.chain_id,
-            BalancerV3BatchRouter::raw_contract(),
-        )
+        BalancerQueries::deployment_address(&(config.chain_id as u64))
+            .expect("Balancer Queries contract not found for chain")
     });
 
     super::Config {
@@ -104,7 +97,7 @@ pub async fn load(path: &Path) -> super::Config {
                 .permit2
                 .map(eth::ContractAddress)
                 .unwrap_or(contracts.permit2),
-            settlement: base.contracts.settlement,
+            settlement: base.contracts.settlement.0.into_alloy(),
             block_stream: base.block_stream.clone(),
             chain_id: config.chain_id,
         },
