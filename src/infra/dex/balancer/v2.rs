@@ -8,9 +8,16 @@ use {
         primitives::{Address, I256, U256},
         sol_types::SolCall,
     },
+    anyhow::{Result, anyhow},
     contracts::alloy::{
-        BalancerV2Vault,
-        BalancerV2Vault::IVault::{BatchSwapStep, FundManagement},
+        BalancerQueries::IVault::{
+            BatchSwapStep as QueriesBatchSwapStep,
+            FundManagement as QueriesFundManagement,
+        },
+        BalancerV2Vault::{
+            self,
+            IVault::{BatchSwapStep, FundManagement},
+        },
     },
 };
 
@@ -70,42 +77,23 @@ pub trait BalancerQueriesExt {
     async fn execute_query_batch_swap(
         &self,
         kind: SwapKind,
-        swaps: Vec<Swap>,
-        assets: Vec<H160>,
-        funds: Funds,
-    ) -> Result<Vec<alloy::primitives::I256>>;
+        swaps: Vec<QueriesBatchSwapStep>,
+        assets: Vec<Address>,
+        funds: QueriesFundManagement,
+    ) -> Result<Vec<I256>>;
 }
 
 impl BalancerQueriesExt for contracts::alloy::BalancerQueries::Instance {
     async fn execute_query_batch_swap(
         &self,
         kind: SwapKind,
-        swaps: Vec<Swap>,
-        assets: Vec<H160>,
-        funds: Funds,
-    ) -> Result<Vec<alloy::primitives::I256>> {
+        swaps: Vec<QueriesBatchSwapStep>,
+        assets: Vec<Address>,
+        funds: QueriesFundManagement,
+    ) -> Result<Vec<I256>> {
         // Execute the query call directly
         let asset_deltas = self
-            .queryBatchSwap(
-                kind as _,
-                swaps
-                    .into_iter()
-                    .map(|swap| BatchSwapStep {
-                        poolId: alloy::primitives::FixedBytes(swap.pool_id.0),
-                        assetInIndex: swap.asset_in_index.into_alloy(),
-                        assetOutIndex: swap.asset_out_index.into_alloy(),
-                        amount: swap.amount.into_alloy(),
-                        userData: alloy::primitives::Bytes::copy_from_slice(&swap.user_data),
-                    })
-                    .collect(),
-                assets.into_iter().map(IntoAlloy::into_alloy).collect(),
-                FundManagement {
-                    sender: funds.sender.into_alloy(),
-                    fromInternalBalance: funds.from_internal_balance,
-                    recipient: funds.recipient.into_alloy(),
-                    toInternalBalance: funds.to_internal_balance,
-                },
-            )
+            .queryBatchSwap(kind as _, swaps, assets, funds)
             .call()
             .await
             .map_err(|e| anyhow!("V2 query_batch_swap RPC call failed: {e:?}"))?;

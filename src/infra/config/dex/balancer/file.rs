@@ -1,4 +1,3 @@
-use ethrpc::alloy::conversions::IntoAlloy;
 use {
     crate::{
         domain::eth,
@@ -6,7 +5,8 @@ use {
         util::serialize,
     },
     alloy::primitives::Address,
-    contracts::alloy::{BalancerV2Vault, BalancerV3BatchRouter, BalancerQueries},
+    contracts::alloy::{BalancerQueries, BalancerV2Vault, BalancerV3BatchRouter},
+    ethrpc::alloy::conversions::IntoAlloy,
     serde::Deserialize,
     serde_with::serde_as,
     std::path::Path,
@@ -30,7 +30,7 @@ struct Config {
 
     /// Optional Balancer Queries contract address. If not specified, the
     /// default contract address will be used.
-    queries: Option<H160>,
+    queries: Option<Address>,
 
     /// Optional Permit2 contract address. If not specified, the
     /// default contract address will be used.
@@ -84,19 +84,10 @@ pub async fn load(path: &Path) -> super::Config {
     super::Config {
         sor: dex::balancer::Config {
             endpoint: config.endpoint,
-            vault: config.vault.map(eth::ContractAddress).or(vault_contract),
-            v3_batch_router: config
-                .v3_batch_router
-                .map(eth::ContractAddress)
-                .or(batch_router),
-            queries: config
-                .queries
-                .map(eth::ContractAddress)
-                .or(queries_contract),
-            permit2: config
-                .permit2
-                .map(eth::ContractAddress)
-                .unwrap_or(contracts.permit2),
+            vault: config.vault.or(vault_contract),
+            v3_batch_router: config.v3_batch_router.or(batch_router),
+            queries: config.queries.or(queries_contract),
+            permit2: config.permit2.unwrap_or(contracts.permit2),
             settlement: base.contracts.settlement.0.into_alloy(),
             block_stream: base.block_stream.clone(),
             chain_id: config.chain_id,

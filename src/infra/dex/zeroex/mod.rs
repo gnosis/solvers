@@ -3,7 +3,7 @@ use {
         domain::{dex, eth},
         util,
     },
-    alloy::primitives::{address, Address},
+    alloy::primitives::{Address, address},
     ethrpc::{alloy::conversions::IntoAlloy, block_stream::CurrentBlockWatcher},
     hyper::StatusCode,
     std::sync::atomic::{self, AtomicU64},

@@ -19,10 +19,12 @@ use {
         },
     },
     ethrpc::{
+        AlloyProvider,
         alloy::conversions::{IntoAlloy, IntoLegacy},
         block_stream::CurrentBlockWatcher,
     },
-    std::sync::atomic::{self, AtomicU64},
+    itertools::Itertools,
+    std::sync::{atomic, atomic::AtomicU64},
     tracing::Instrument,
 };
 
@@ -62,7 +64,7 @@ pub struct Config {
     pub v3_batch_router: Option<Address>,
 
     /// The address of the Balancer Queries contract for on-chain swap queries.
-    pub queries: Option<eth::ContractAddress>,
+    pub queries: Option<Address>,
 
     /// The address of the Permit2 contract.
     pub permit2: Address,
@@ -83,13 +85,16 @@ impl Sor {
 
     pub fn new(
         config: Config,
+        alloy_provider: AlloyProvider,
         query_swap_provider: Box<dyn QuerySwapProvider>,
     ) -> Result<Self, Error> {
         Ok(Self {
             client: super::Client::new(Default::default(), config.block_stream),
             endpoint: config.endpoint,
             v2_vault: config.vault.map(v2::Vault::new),
-            v3_batch_router: config.v3_batch_router.map(v3::Router::new),
+            v3_batch_router: config
+                .v3_batch_router
+                .map(|addr| v3::Router::new(addr, alloy_provider)),
             permit2: v3::Permit2::new(config.permit2),
             settlement: config.settlement,
             chain_id: Chain::from_domain(config.chain_id)?,
@@ -133,7 +138,10 @@ impl Sor {
                         return = ?on_chain_amounts.return_amount,
                         "Using on-chain amounts"
                     );
-                    (on_chain_amounts.swap_amount, on_chain_amounts.return_amount)
+                    (
+                        on_chain_amounts.swap_amount.into_legacy(),
+                        on_chain_amounts.return_amount.into_legacy(),
+                    )
                 }
                 Err(e) => {
                     tracing::warn!(
@@ -203,7 +211,12 @@ impl Sor {
         v2_vault: &v2::Vault,
     ) -> Result<Vec<dex::Call>, Error> {
         let (kind, swaps, funds) = self.build_v2_swap_data(order, quote)?;
-        let assets = quote.token_addresses.clone();
+        let assets: Vec<Address> = quote
+            .token_addresses
+            .iter()
+            .cloned()
+            .map(IntoAlloy::into_alloy)
+            .collect();
         let limits = quote
             .token_addresses
             .iter()
@@ -237,19 +250,28 @@ impl Sor {
         let Some(v3_batch_router) = &self.v3_batch_router else {
             return Err(Error::DisabledApiVersion(ApiVersion::V3));
         };
-        let paths = self.build_v3_swap_data(quote, order, slippage)?;
+        let paths_in = quote
+            .paths
+            .iter()
+            .map(|path| path_to_exact_amount_in(path, order.side, slippage))
+            .try_collect()?;
+        let paths_out = quote
+            .paths
+            .iter()
+            .map(|path| path_to_exact_amount_out(path, order.side, slippage))
+            .try_collect()?;
 
         Ok(match order.side {
             Side::Buy => v3_batch_router.swap_exact_amount_out(
-                paths,
+                paths_out,
                 &self.permit2,
-                quote.token_in,
+                quote.token_in.into_alloy(),
                 max_input,
             ),
             Side::Sell => v3_batch_router.swap_exact_amount_in(
-                paths,
+                paths_in,
                 &self.permit2,
-                quote.token_in,
+                quote.token_in.into_alloy(),
                 max_input,
             ),
         })
@@ -260,7 +282,7 @@ impl Sor {
         &self,
         order: &dex::Order,
         quote: &dto::Quote,
-    ) -> Result<(v2::SwapKind, Vec<v2::Swap>, v2::Funds), Error> {
+    ) -> Result<(v2::SwapKind, Vec<BatchSwapStep>, FundManagement), Error> {
         // Determine swap kind based on order side
         let kind = match order.side {
             order::Side::Sell => v2::SwapKind::GivenIn,
@@ -272,60 +294,25 @@ impl Sor {
             .swaps
             .iter()
             .map(|swap| {
-                Ok(v2::Swap {
-                    pool_id: swap.pool_id.as_v2()?,
-                    asset_in_index: swap.asset_in_index.into(),
-                    asset_out_index: swap.asset_out_index.into(),
-                    amount: swap.amount,
-                    user_data: swap.user_data.clone(),
+                Ok(BatchSwapStep {
+                    poolId: FixedBytes(swap.pool_id.as_v2()?.0),
+                    assetInIndex: U256::from(swap.asset_in_index),
+                    assetOutIndex: U256::from(swap.asset_out_index),
+                    amount: swap.amount.into_alloy(),
+                    userData: Bytes::copy_from_slice(&swap.user_data),
                 })
             })
             .collect::<Result<_, Error>>()?;
 
         // Create funds structure
-        let funds = v2::Funds {
-            sender: self.settlement.0,
-            from_internal_balance: false,
-            recipient: self.settlement.0,
-            to_internal_balance: false,
+        let funds = FundManagement {
+            sender: self.settlement,
+            fromInternalBalance: false,
+            recipient: self.settlement,
+            toInternalBalance: false,
         };
 
         Ok((kind, swaps, funds))
-    }
-
-    /// Build common V3 swap data (paths) from quote
-    fn build_v3_swap_data(
-        &self,
-        quote: &dto::Quote,
-        order: &dex::Order,
-        slippage: &dex::Slippage,
-    ) -> Result<Vec<v3::SwapPath>, Error> {
-        quote
-            .paths
-            .iter()
-            .map(|path| path_to_exact_amount_in(path, order.side, slippage))
-            .collect::<Result<_, Error>>()?;
-
-                    // A path step consists of 1 item of 3 different arrays at the correct
-                    // index. `tokens` contains 1 item more where the first one needs
-                    // to be skipped.
-                    steps: path
-                        .tokens
-                        .iter()
-                        .skip(1)
-                        .zip(path.is_buffer.iter())
-                        .zip(path.pools.iter())
-                        .map(|((token_out, is_buffer), pool)| {
-                            Ok(v3::SwapPathStep {
-                                pool: pool.as_v3()?,
-                                token_out: token_out.address,
-                                is_buffer: *is_buffer,
-                            })
-                        })
-                        .collect::<Result<_, Error>>()?,
-                })
-            })
-            .collect::<Result<_, Error>>()
     }
 
     async fn quote(&self, query: &dto::Query<'_>) -> Result<dto::Quote, Error> {

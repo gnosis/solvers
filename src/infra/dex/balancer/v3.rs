@@ -5,14 +5,16 @@
 use {
     crate::domain::dex,
     alloy::{
-        primitives::{aliases::U48, Address, Bytes, U160, U256},
+        primitives::{Address, Bytes, U160, U256, aliases::U48},
         sol_types::SolCall,
     },
+    anyhow::{Result, anyhow, ensure},
     contracts::alloy::{
         BalancerV3BatchRouter,
         BalancerV3BatchRouter::IBatchRouter::{SwapPathExactAmountIn, SwapPathExactAmountOut},
         Permit2 as Permit2Contract,
     },
+    ethrpc::AlloyProvider,
 };
 
 pub struct Permit2(Address);
@@ -60,15 +62,18 @@ impl Permit2 {
     }
 }
 
-pub struct Router(Address);
+pub struct Router(BalancerV3BatchRouter::Instance);
 
 impl Router {
-    pub fn new(address: Address) -> Self {
-        Self(address)
+    pub fn new(address: Address, alloy_provider: AlloyProvider) -> Self {
+        Self(BalancerV3BatchRouter::Instance::new(
+            address,
+            alloy_provider,
+        ))
     }
 
     pub fn address(&self) -> Address {
-        self.0
+        *self.0.address()
     }
 
     pub fn swap_exact_amount_in(
@@ -102,15 +107,12 @@ impl Router {
     /// (high-level contract call)
     pub async fn query_swap_exact_amount_in(
         &self,
-        web3: &ethrpc::Web3,
-        paths: Vec<SwapPath>,
+        paths: Vec<SwapPathExactAmountIn>,
     ) -> Result<U256> {
-        // Create a contract instance with the Web3 client
-        let contract = contracts::BalancerV3BatchRouter::at(web3, self.address().0);
-
         // Execute the query call directly
-        let (amounts_out, _tokens_out, _amounts_in) = contract
-            .query_swap_exact_in(Self::encode_paths(paths), H160::zero(), Self::user_data())
+        let swap_in_return = self
+            .0
+            .querySwapExactIn(paths, Address::ZERO, Self::user_data())
             .call()
             .await
             .map_err(|e| anyhow!("V3 query_swap_exact_amount_in RPC call failed: {e:?}"))?;
@@ -118,25 +120,22 @@ impl Router {
         // The result is (amounts_out, tokens_out, amounts_in)
         // For exact amount in, we want the output amount (first element of amounts_out)
         ensure!(
-            !amounts_out.is_empty(),
+            !swap_in_return.amountsOut.is_empty(),
             "V3 query_swap_exact_in returned no output amounts"
         );
-        Ok(amounts_out[0])
+        Ok(swap_in_return.amountsOut[0])
     }
 
     /// Execute on-chain query for V3 swap and return the actual amounts
     /// (high-level contract call)
     pub async fn query_swap_exact_amount_out(
         &self,
-        web3: &ethrpc::Web3,
-        paths: Vec<SwapPath>,
+        paths: Vec<SwapPathExactAmountOut>,
     ) -> Result<U256> {
-        // Create a contract instance with the Web3 client
-        let contract = contracts::BalancerV3BatchRouter::at(web3, self.address().0);
-
         // Execute the query call directly
-        let (_amounts_out, _tokens_out, amounts_in) = contract
-            .query_swap_exact_out(Self::encode_paths(paths), H160::zero(), Self::user_data())
+        let swap_out_return = self
+            .0
+            .querySwapExactOut(paths, Address::ZERO, Self::user_data())
             .call()
             .await
             .map_err(|e| anyhow!("V3 query_swap_exact_amount_out RPC call failed: {e:?}"))?;
@@ -144,10 +143,10 @@ impl Router {
         // The result is (amounts_out, tokens_out, amounts_in)
         // For exact amount out, we want the input amount (first element of amounts_in)
         ensure!(
-            !amounts_in.is_empty(),
+            !swap_out_return.amountsIn.is_empty(),
             "V3 query_swap_exact_out returned no input amounts"
         );
-        Ok(amounts_in[0])
+        Ok(swap_out_return.amountsIn[0])
     }
 
     pub fn swap_exact_amount_out(

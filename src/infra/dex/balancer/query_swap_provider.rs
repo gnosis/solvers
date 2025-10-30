@@ -12,19 +12,30 @@
 
 use {
     crate::{
-        domain::{dex, eth, order},
+        domain::{
+            dex,
+            eth,
+            order::{self, Side},
+        },
         infra::{
             blockchain,
             dex::balancer::{
+                Error,
+                convert_path_steps,
                 dto,
                 v2::{self, BalancerQueriesExt},
                 v3,
             },
         },
     },
+    alloy::primitives::{Address, Bytes, FixedBytes, U256},
     anyhow::{Context, Result, anyhow, ensure},
-    ethereum_types::U256,
+    contracts::alloy::{
+        BalancerQueries::IVault::{BatchSwapStep, FundManagement},
+        BalancerV3BatchRouter::IBatchRouter::{SwapPathExactAmountIn, SwapPathExactAmountOut},
+    },
     ethrpc::alloy::conversions::IntoAlloy,
+    itertools::Itertools,
 };
 
 /// Result from on-chain query containing updated swap amounts.
@@ -72,27 +83,22 @@ pub trait QuerySwapProvider: Send + Sync {
 pub struct OnChainQuerySwapProvider {
     queries: Option<contracts::alloy::BalancerQueries::Instance>,
     v3_batch_router: Option<v3::Router>,
-    web3: ethrpc::Web3,
-    settlement: eth::ContractAddress,
+    settlement: Address,
 }
 
 impl OnChainQuerySwapProvider {
     pub fn new(
-        queries: Option<eth::ContractAddress>,
-        v3_batch_router: Option<eth::ContractAddress>,
+        queries: Option<Address>,
+        v3_batch_router: Option<Address>,
         node_url: reqwest::Url,
-        settlement: eth::ContractAddress,
+        settlement: Address,
     ) -> Self {
         let web3 = blockchain::rpc(&node_url);
         Self {
             queries: queries.map(|addr| {
-                contracts::alloy::BalancerQueries::Instance::new(
-                    addr.0.into_alloy(),
-                    web3.alloy.clone(),
-                )
+                contracts::alloy::BalancerQueries::Instance::new(addr, web3.alloy.clone())
             }),
-            v3_batch_router: v3_batch_router.map(|addr| v3::Router::new_with_web3(&web3, addr)),
-            web3,
+            v3_batch_router: v3_batch_router.map(|addr| v3::Router::new(addr, web3.alloy.clone())),
             settlement,
         }
     }
@@ -116,7 +122,12 @@ impl OnChainQuerySwapProvider {
         quote: &dto::Quote,
     ) -> Result<OnChainAmounts> {
         let (kind, swaps, funds) = self.build_v2_swap_data(order, quote)?;
-        let assets = quote.token_addresses.clone();
+        let assets: Vec<Address> = quote
+            .token_addresses
+            .iter()
+            .copied()
+            .map(IntoAlloy::into_alloy)
+            .collect();
 
         // Execute the on-chain query
         let asset_deltas = self
@@ -159,14 +170,14 @@ impl OnChainQuerySwapProvider {
             })?;
 
         // Get the deltas for token_in and token_out (convert to absolute values)
-        let amount_in = U256::from_dec_str(&asset_deltas[token_in_index].abs().to_string())
+        let amount_in = eth::U256::from_dec_str(&asset_deltas[token_in_index].abs().to_string())
             .map_err(|e| {
                 anyhow!(
                     "failed to parse token_in delta '{}' into U256: {e:?}",
                     asset_deltas[token_in_index]
                 )
             })?;
-        let amount_out = U256::from_dec_str(&asset_deltas[token_out_index].abs().to_string())
+        let amount_out = eth::U256::from_dec_str(&asset_deltas[token_out_index].abs().to_string())
             .map_err(|e| {
                 anyhow!(
                     "failed to parse token_out delta '{}' into U256: {e:?}",
@@ -175,8 +186,8 @@ impl OnChainQuerySwapProvider {
             })?;
 
         Ok(OnChainAmounts {
-            swap_amount: amount_in,
-            return_amount: amount_out,
+            swap_amount: amount_in.into_alloy(),
+            return_amount: amount_out.into_alloy(),
         })
     }
 
@@ -192,16 +203,25 @@ impl OnChainQuerySwapProvider {
             .as_ref()
             .context("V3 batch router not configured (required for V3 on-chain query)")?;
 
-        let paths = self
-            .build_v3_swap_data(quote, order, &dex::Slippage::zero())
-            .context("failed to build V3 swap paths from quote")?;
+        let paths_in = quote
+            .paths
+            .iter()
+            .map(|path| Self::path_to_exact_amount_in(path, order.side, &dex::Slippage::zero()))
+            .try_collect()
+            .context("failed to build V3 exact amount in paths from quote")?;
+        let paths_out = quote
+            .paths
+            .iter()
+            .map(|path| Self::path_to_exact_amount_out(path, order.side, &dex::Slippage::zero()))
+            .try_collect()
+            .context("failed to build V3 exact amount out paths from quote")?;
 
         // Execute the appropriate query based on order side
         let result = match order.side {
             order::Side::Sell => {
                 // For sell orders, we know the input amount, query for output amount
                 v3_batch_router
-                    .query_swap_exact_amount_in(&self.web3, paths)
+                    .query_swap_exact_amount_in(paths_in)
                     .await
                     .map_err(|e| {
                         anyhow!("RPC call failed: Router.query_swap_exact_amount_in: {e:?}")
@@ -210,7 +230,7 @@ impl OnChainQuerySwapProvider {
             order::Side::Buy => {
                 // For buy orders, we know the output amount, query for input amount
                 v3_batch_router
-                    .query_swap_exact_amount_out(&self.web3, paths)
+                    .query_swap_exact_amount_out(paths_out)
                     .await
                     .map_err(|e| {
                         anyhow!("RPC call failed: Router.query_swap_exact_amount_out: {e:?}")
@@ -225,12 +245,12 @@ impl OnChainQuerySwapProvider {
             order::Side::Sell => {
                 // For sell orders: swap_amount is the input (known), return_amount is the
                 // output (queried)
-                (quote.swap_amount_raw, result)
+                (quote.swap_amount_raw.into_alloy(), result)
             }
             order::Side::Buy => {
                 // For buy orders: swap_amount is the input (queried), return_amount is the
                 // output (known)
-                (result, quote.return_amount_raw)
+                (result, quote.return_amount_raw.into_alloy())
             }
         };
 
@@ -245,7 +265,7 @@ impl OnChainQuerySwapProvider {
         &self,
         order: &dex::Order,
         quote: &dto::Quote,
-    ) -> Result<(v2::SwapKind, Vec<v2::Swap>, v2::Funds)> {
+    ) -> Result<(v2::SwapKind, Vec<BatchSwapStep>, FundManagement)> {
         // Determine swap kind based on order side
         let kind = match order.side {
             order::Side::Sell => v2::SwapKind::GivenIn,
@@ -257,77 +277,79 @@ impl OnChainQuerySwapProvider {
             .swaps
             .iter()
             .map(|swap| {
-                Ok(v2::Swap {
-                    pool_id: swap
-                        .pool_id
-                        .as_v2()
-                        .context("invalid V2 pool id format in quote.swap")?,
-                    asset_in_index: swap.asset_in_index.into(),
-                    asset_out_index: swap.asset_out_index.into(),
-                    amount: swap.amount,
-                    user_data: swap.user_data.clone(),
+                Ok(BatchSwapStep {
+                    poolId: FixedBytes(
+                        swap.pool_id
+                            .as_v2()
+                            .context("invalid V2 pool id format in quote.swap")?
+                            .0,
+                    ),
+                    assetInIndex: U256::from(swap.asset_in_index),
+                    assetOutIndex: U256::from(swap.asset_out_index),
+                    amount: swap.amount.into_alloy(),
+                    userData: Bytes::copy_from_slice(&swap.user_data),
                 })
             })
             .collect::<Result<_>>()?;
 
         // Create funds structure
-        let funds = v2::Funds {
-            sender: self.settlement.0,
-            from_internal_balance: false,
-            recipient: self.settlement.0,
-            to_internal_balance: false,
+        let funds = FundManagement {
+            sender: self.settlement,
+            fromInternalBalance: false,
+            recipient: self.settlement,
+            toInternalBalance: false,
         };
 
         Ok((kind, swaps, funds))
     }
 
-    /// Build common V3 swap data (paths) from quote
-    fn build_v3_swap_data(
-        &self,
-        quote: &dto::Quote,
-        order: &dex::Order,
+    /// Converts a Balancer API path into a `SwapPathExactAmountIn` struct for
+    /// V3 batch swaps.
+    fn path_to_exact_amount_in(
+        path: &dto::Path,
+        side: Side,
         slippage: &dex::Slippage,
-    ) -> Result<Vec<v3::SwapPath>> {
-        quote
-            .paths
-            .iter()
-            .map(|path| {
-                Ok(v3::SwapPath {
-                    token_in: path
-                        .tokens
-                        .first()
-                        .map(|t| t.address)
-                        .ok_or_else(|| anyhow!("path.tokens is empty; token_in missing"))?,
-                    input_amount_raw: match order.side {
-                        order::Side::Buy => slippage.add(path.input_amount_raw),
-                        order::Side::Sell => path.input_amount_raw,
-                    },
-                    output_amount_raw: match order.side {
-                        order::Side::Buy => path.output_amount_raw,
-                        order::Side::Sell => slippage.sub(path.output_amount_raw),
-                    },
+    ) -> Result<SwapPathExactAmountIn, Error> {
+        Ok(SwapPathExactAmountIn {
+            tokenIn: path
+                .tokens
+                .first()
+                .map(|t| t.address.into_alloy())
+                .ok_or(Error::InvalidPath)?,
+            exactAmountIn: match side {
+                Side::Buy => slippage.add(path.input_amount_raw).into_alloy(),
+                Side::Sell => path.input_amount_raw.into_alloy(),
+            },
+            minAmountOut: match side {
+                Side::Buy => path.output_amount_raw.into_alloy(),
+                Side::Sell => slippage.sub(path.output_amount_raw).into_alloy(),
+            },
+            steps: convert_path_steps(path)?,
+        })
+    }
 
-                    // A path step consists of 1 item of 3 different arrays at the correct
-                    // index. `tokens` contains 1 item more where the first one needs
-                    // to be skipped.
-                    steps: path
-                        .tokens
-                        .iter()
-                        .skip(1)
-                        .zip(path.is_buffer.iter())
-                        .zip(path.pools.iter())
-                        .map(|((token_out, is_buffer), pool)| {
-                            Ok(v3::SwapPathStep {
-                                pool: pool
-                                    .as_v3()
-                                    .context("invalid V3 pool id format in path step")?,
-                                token_out: token_out.address,
-                                is_buffer: *is_buffer,
-                            })
-                        })
-                        .collect::<Result<_>>()?,
-                })
-            })
-            .collect::<Result<_>>()
+    /// Converts a Balancer API path into a `SwapPathExactAmountOut` struct for
+    /// V3 batch swaps.
+    fn path_to_exact_amount_out(
+        path: &dto::Path,
+        side: Side,
+        slippage: &dex::Slippage,
+    ) -> Result<SwapPathExactAmountOut, Error> {
+        Ok(SwapPathExactAmountOut {
+            tokenIn: path
+                .tokens
+                .first()
+                .map(|t| t.address.into_alloy())
+                .ok_or(Error::InvalidPath)?,
+            maxAmountIn: match side {
+                Side::Buy => slippage.add(path.input_amount_raw).into_alloy(),
+                Side::Sell => path.input_amount_raw.into_alloy(),
+            },
+            exactAmountOut: match side {
+                Side::Buy => path.output_amount_raw.into_alloy(),
+                Side::Sell => slippage.sub(path.output_amount_raw).into_alloy(),
+            },
+            steps: convert_path_steps(path)?,
+        })
     }
 }

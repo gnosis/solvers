@@ -4,7 +4,12 @@
 
 use {
     crate::{
-        domain::{auction, dex, eth, order},
+        domain::{
+            auction,
+            dex,
+            eth::{self, H160},
+            order,
+        },
         infra::dex::balancer::{
             self,
             dto,
@@ -12,7 +17,8 @@ use {
         },
         tests::{self, mock},
     },
-    ethereum_types::{H160, U256},
+    alloy::primitives::U256,
+    ethrpc::alloy::conversions::IntoAlloy,
     serde_json::json,
     std::str::FromStr,
 };
@@ -31,7 +37,7 @@ async fn test_mock_provider_success() {
         sell: eth::TokenAddress(H160::from_low_u64_be(1)),
         buy: eth::TokenAddress(H160::from_low_u64_be(2)),
         side: order::Side::Sell,
-        amount: dex::Amount::new(U256::from(1000000000000000000u64)),
+        amount: dex::Amount::new(eth::U256::from(1000000000000000000u64)),
         owner: H160::from_low_u64_be(5),
     };
 
@@ -56,7 +62,7 @@ async fn test_mock_provider_error() {
         sell: eth::TokenAddress(H160::from_low_u64_be(1)),
         buy: eth::TokenAddress(H160::from_low_u64_be(2)),
         side: order::Side::Sell,
-        amount: dex::Amount::new(U256::from(1000000000000000000u64)),
+        amount: dex::Amount::new(eth::U256::from(1000000000000000000u64)),
         owner: H160::from_low_u64_be(5),
     };
 
@@ -127,7 +133,9 @@ async fn test_mock_provider_affects_swap_result() {
     mock_provider.expect_query_swap().returning(|_, _| {
         Ok(OnChainAmounts {
             swap_amount: U256::from(1000000000000000000u64),
-            return_amount: U256::from_dec_str("300000000000000000000").unwrap(),
+            return_amount: eth::U256::from_dec_str("300000000000000000000")
+                .unwrap()
+                .into_alloy(),
         })
     });
 
@@ -136,14 +144,15 @@ async fn test_mock_provider_affects_swap_result() {
         block_stream: None,
         endpoint: format!("http://{}/sor", api.address).parse().unwrap(), // Use mock server address
         chain_id: eth::ChainId::Mainnet,
-        vault: Some(eth::ContractAddress(H160::from_low_u64_be(1))),
-        queries: Some(eth::ContractAddress(H160::from_low_u64_be(2))),
+        vault: Some(H160::from_low_u64_be(1).into_alloy()),
+        queries: Some(H160::from_low_u64_be(2).into_alloy()),
         v3_batch_router: None,
-        permit2: eth::ContractAddress(H160::from_low_u64_be(3)),
-        settlement: eth::ContractAddress(H160::from_low_u64_be(4)),
+        permit2: H160::from_low_u64_be(3).into_alloy(),
+        settlement: H160::from_low_u64_be(4).into_alloy(),
     };
+    let web3 = ethrpc::mock::web3();
 
-    let sor = balancer::Sor::new(config, Box::new(mock_provider))
+    let sor = balancer::Sor::new(config, web3.alloy.clone(), Box::new(mock_provider))
         .expect("Failed to create Sor with mock provider");
 
     // Create a test order (sell order)
@@ -155,7 +164,7 @@ async fn test_mock_provider_affects_swap_result() {
             H160::from_str("0xba100000625a3754423978a60c9317c58a424e3d").unwrap(),
         ),
         side: order::Side::Sell,
-        amount: dex::Amount::new(U256::from(1000000000000000000u64)),
+        amount: dex::Amount::new(eth::U256::from(1000000000000000000u64)),
         owner: H160::from_low_u64_be(5),
     };
 
@@ -168,10 +177,10 @@ async fn test_mock_provider_affects_swap_result() {
                 ),
                 auction::Token {
                     decimals: Some(18),
-                    reference_price: Some(auction::Price(eth::Ether(U256::from(
+                    reference_price: Some(auction::Price(eth::Ether(eth::U256::from(
                         1000000000000000000u64,
                     )))),
-                    available_balance: U256::from(1000000000000000000u64),
+                    available_balance: eth::U256::from(1000000000000000000u64),
                     trusted: false,
                 },
             ),
@@ -181,10 +190,10 @@ async fn test_mock_provider_affects_swap_result() {
                 ),
                 auction::Token {
                     decimals: Some(18),
-                    reference_price: Some(auction::Price(eth::Ether(U256::from(
+                    reference_price: Some(auction::Price(eth::Ether(eth::U256::from(
                         4327903683155778u64,
                     )))),
-                    available_balance: U256::from_dec_str("1583034704488033979459").unwrap(),
+                    available_balance: eth::U256::from_dec_str("1583034704488033979459").unwrap(),
                     trusted: true,
                 },
             ),
@@ -203,9 +212,12 @@ async fn test_mock_provider_affects_swap_result() {
     // return_amount from our mock provider
     assert_eq!(
         swap_result.output.amount,
-        U256::from_dec_str("300000000000000000000").unwrap()
+        eth::U256::from_dec_str("300000000000000000000").unwrap()
     );
-    assert_eq!(swap_result.input.amount, U256::from(1000000000000000000u64));
+    assert_eq!(
+        swap_result.input.amount,
+        eth::U256::from(1000000000000000000u64)
+    );
 
     // Verify the token addresses are correct
     assert_eq!(swap_result.input.token, order.sell);
@@ -217,8 +229,8 @@ fn create_dummy_quote() -> dto::Quote {
     dto::Quote {
         token_addresses: vec![H160::from_low_u64_be(1), H160::from_low_u64_be(2)],
         swaps: vec![],
-        swap_amount_raw: U256::from(1000000000000000000u64),
-        return_amount_raw: U256::from(2275987844420653881u64),
+        swap_amount_raw: eth::U256::from(1000000000000000000u64),
+        return_amount_raw: eth::U256::from(2275987844420653881u64),
         token_in: H160::from_low_u64_be(1),
         token_out: H160::from_low_u64_be(2),
         protocol_version: dto::ProtocolVersion::V2,
