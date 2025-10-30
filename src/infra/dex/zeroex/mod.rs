@@ -3,12 +3,10 @@ use {
         domain::{dex, eth},
         util,
     },
-    ethrpc::block_stream::CurrentBlockWatcher,
+    alloy::primitives::{address, Address},
+    ethrpc::{alloy::conversions::IntoAlloy, block_stream::CurrentBlockWatcher},
     hyper::StatusCode,
-    std::{
-        str::FromStr,
-        sync::atomic::{self, AtomicU64},
-    },
+    std::sync::atomic::{self, AtomicU64},
     tracing::Instrument,
 };
 
@@ -22,7 +20,7 @@ pub struct ZeroEx {
 }
 
 /// https://0x.org/docs/introduction/0x-cheat-sheet#0x-contracts
-const DEFAULT_ALLOWANCE_TARGET: &str = "0x0000000000001fF3684f28c67538d4D072C22734";
+const DEFAULT_ALLOWANCE_TARGET: Address = address!("0x0000000000001fF3684f28c67538d4D072C22734");
 
 pub struct Config {
     /// The chain ID identifying the network to use for all requests.
@@ -96,7 +94,7 @@ impl ZeroEx {
 
         Ok(dex::Swap {
             calls: vec![dex::Call {
-                to: eth::ContractAddress(quote.transaction.to),
+                to: quote.transaction.to.into_alloy(),
                 calldata: quote.transaction.data,
             }],
             input: eth::Asset {
@@ -111,10 +109,8 @@ impl ZeroEx {
                 spender: quote
                     .issues
                     .allowance
-                    .map(|allowance| eth::ContractAddress(allowance.spender))
-                    .unwrap_or(eth::ContractAddress(
-                        ethereum_types::H160::from_str(DEFAULT_ALLOWANCE_TARGET).unwrap(),
-                    )),
+                    .map(|allowance| allowance.spender.into_alloy())
+                    .unwrap_or(DEFAULT_ALLOWANCE_TARGET),
                 amount: dex::Amount::new(quote.sell_amount),
             },
             gas: eth::Gas(quote.transaction.gas.ok_or(Error::MissingGasEstimate)?),

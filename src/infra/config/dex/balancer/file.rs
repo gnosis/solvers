@@ -4,8 +4,9 @@ use {
         infra::{self, config::dex::file, dex},
         util::serialize,
     },
-    contracts::BalancerV2Vault,
-    ethereum_types::H160,
+    alloy::primitives::Address,
+    contracts::alloy::{BalancerV2Vault, BalancerV3BatchRouter},
+    ethrpc::alloy::conversions::IntoAlloy,
     serde::Deserialize,
     serde_with::serde_as,
     std::path::Path,
@@ -21,15 +22,15 @@ struct Config {
 
     /// Optional Balancer V2 Vault contract address. If not specified, the
     /// default Vault contract address will be used.
-    vault: Option<H160>,
+    vault: Option<Address>,
 
     /// Optional Balancer V3 BatchRouter contract address. If not specified, the
     /// default contract address will be used.
-    v3_batch_router: Option<H160>,
+    v3_batch_router: Option<Address>,
 
     /// Optional Permit2 contract address. If not specified, the
     /// default contract address will be used.
-    permit2: Option<H160>,
+    permit2: Option<Address>,
 
     /// Chain ID used to automatically determine contract addresses and send to
     /// the SOR API.
@@ -63,32 +64,22 @@ pub async fn load(path: &Path) -> super::Config {
     let (base, config) = file::load::<Config>(path).await;
     let contracts = infra::contracts::Contracts::for_chain(config.chain_id);
     let enabled_api_versions = config.enabled_api_versions.unwrap_or_else(ApiVersion::all);
-    let vault_contract = enabled_api_versions.contains(&ApiVersion::V2).then(|| {
-        infra::contracts::contract_address_for_chain(
-            config.chain_id,
-            BalancerV2Vault::raw_contract(),
-        )
-    });
-    let batch_router = enabled_api_versions.contains(&ApiVersion::V3).then(|| {
-        infra::contracts::contract_address_for_chain(
-            config.chain_id,
-            contracts::BalancerV3BatchRouter::raw_contract(),
-        )
-    });
+    let vault_contract = enabled_api_versions
+        .contains(&ApiVersion::V2)
+        .then(|| BalancerV2Vault::deployment_address(&config.chain_id.value().as_u64()))
+        .flatten();
+    let batch_router = enabled_api_versions
+        .contains(&ApiVersion::V3)
+        .then(|| BalancerV3BatchRouter::deployment_address(&config.chain_id.value().as_u64()))
+        .flatten();
 
     super::Config {
         sor: dex::balancer::Config {
             endpoint: config.endpoint,
-            vault: config.vault.map(eth::ContractAddress).or(vault_contract),
-            v3_batch_router: config
-                .v3_batch_router
-                .map(eth::ContractAddress)
-                .or(batch_router),
-            permit2: config
-                .permit2
-                .map(eth::ContractAddress)
-                .unwrap_or(contracts.permit2),
-            settlement: base.contracts.settlement,
+            vault: config.vault.or(vault_contract),
+            v3_batch_router: config.v3_batch_router.or(batch_router),
+            permit2: config.permit2.unwrap_or(contracts.permit2),
+            settlement: base.contracts.settlement.0.into_alloy(),
             block_stream: base.block_stream.clone(),
             chain_id: config.chain_id,
         },

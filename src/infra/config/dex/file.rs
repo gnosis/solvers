@@ -10,6 +10,7 @@ use {
         util::serialize,
     },
     bigdecimal::{BigDecimal, Zero},
+    ethrpc::alloy::conversions::IntoLegacy,
     serde::{de::DeserializeOwned, Deserialize},
     serde_with::serde_as,
     std::{fmt::Debug, num::NonZeroUsize, path::Path, time::Duration},
@@ -159,7 +160,10 @@ pub async fn load<T: DeserializeOwned>(path: &Path) -> (super::Config, T) {
         });
         (eth::ContractAddress(settlement), authenticator)
     } else {
-        (contracts.settlement, contracts.authenticator)
+        (
+            eth::ContractAddress(contracts.settlement.into_legacy()),
+            eth::ContractAddress(contracts.authenticator.into_legacy()),
+        )
     };
 
     let block_stream = match config.current_block_poll_interval {

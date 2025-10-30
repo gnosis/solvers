@@ -4,7 +4,7 @@ use {
         util,
     },
     ethereum_types::Address,
-    ethrpc::block_stream::CurrentBlockWatcher,
+    ethrpc::{alloy::conversions::IntoAlloy, block_stream::CurrentBlockWatcher},
 };
 
 mod dto;
@@ -81,7 +81,7 @@ impl ParaSwap {
         .await?;
         Ok(dex::Swap {
             calls: vec![dex::Call {
-                to: eth::ContractAddress(swap.tx_params.to),
+                to: swap.tx_params.to.into_alloy(),
                 calldata: swap.tx_params.data,
             }],
             input: eth::Asset {
@@ -93,7 +93,7 @@ impl ParaSwap {
                 amount: swap.price_route.dest_amount,
             },
             allowance: dex::Allowance {
-                spender: eth::ContractAddress(swap.price_route.token_transfer_proxy),
+                spender: swap.price_route.token_transfer_proxy.into_alloy(),
                 amount: dex::Amount::new(swap.price_route.src_amount),
             },
             gas: eth::Gas(swap.price_route.gas_cost),
