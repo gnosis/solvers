@@ -26,7 +26,7 @@ impl Permit2 {
         self.0
     }
 
-    // Creates a interaction call to approve an addresss
+    // Creates a interaction call to approve an address
     // Needed because in Balancer V3 transfers are done via Permit2, so we approve
     // the balancer v3 router to spend the input tokens
     pub fn create_approval_call(
