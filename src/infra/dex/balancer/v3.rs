@@ -51,11 +51,6 @@ impl Permit2 {
         }
         .abi_encode();
 
-        // As alloy encodes the last argument (expiration) as a U48 (6 bytes),
-        // we need to add 24 bytes to pad it into a U256 (32 bytes) (which is the
-        // expected for EVM arguments)
-        calldata.extend_from_slice(&[0u8; 24]);
-
         dex::Call { to, calldata }
     }
 }
