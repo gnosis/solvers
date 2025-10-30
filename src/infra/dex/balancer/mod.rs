@@ -233,83 +233,14 @@ impl Sor {
         let paths_in = quote
             .paths
             .iter()
-            .map(|path| {
-                Ok(SwapPathExactAmountIn {
-                    tokenIn: path
-                        .tokens
-                        .first()
-                        .map(|t| t.address.into_alloy())
-                        .ok_or_else(|| Error::InvalidPath)?,
-                    exactAmountIn: match order.side {
-                        Side::Buy => slippage.add(path.input_amount_raw).into_alloy(),
-                        Side::Sell => path.input_amount_raw.into_alloy(),
-                    },
-                    minAmountOut: match order.side {
-                        Side::Buy => path.output_amount_raw.into_alloy(),
-                        Side::Sell => slippage.sub(path.output_amount_raw).into_alloy(),
-                    },
-
-                    // A path step consists of 1 item of 3 different arrays at the correct
-                    // index. `tokens` contains 1 item more where the first one needs
-                    // to be skipped.
-                    steps: path
-                        .tokens
-                        .iter()
-                        .skip(1)
-                        .zip(path.is_buffer.iter())
-                        .zip(path.pools.iter())
-                        .map(|((token_out, is_buffer), pool)| {
-                            Ok(SwapPathStep {
-                                pool: pool.as_v3()?.into_alloy(),
-                                tokenOut: token_out.address.into_alloy(),
-                                isBuffer: *is_buffer,
-                            })
-                        })
-                        .collect::<Result<_, Error>>()?,
-                })
-            })
+            .map(|path| path_to_exact_amount_in(path, order.side, slippage))
             .collect::<Result<_, Error>>()?;
 
         let paths_out = quote
             .paths
             .iter()
-            .map(|path| {
-                Ok(SwapPathExactAmountOut {
-                    tokenIn: path
-                        .tokens
-                        .first()
-                        .map(|t| t.address.into_alloy())
-                        .ok_or_else(|| Error::InvalidPath)?,
-                    maxAmountIn: match order.side {
-                        Side::Buy => slippage.add(path.input_amount_raw).into_alloy(),
-                        Side::Sell => path.input_amount_raw.into_alloy(),
-                    },
-                    exactAmountOut: match order.side {
-                        Side::Buy => path.output_amount_raw.into_alloy(),
-                        Side::Sell => slippage.sub(path.output_amount_raw).into_alloy(),
-                    },
-
-                    // A path step consists of 1 item of 3 different arrays at the correct
-                    // index. `tokens` contains 1 item more where the first one needs
-                    // to be skipped.
-                    steps: path
-                        .tokens
-                        .iter()
-                        .skip(1)
-                        .zip(path.is_buffer.iter())
-                        .zip(path.pools.iter())
-                        .map(|((token_out, is_buffer), pool)| {
-                            Ok(SwapPathStep {
-                                pool: pool.as_v3()?.into_alloy(),
-                                tokenOut: token_out.address.into_alloy(),
-                                isBuffer: *is_buffer,
-                            })
-                        })
-                        .collect::<Result<_, Error>>()?,
-                })
-            })
+            .map(|path| path_to_exact_amount_out(path, order.side, slippage))
             .collect::<Result<_, Error>>()?;
-
         Ok(match order.side {
             Side::Buy => v3_batch_router.swap_exact_amount_out(
                 paths_out,
@@ -336,6 +267,76 @@ impl Sor {
         .await?;
         Ok(response.data.sor_get_swap_paths)
     }
+}
+
+/// Converts a Balancer API path into a `SwapPathExactAmountIn` struct for V3
+/// batch swaps.
+fn path_to_exact_amount_in(
+    path: &dto::Path,
+    side: Side,
+    slippage: &dex::Slippage,
+) -> Result<SwapPathExactAmountIn, Error> {
+    Ok(SwapPathExactAmountIn {
+        tokenIn: path
+            .tokens
+            .first()
+            .map(|t| t.address.into_alloy())
+            .ok_or(Error::InvalidPath)?,
+        exactAmountIn: match side {
+            Side::Buy => slippage.add(path.input_amount_raw).into_alloy(),
+            Side::Sell => path.input_amount_raw.into_alloy(),
+        },
+        minAmountOut: match side {
+            Side::Buy => path.output_amount_raw.into_alloy(),
+            Side::Sell => slippage.sub(path.output_amount_raw).into_alloy(),
+        },
+        steps: convert_path_steps(path)?,
+    })
+}
+
+/// Converts a Balancer API path into a `SwapPathExactAmountOut` struct for V3
+/// batch swaps.
+fn path_to_exact_amount_out(
+    path: &dto::Path,
+    side: Side,
+    slippage: &dex::Slippage,
+) -> Result<SwapPathExactAmountOut, Error> {
+    Ok(SwapPathExactAmountOut {
+        tokenIn: path
+            .tokens
+            .first()
+            .map(|t| t.address.into_alloy())
+            .ok_or(Error::InvalidPath)?,
+        maxAmountIn: match side {
+            Side::Buy => slippage.add(path.input_amount_raw).into_alloy(),
+            Side::Sell => path.input_amount_raw.into_alloy(),
+        },
+        exactAmountOut: match side {
+            Side::Buy => path.output_amount_raw.into_alloy(),
+            Side::Sell => slippage.sub(path.output_amount_raw).into_alloy(),
+        },
+        steps: convert_path_steps(path)?,
+    })
+}
+
+/// Converts the path steps from a Balancer API path into the format expected by
+/// the V3 batch router. A path step consists of 1 item from 3 different arrays
+/// at the correct index. `tokens` contains 1 item more where the first one
+/// needs to be skipped.
+fn convert_path_steps(path: &dto::Path) -> Result<Vec<SwapPathStep>, Error> {
+    path.tokens
+        .iter()
+        .skip(1)
+        .zip(path.is_buffer.iter())
+        .zip(path.pools.iter())
+        .map(|((token_out, is_buffer), pool)| {
+            Ok(SwapPathStep {
+                pool: pool.as_v3()?.into_alloy(),
+                tokenOut: token_out.address.into_alloy(),
+                isBuffer: *is_buffer,
+            })
+        })
+        .collect()
 }
 
 #[derive(Debug, thiserror::Error)]

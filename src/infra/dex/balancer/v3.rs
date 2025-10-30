@@ -62,21 +62,6 @@ impl Permit2 {
 
 pub struct Router(Address);
 
-// pub struct SwapPathStep {
-//     pub pool: Address,
-//     pub token_out: Address,
-//     If true, the "pool" is an ERC4626 Buffer. Used to wrap/unwrap tokens if
-//     pool doesn't have enough liquidity.
-// pub is_buffer: bool,
-// }
-
-// pub struct SwapPath {
-//     pub token_in: Address,
-//     pub steps: Vec<SwapPathStep>,
-//     pub input_amount_raw: U256,
-//     pub output_amount_raw: U256,
-// }
-
 impl Router {
     pub fn new(address: Address) -> Self {
         Self(address)
@@ -139,26 +124,6 @@ impl Router {
             },
         ]
     }
-
-    // /// Converts rust struct with readable fields into tuple arguments used by
-    // /// the smart contract bindings.
-    // #[allow(clippy::type_complexity)]
-    // fn encode_paths(paths: Vec<SwapPath>) -> Vec<(H160, Vec<(H160, H160, bool)>,
-    // U256, U256)> {     paths
-    //         .into_iter()
-    //         .map(|path| {
-    //             (
-    //                 path.token_in,
-    //                 path.steps
-    //                     .into_iter()
-    //                     .map(|s| (s.pool, s.token_out, s.is_buffer))
-    //                     .collect(),
-    //                 path.input_amount_raw,
-    //                 path.output_amount_raw,
-    //             )
-    //         })
-    //         .collect()
-    // }
 
     /// Returns a `deadline` value that is sufficiently large with as many 0's
     /// as possible for some small gas savings (i.e. b1000...0000).
