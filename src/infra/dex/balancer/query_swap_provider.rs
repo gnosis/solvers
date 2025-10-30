@@ -18,7 +18,7 @@ use {
             dex::balancer::{dto, v2, v3},
         },
     },
-    anyhow::{anyhow, ensure, Context, Result},
+    anyhow::{Context, Result, anyhow, ensure},
     ethereum_types::U256,
 };
 

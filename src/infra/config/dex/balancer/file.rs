@@ -4,7 +4,7 @@ use {
         infra::{self, config::dex::file, dex},
         util::serialize,
     },
-    contracts::{alloy::BalancerQueries, BalancerV2Vault, BalancerV3BatchRouter},
+    contracts::{BalancerV2Vault, BalancerV3BatchRouter, alloy::BalancerQueries},
     ethereum_types::H160,
     ethrpc::alloy::conversions::IntoLegacy,
     serde::Deserialize,

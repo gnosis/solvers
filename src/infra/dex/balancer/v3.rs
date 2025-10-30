@@ -4,8 +4,8 @@
 
 use {
     crate::domain::{dex, eth},
-    anyhow::{anyhow, ensure, Result},
-    contracts::{ethcontract::Bytes, BalancerV3BatchRouter, Permit2 as Permit2Contract},
+    anyhow::{Result, anyhow, ensure},
+    contracts::{BalancerV3BatchRouter, Permit2 as Permit2Contract, ethcontract::Bytes},
     ethereum_types::{H160, U256},
 };
 

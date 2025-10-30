@@ -65,11 +65,13 @@ async fn test_mock_provider_error() {
         .query_swap(&order, &create_dummy_quote())
         .await;
     assert!(result.is_err());
-    assert!(result
-        .unwrap_err()
-        .to_string()
-        .to_lowercase()
-        .contains("invalid path"));
+    assert!(
+        result
+            .unwrap_err()
+            .to_string()
+            .to_lowercase()
+            .contains("invalid path")
+    );
 }
 
 #[tokio::test]

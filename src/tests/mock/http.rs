@@ -3,9 +3,9 @@ use {
         fmt::{self, Debug, Formatter},
         net::SocketAddr,
         sync::{
-            atomic::{AtomicBool, Ordering},
             Arc,
             Mutex,
+            atomic::{AtomicBool, Ordering},
         },
     },
     testlib::assert_json_matches_excluding,
@@ -138,14 +138,14 @@ pub async fn setup(mut expectations: Vec<Expectation>) -> ServerHandle {
                     axum::response::Json(get(state, Some(path), query))
                 },
             )
-            .post(
-                |axum::extract::State(state),
-                 axum::extract::Path(path),
-                 axum::extract::RawQuery(query),
-                 axum::extract::Json(req)| async move {
-                    axum::response::Json(post(state, Some(path), query, req))
-                },
-            ),
+                .post(
+                    |axum::extract::State(state),
+                     axum::extract::Path(path),
+                     axum::extract::RawQuery(query),
+                     axum::extract::Json(req)| async move {
+                        axum::response::Json(post(state, Some(path), query, req))
+                    },
+                ),
         )
         // Annoying, but `axum` doesn't seem to match `/` with the above route,
         // so explicitly mount `/`.
@@ -156,13 +156,13 @@ pub async fn setup(mut expectations: Vec<Expectation>) -> ServerHandle {
                     axum::response::Json(get(state, None, query))
                 },
             )
-            .post(
-                |axum::extract::State(state),
-                 axum::extract::RawQuery(query),
-                 axum::extract::Json(req)| async move {
-                    axum::response::Json(post(state, None, query, req))
-                },
-            ),
+                .post(
+                    |axum::extract::State(state),
+                     axum::extract::RawQuery(query),
+                     axum::extract::Json(req)| async move {
+                        axum::response::Json(post(state, None, query, req))
+                    },
+                ),
         )
         .with_state(State {
             expectations: expectations.clone(),
@@ -248,10 +248,10 @@ fn post(
         }
 
         // If this is a JSON-RPC request, echo the request ID back in the response
-        if let Some(req_id) = req.get("id") {
-            if let Some(res_obj) = res.as_object_mut() {
-                res_obj.insert("id".to_string(), req_id.clone());
-            }
+        if let Some(req_id) = req.get("id")
+            && let Some(res_obj) = res.as_object_mut()
+        {
+            res_obj.insert("id".to_string(), req_id.clone());
         }
 
         res

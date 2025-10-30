@@ -5,11 +5,11 @@
 use {
     crate::domain::{dex, eth},
     alloy::primitives::Address,
-    anyhow::{anyhow, Result},
+    anyhow::{Result, anyhow},
     contracts::{
+        BalancerV2Vault,
         alloy::BalancerQueries::IVault::{BatchSwapStep, FundManagement},
         ethcontract::{Bytes, I256},
-        BalancerV2Vault,
     },
     ethereum_types::{H160, H256, U256},
     ethrpc::alloy::conversions::IntoAlloy,

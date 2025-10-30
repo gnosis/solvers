@@ -30,7 +30,7 @@ pub fn absolute_to_relative(
     tokens: &auction::Tokens,
 ) -> Option<BigDecimal> {
     let price = tokens.reference_price(&asset.token)?;
-    if price.0 .0.is_zero() {
+    if price.0.0.is_zero() {
         return None;
     }
 

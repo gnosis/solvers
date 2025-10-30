@@ -10,7 +10,7 @@ use {
         util::serialize,
     },
     bigdecimal::{BigDecimal, Zero},
-    serde::{de::DeserializeOwned, Deserialize},
+    serde::{Deserialize, de::DeserializeOwned},
     serde_with::serde_as,
     std::{fmt::Debug, num::NonZeroUsize, path::Path, time::Duration},
     tokio::fs,

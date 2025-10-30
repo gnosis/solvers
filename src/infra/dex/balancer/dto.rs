@@ -4,7 +4,7 @@ use {
         infra::dex::balancer::Error,
         util::serialize,
     },
-    bigdecimal::{num_bigint::BigInt, BigDecimal},
+    bigdecimal::{BigDecimal, num_bigint::BigInt},
     ethereum_types::{H160, H256, U256},
     number::conversions::u256_to_big_decimal,
     serde::{Deserialize, Serialize, Serializer},
@@ -341,7 +341,7 @@ pub struct PathToken {
 mod address_default_when_empty {
     use {
         ethereum_types::H160,
-        serde::{de, Deserialize as _, Deserializer},
+        serde::{Deserialize as _, Deserializer, de},
         std::borrow::Cow,
     };
 
@@ -362,7 +362,7 @@ mod address_default_when_empty {
 /// generic enough to be used for any value that can be converted from a string.
 mod value_or_string {
     use {
-        serde::{de, Deserialize, Deserializer},
+        serde::{Deserialize, Deserializer, de},
         std::borrow::Cow,
     };
 
