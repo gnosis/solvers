@@ -12,6 +12,8 @@ pub enum ChainId {
     Avalanche = 43114,
     Optimism = 10,
     Polygon = 137,
+    Linea = 59144,
+    Plasma = 9745,
 }
 
 impl ChainId {
@@ -33,6 +35,8 @@ impl ChainId {
             43114 => Ok(Self::Avalanche),
             10 => Ok(Self::Optimism),
             137 => Ok(Self::Polygon),
+            59144 => Ok(Self::Linea),
+            9745 => Ok(Self::Plasma),
             _ => Err(UnsupportedChain),
         }
     }
@@ -49,6 +53,8 @@ impl ChainId {
             ChainId::Avalanche => "43114",
             ChainId::Optimism => "10",
             ChainId::Polygon => "137",
+            ChainId::Linea => "59144",
+            ChainId::Plasma => "9745",
         }
     }
 
