@@ -43,7 +43,7 @@ impl Permit2 {
 
         // Transfers are done via Permit2, so we approve the balancer v3 router to spend
         // the input tokens
-        let mut calldata = Permit2Contract::Permit2::approveCall {
+        let calldata = Permit2Contract::Permit2::approveCall {
             token: token_in,
             spender,
             amount: U160::from(max_input),
