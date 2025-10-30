@@ -15,11 +15,12 @@ use {
         domain::{dex, eth, order},
         infra::{
             blockchain,
-            dex::balancer::{dto, v2, v3},
+            dex::balancer::{dto, v2, v2::BalancerQueriesExt, v3},
         },
     },
     anyhow::{Context, Result, anyhow, ensure},
     ethereum_types::U256,
+    ethrpc::alloy::conversions::IntoAlloy,
 };
 
 /// Result from on-chain query containing updated swap amounts.
@@ -65,7 +66,7 @@ pub trait QuerySwapProvider: Send + Sync {
 /// - Handles both sell orders (exact input) and buy orders (exact output)
 /// - Returns updated amounts that reflect current on-chain state
 pub struct OnChainQuerySwapProvider {
-    queries: Option<v2::Queries>,
+    queries: Option<contracts::alloy::BalancerQueries::Instance>,
     v3_batch_router: Option<v3::Router>,
     web3: ethrpc::Web3,
     settlement: eth::ContractAddress,
@@ -80,7 +81,12 @@ impl OnChainQuerySwapProvider {
     ) -> Self {
         let web3 = blockchain::rpc(&node_url);
         Self {
-            queries: queries.map(|addr| v2::Queries::new(&web3, addr)),
+            queries: queries.map(|addr| {
+                contracts::alloy::BalancerQueries::Instance::new(
+                    addr.0.into_alloy(),
+                    web3.alloy.clone(),
+                )
+            }),
             v3_batch_router: v3_batch_router.map(|addr| v3::Router::new_with_web3(&web3, addr)),
             web3,
             settlement,
@@ -113,7 +119,7 @@ impl OnChainQuerySwapProvider {
             .queries
             .as_ref()
             .context("BalancerQueries not configured (required for V2 on-chain query)")?
-            .execute_query_batch_swap(&self.web3, kind, swaps, assets, funds)
+            .execute_query_batch_swap(kind, swaps, assets, funds)
             .await
             .map_err(|e| anyhow!("RPC call failed: Queries.execute_query_batch_swap: {e:?}"))?;
 

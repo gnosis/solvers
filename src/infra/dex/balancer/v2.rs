@@ -4,7 +4,6 @@
 
 use {
     crate::domain::{dex, eth},
-    alloy::primitives::Address,
     anyhow::{Result, anyhow},
     contracts::{
         BalancerV2Vault,
@@ -94,44 +93,34 @@ impl Vault {
     }
 }
 
-/// BalancerQueries is a helper contract to provide quotes for common
+/// Extension trait for BalancerQueries contract to provide quotes for common
 /// interactions like swaps / joins / exits without submitting a transaction.
 ///
 /// Deployed at 0xE39B5e3B6D74016b2F6A9673D7d7493B6DF549d5 on all chains.
 ///
 /// Further documentation: https://docs-v2.balancer.fi/reference/contracts/query-functions.html
-pub struct Queries(contracts::alloy::BalancerQueries::Instance);
-
-impl Queries {
-    /// Create a new BalancerQueries contract instance
-    pub fn new(web3: &ethrpc::Web3, address: eth::ContractAddress) -> Self {
-        Self(contracts::alloy::BalancerQueries::Instance::new(
-            address.0.into_alloy(),
-            web3.alloy.clone(),
-        ))
-    }
-
-    /// Get the contract address
-    pub fn address(&self) -> Address {
-        *self.0.address()
-    }
-
+pub trait BalancerQueriesExt {
     /// Execute on-chain query and return the actual amounts (high-level
     /// contract call)
-    pub async fn execute_query_batch_swap(
+    async fn execute_query_batch_swap(
         &self,
-        web3: &ethrpc::Web3,
+        kind: SwapKind,
+        swaps: Vec<Swap>,
+        assets: Vec<H160>,
+        funds: Funds,
+    ) -> Result<Vec<alloy::primitives::I256>>;
+}
+
+impl BalancerQueriesExt for contracts::alloy::BalancerQueries::Instance {
+    async fn execute_query_batch_swap(
+        &self,
         kind: SwapKind,
         swaps: Vec<Swap>,
         assets: Vec<H160>,
         funds: Funds,
     ) -> Result<Vec<alloy::primitives::I256>> {
-        // Create a contract instance with the Web3 client
-        let contract =
-            contracts::alloy::BalancerQueries::Instance::new(self.address(), web3.alloy.clone());
-
         // Execute the query call directly
-        let asset_deltas = contract
+        let asset_deltas = self
             .queryBatchSwap(
                 kind as _,
                 swaps
