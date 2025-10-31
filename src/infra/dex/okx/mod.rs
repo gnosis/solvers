@@ -1,6 +1,6 @@
 use {
     crate::{
-        domain::{dex, eth},
+        domain::{dex, eth, order},
         util,
     },
     base64::prelude::*,
@@ -32,6 +32,8 @@ pub struct Okx {
     /// Cache which stores a map of Token Address to contract address of
     /// OKX DEX approve contract.
     dex_approved_addresses: Cache<eth::TokenAddress, eth::ContractAddress>,
+    /// Enable buy order support (ExactOut mode).
+    enable_buy_orders: bool,
 }
 
 pub struct Config {
@@ -47,6 +49,9 @@ pub struct Config {
 
     /// The stream that yields every new block.
     pub block_stream: Option<CurrentBlockWatcher>,
+
+    /// Enable buy order support (ExactOut mode).
+    pub enable_buy_orders: bool,
 }
 
 pub struct OkxCredentialsConfig {
@@ -102,6 +107,7 @@ impl Okx {
             api_secret_key: config.okx_credentials.api_secret_key,
             defaults,
             dex_approved_addresses: Cache::new(DEFAULT_DEX_APPROVED_ADDRESSES_CACHE_SIZE),
+            enable_buy_orders: config.enable_buy_orders,
         })
     }
 
@@ -129,6 +135,14 @@ impl Okx {
             .checked_add(swap_response.tx.gas / 2)
             .ok_or(Error::GasCalculationFailed)?;
 
+        // For buy orders (ExactOut mode), the slippage is on the input token,
+        // so we need to use U256::MAX allowance to cover the maximum possible input.
+        let allowance_amount = if self.enable_buy_orders && order.side == order::Side::Buy {
+            eth::U256::max_value()
+        } else {
+            swap_response.router_result.from_token_amount
+        };
+
         Ok(dex::Swap {
             calls: vec![dex::Call {
                 to: swap_response.tx.to.into_alloy(),
@@ -152,7 +166,7 @@ impl Okx {
             },
             allowance: dex::Allowance {
                 spender: dex_contract_address.0.into_alloy(),
-                amount: dex::Amount::new(swap_response.router_result.from_token_amount),
+                amount: dex::Amount::new(allowance_amount),
             },
             gas: eth::Gas(gas),
         })
@@ -169,13 +183,19 @@ impl Okx {
         slippage: &dex::Slippage,
     ) -> Result<(dto::SwapResponse, eth::ContractAddress), Error> {
         let swap_request_future = async {
-            let swap_request = self.defaults.clone().try_with_domain(order, slippage)?;
+            let swap_request =
+                self.defaults
+                    .clone()
+                    .try_with_domain(order, slippage, self.enable_buy_orders)?;
             self.send_get_request("swap", &swap_request).await
         };
 
         let approve_transaction_request_future = async {
-            let approve_transaction_request =
-                dto::ApproveTransactionRequest::with_domain(self.defaults.chain_index, order);
+            let approve_transaction_request = dto::ApproveTransactionRequest::with_domain(
+                self.defaults.chain_index,
+                order,
+                self.enable_buy_orders,
+            );
 
             let approve_transaction: dto::ApproveTransactionResponse = self
                 .send_get_request("approve-transaction", &approve_transaction_request)

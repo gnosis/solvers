@@ -8,6 +8,11 @@ chain-id = "1"
 # Optionally specify a custom OKX Swap API endpoint
 # endpoint = "https://web3.okx.com/api/v6/dex/aggregator/"
 
+# Enable support for buy orders (ExactOut mode). Default: false
+# ExactOut feature currently only supports Ethereum, Base, BSC, and Arbitrum chains
+# and only Uni v2 and v3 protocols.
+# enable-buy-orders = false
+
 # OKX Project ID. Instruction on how to create a project:
 # https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#create-project
 api-project-id = "$OKX_PROJECT_ID"
