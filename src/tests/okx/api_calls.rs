@@ -14,7 +14,7 @@ use {
 // OKX setup: OKX_PROJECT_ID, OKX_API_KEY, OKX_SECRET_KEY, OKX_PASSPHRASE
 async fn swap_sell_regular() {
     let okx_config = okx_dex::Config {
-        endpoint: reqwest::Url::parse("https://web3.okx.com/api/v6/dex/aggregator/").unwrap(),
+        endpoint: reqwest::Url::parse(okx_dex::DEFAULT_ENDPOINT).unwrap(),
         chain_id: crate::domain::eth::ChainId::Mainnet,
         okx_credentials: okx_dex::OkxCredentialsConfig {
             project_id: env::var("OKX_PROJECT_ID").unwrap(),
@@ -100,7 +100,7 @@ async fn swap_buy() {
 // OKX setup: OKX_PROJECT_ID, OKX_API_KEY, OKX_SECRET_KEY, OKX_PASSPHRASE
 async fn swap_api_error() {
     let okx_config = okx_dex::Config {
-        endpoint: reqwest::Url::parse("https://web3.okx.com/api/v6/dex/aggregator/").unwrap(),
+        endpoint: reqwest::Url::parse(okx_dex::DEFAULT_ENDPOINT).unwrap(),
         chain_id: crate::domain::eth::ChainId::Mainnet,
         okx_credentials: okx_dex::OkxCredentialsConfig {
             project_id: env::var("OKX_PROJECT_ID").unwrap(),
@@ -143,7 +143,7 @@ async fn swap_api_error() {
 // OKX setup: OKX_PROJECT_ID, OKX_API_KEY, OKX_SECRET_KEY, OKX_PASSPHRASE
 async fn swap_sell_insufficient_liquidity() {
     let okx_config = okx_dex::Config {
-        endpoint: reqwest::Url::parse("https://web3.okx.com/api/v6/dex/aggregator/").unwrap(),
+        endpoint: reqwest::Url::parse(okx_dex::DEFAULT_ENDPOINT).unwrap(),
         chain_id: crate::domain::eth::ChainId::Mainnet,
         okx_credentials: okx_dex::OkxCredentialsConfig {
             project_id: env::var("OKX_PROJECT_ID").unwrap(),

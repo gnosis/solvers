@@ -18,6 +18,9 @@ use {
 
 mod dto;
 
+/// Default OKX v6 DEX aggregator API endpoint.
+pub const DEFAULT_ENDPOINT: &str = "https://web3.okx.com/api/v6/dex/aggregator/";
+
 const DEFAULT_DEX_APPROVED_ADDRESSES_CACHE_SIZE: u64 = 100;
 
 /// Bindings to the OKX swap API.

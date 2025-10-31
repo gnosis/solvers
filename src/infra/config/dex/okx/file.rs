@@ -60,9 +60,7 @@ impl Into<okx::OkxCredentialsConfig> for OkxCredentialsConfig {
 }
 
 fn default_endpoint() -> reqwest::Url {
-    "https://web3.okx.com/api/v6/dex/aggregator/"
-        .parse()
-        .unwrap()
+    okx::DEFAULT_ENDPOINT.parse().unwrap()
 }
 
 /// Load the OKX solver configuration from a TOML file.
