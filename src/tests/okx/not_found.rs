@@ -10,17 +10,18 @@ use {
 async fn sell() {
     let api = mock::http::setup(vec![mock::http::Expectation::Get {
         path: mock::http::Path::exact(
-            "swap?chainId=1&amount=1000000000000000000&\
+            "swap?chainIndex=1&amount=1000000000000000000&\
              fromTokenAddress=0xc8cd2be653759aed7b0996315821aae71e1feadf&\
-             toTokenAddress=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&slippage=0.01&\
+             toTokenAddress=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&slippagePercent=0.01&\
              userWalletAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41&\
-             swapReceiverAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+             swapReceiverAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41&\
+             swapMode=exactIn",
         ),
         res: json!({"code":"82000","data":[],"msg":"Insufficient liquidity."}),
     },
     mock::http::Expectation::Get {
         path: mock::http::Path::exact(
-            "approve-transaction?chainId=1\
+            "approve-transaction?chainIndex=1\
             &tokenContractAddress=0xc8cd2be653759aed7b0996315821aae71e1feadf\
             &approveAmount=1000000000000000000"
         ),
@@ -97,13 +98,14 @@ async fn sell_no_approve_transaction() {
     let api = mock::http::setup(vec![
         mock::http::Expectation::Get {
             path: mock::http::Path::exact(
-                "swap?chainId=1\
+                "swap?chainIndex=1\
                 &amount=1000000000000000000\
                 &fromTokenAddress=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2\
                 &toTokenAddress=0xe41d2489571d322189246dafa5ebde1f4699f498\
-                &slippage=0.01\
+                &slippagePercent=0.01\
                 &userWalletAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41\
-                &swapReceiverAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41"
+                &swapReceiverAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41\
+                &swapMode=exactIn"
             ),
             res: json!(
               {
@@ -213,7 +215,7 @@ async fn sell_no_approve_transaction() {
         },
         mock::http::Expectation::Get {
             path: mock::http::Path::exact(
-                "approve-transaction?chainId=1\
+                "approve-transaction?chainIndex=1\
                 &tokenContractAddress=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2\
                 &approveAmount=1000000000000000000"
             ),

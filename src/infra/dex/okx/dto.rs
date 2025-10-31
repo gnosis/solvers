@@ -1,5 +1,5 @@
 //! DTOs for the OKX swap API. Full documentation for the API can be found
-//! [here](https://www.okx.com/en-au/web3/build/docs/waas/dex-swap).
+//! [here](https://web3.okx.com/build/dev-docs/wallet-api/dex-swap).
 
 use {
     crate::{
@@ -13,9 +13,9 @@ use {
 };
 
 /// A OKX API swap request parameters (only mandatory fields).
-/// OKX supports only sell orders.
+/// OKX v6 supports both sell orders (exactIn) and buy orders (exactOut).
 ///
-/// See [API](https://www.okx.com/en-au/web3/build/docs/waas/dex-swap)
+/// See [API](https://web3.okx.com/build/dev-docs/wallet-api/dex-swap)
 /// documentation for more detailed information on each parameter.
 #[serde_as]
 #[derive(Clone, Default, Serialize)]
@@ -23,9 +23,10 @@ use {
 pub struct SwapRequest {
     /// Chain ID
     #[serde_as(as = "serde_with::DisplayFromStr")]
-    pub chain_id: u64,
+    pub chain_index: u64,
 
-    /// Input amount of a token to be sold set in minimal divisible units.
+    /// Input amount of a token to be sold or bought set in minimal divisible
+    /// units.
     #[serde_as(as = "serialize::U256")]
     pub amount: U256,
 
@@ -36,18 +37,32 @@ pub struct SwapRequest {
     pub to_token_address: H160,
 
     /// Limit of price slippage you are willing to accept
-    pub slippage: Slippage,
+    pub slippage_percent: Slippage,
 
     /// User's wallet address. Where the sell tokens will be taken from.
     pub user_wallet_address: H160,
 
     /// Where the buy tokens get sent to.
     pub swap_receiver_address: H160,
+
+    /// Swap mode: "exactIn" for sell orders (default), "exactOut" for buy
+    /// orders
+    pub swap_mode: SwapMode,
 }
 
 /// A OKX slippage amount.
 #[derive(Clone, Debug, Default, Serialize)]
 pub struct Slippage(BigDecimal);
+
+/// A OKX swap mode.
+#[derive(Clone, Debug, Serialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub enum SwapMode {
+    #[default]
+    ExactIn,
+    #[expect(dead_code)] // Disabled for now
+    ExactOut,
+}
 
 impl SwapRequest {
     pub fn try_with_domain(
@@ -55,16 +70,18 @@ impl SwapRequest {
         order: &dex::Order,
         slippage: &dex::Slippage,
     ) -> Result<Self, super::Error> {
-        // Buy orders are not supported on OKX
-        if order.side == order::Side::Buy {
-            return Err(super::Error::OrderNotSupported);
+        let swap_mode = match order.side {
+            order::Side::Sell => SwapMode::ExactIn,
+            // Buy orders are limited on OKX
+            order::Side::Buy => return Err(super::Error::OrderNotSupported),
         };
 
         Ok(Self {
             from_token_address: order.sell.0,
             to_token_address: order.buy.0,
             amount: order.amount.get(),
-            slippage: Slippage(slippage.as_factor().clone()),
+            slippage_percent: Slippage(slippage.as_factor().clone()),
+            swap_mode,
             ..self
         })
     }
@@ -72,7 +89,7 @@ impl SwapRequest {
 
 /// A OKX API swap response.
 ///
-/// See [API](https://www.okx.com/en-au/web3/build/docs/waas/dex-swap)
+/// See [API](https://web3.okx.com/build/dev-docs/wallet-api/dex-swap)
 /// documentation for more detailed information on each parameter.
 #[serde_as]
 #[derive(Deserialize, Clone)]
@@ -88,7 +105,7 @@ pub struct SwapResponse {
 /// A OKX API swap response - quote execution path.
 /// Deserializing fields which are only used by the implementation.
 /// For all possible fields look into the documentation:
-/// [API](https://www.okx.com/en-au/web3/build/docs/waas/dex-swap)
+/// [API](https://web3.okx.com/build/dev-docs/wallet-api/dex-swap)
 #[serde_as]
 #[derive(Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -111,7 +128,7 @@ pub struct SwapResponseRouterResult {
 /// A OKX API swap response - token information.
 /// Deserializing fields which are only used by the implementation.
 /// For all possible fields look into the documentation:
-/// [API](https://www.okx.com/en-au/web3/build/docs/waas/dex-swap)
+/// [API](https://web3.okx.com/build/dev-docs/wallet-api/dex-swap)
 #[serde_as]
 #[derive(Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -123,7 +140,7 @@ pub struct SwapResponseFromToToken {
 /// A OKX API swap response - contract related information.
 /// Deserializing fields which are only used by the implementation.
 /// For all possible fields look into the documentation:
-/// [API](https://www.okx.com/en-au/web3/build/docs/waas/dex-swap)
+/// [API](https://web3.okx.com/build/dev-docs/wallet-api/dex-swap)
 #[serde_as]
 #[derive(Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -142,7 +159,7 @@ pub struct SwapResponseTx {
 
 /// A OKX API approve transaction request.
 ///
-/// See [API](https://www.okx.com/en-au/web3/build/docs/waas/dex-approve-transaction)
+/// See [API](https://web3.okx.com/build/dev-docs/wallet-api/dex-approve-transaction)
 /// documentation for more detailed information on each parameter.
 #[serde_as]
 #[derive(Clone, Default, Serialize)]
@@ -150,7 +167,7 @@ pub struct SwapResponseTx {
 pub struct ApproveTransactionRequest {
     /// Chain ID
     #[serde_as(as = "serde_with::DisplayFromStr")]
-    pub chain_id: u64,
+    pub chain_index: u64,
 
     /// Contract address of a token to be permitted.
     pub token_contract_address: H160,
@@ -162,9 +179,9 @@ pub struct ApproveTransactionRequest {
 }
 
 impl ApproveTransactionRequest {
-    pub fn with_domain(chain_id: u64, order: &dex::Order) -> Self {
+    pub fn with_domain(chain_index: u64, order: &dex::Order) -> Self {
         Self {
-            chain_id,
+            chain_index,
             token_contract_address: order.sell.0,
             approve_amount: order.amount.get(),
         }
@@ -173,7 +190,7 @@ impl ApproveTransactionRequest {
 
 /// A OKX API approve transaction response.
 /// Deserializing fields which are only used by the implementation.
-/// See [API](https://www.okx.com/en-au/web3/build/docs/waas/dex-approve-transaction)
+/// See [API](https://web3.okx.com/build/dev-docs/wallet-api/dex-approve-transaction)
 /// documentation for more detailed information on each parameter.
 #[serde_as]
 #[derive(Clone, Default, Deserialize)]
@@ -189,7 +206,7 @@ pub struct ApproveTransactionResponse {
 #[serde(rename_all = "camelCase")]
 pub struct Response<T> {
     /// Error code, 0 for success, otherwise one of:
-    /// [error codes](https://www.okx.com/en-au/web3/build/docs/waas/dex-error-code)
+    /// [error codes](https://web3.okx.com/build/dev-docs/wallet-api/dex-error-code)
     #[serde_as(as = "serde_with::DisplayFromStr")]
     pub code: i64,
 
