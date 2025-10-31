@@ -60,7 +60,6 @@ pub struct Slippage(BigDecimal);
 pub enum SwapMode {
     #[default]
     ExactIn,
-    #[expect(dead_code)] // Disabled for now
     ExactOut,
 }
 
@@ -69,11 +68,17 @@ impl SwapRequest {
         self,
         order: &dex::Order,
         slippage: &dex::Slippage,
+        enable_buy_orders: bool,
     ) -> Result<Self, super::Error> {
         let swap_mode = match order.side {
             order::Side::Sell => SwapMode::ExactIn,
-            // Buy orders are limited on OKX
-            order::Side::Buy => return Err(super::Error::OrderNotSupported),
+            order::Side::Buy => {
+                if enable_buy_orders {
+                    SwapMode::ExactOut
+                } else {
+                    return Err(super::Error::OrderNotSupported);
+                }
+            }
         };
 
         Ok(Self {
@@ -179,11 +184,19 @@ pub struct ApproveTransactionRequest {
 }
 
 impl ApproveTransactionRequest {
-    pub fn with_domain(chain_index: u64, order: &dex::Order) -> Self {
+    pub fn with_domain(chain_index: u64, order: &dex::Order, enable_buy_orders: bool) -> Self {
+        // For buy orders (ExactOut mode), we need to use U256::MAX allowance
+        // because the exact input amount is not known in advance.
+        let approve_amount = if enable_buy_orders && matches!(order.side, order::Side::Buy) {
+            U256::MAX
+        } else {
+            order.amount.get()
+        };
+
         Self {
             chain_index,
             token_contract_address: order.sell.0,
-            approve_amount: order.amount.get(),
+            approve_amount,
         }
     }
 }

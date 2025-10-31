@@ -25,6 +25,12 @@ struct Config {
     /// OKX API credentials
     #[serde(flatten)]
     okx_credentials: OkxCredentialsConfig,
+
+    /// Enable buy order support (ExactOut mode).
+    /// ExactOut currently only supports Ethereum, Base, BSC, and Arbitrum
+    /// chains and only Uni v2 and v3 protocols.
+    #[serde(default)]
+    enable_buy_orders: bool,
 }
 
 #[derive(Deserialize)]
@@ -78,6 +84,7 @@ pub async fn load(path: &Path) -> super::Config {
             okx_credentials: config.okx_credentials.into(),
             block_stream: base.block_stream.clone(),
             settlement_contract: base.contracts.settlement.0.into(),
+            enable_buy_orders: config.enable_buy_orders,
         },
         base,
     }
