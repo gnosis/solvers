@@ -100,7 +100,7 @@ async fn swap_buy_disabled() {
 #[tokio::test]
 // To run this test, set the following environment variables accordingly to your
 // OKX setup: OKX_PROJECT_ID, OKX_API_KEY, OKX_SECRET_KEY, OKX_PASSPHRASE
-async fn swap_buy_regular() {
+async fn swap_buy_enabled() {
     let okx_config = okx_dex::Config {
         endpoint: reqwest::Url::parse(okx_dex::DEFAULT_ENDPOINT).unwrap(),
         chain_id: crate::domain::eth::ChainId::Mainnet,
