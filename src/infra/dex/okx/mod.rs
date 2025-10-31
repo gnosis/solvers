@@ -85,7 +85,7 @@ impl Okx {
         };
 
         let defaults = dto::SwapRequest {
-            chain_id: config.chain_id as u64,
+            chain_index: config.chain_id as u64,
             // Funds first get moved in and out of the settlement contract so we have use
             // that address here to generate the correct calldata.
             swap_receiver_address: config.settlement_contract.into(),
@@ -119,7 +119,7 @@ impl Okx {
             .await?;
 
         // Increasing returned gas by 50% according to the documentation:
-        // https://www.okx.com/en-au/web3/build/docs/waas/dex-swap (gas field description in Response param)
+        // https://web3.okx.com/build/dev-docs/wallet-api/dex-swap (gas field description in Response param)
         let gas = swap_response
             .tx
             .gas
@@ -172,7 +172,7 @@ impl Okx {
 
         let approve_transaction_request_future = async {
             let approve_transaction_request =
-                dto::ApproveTransactionRequest::with_domain(self.defaults.chain_id, order);
+                dto::ApproveTransactionRequest::with_domain(self.defaults.chain_index, order);
 
             let approve_transaction: dto::ApproveTransactionResponse = self
                 .send_get_request("approve-transaction", &approve_transaction_request)
@@ -195,7 +195,7 @@ impl Okx {
 
     /// OKX requires signature of the request to be added as dedicated HTTP
     /// Header. More information on generating the signature can be found in
-    /// OKX documentation: https://www.okx.com/en-au/web3/build/docs/waas/rest-authentication#signature
+    /// OKX documentation: https://web3.okx.com/build/dev-docs/wallet-api/rest-authentication
     fn generate_signature(
         &self,
         request: &reqwest::Request,
@@ -216,7 +216,7 @@ impl Okx {
         Ok(BASE64_STANDARD.encode(signature))
     }
 
-    /// OKX Error codes: [link](https://www.okx.com/en-au/web3/build/docs/waas/dex-error-code)
+    /// OKX Error codes: [link](https://web3.okx.com/build/dev-docs/wallet-api/dex-error-code)
     fn handle_api_error(code: i64, message: &str) -> Result<(), Error> {
         Err(match code {
             0 => return Ok(()),

@@ -60,7 +60,7 @@ impl Into<okx::OkxCredentialsConfig> for OkxCredentialsConfig {
 }
 
 fn default_endpoint() -> reqwest::Url {
-    "https://www.okx.com/api/v5/dex/aggregator/"
+    "https://web3.okx.com/api/v6/dex/aggregator/"
         .parse()
         .unwrap()
 }
