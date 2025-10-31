@@ -2,9 +2,9 @@
 
 use {
     crate::domain::eth,
-    bigdecimal::{num_bigint::ToBigInt, BigDecimal},
+    bigdecimal::{BigDecimal, num_bigint::ToBigInt},
     ethereum_types::U256,
-    num::{rational::Ratio, BigInt, BigUint, One},
+    num::{BigInt, BigUint, One, rational::Ratio},
 };
 
 /// A 256-bit rational type.

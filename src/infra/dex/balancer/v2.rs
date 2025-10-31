@@ -8,9 +8,16 @@ use {
         primitives::{Address, I256, U256},
         sol_types::SolCall,
     },
+    anyhow::{Result, anyhow},
     contracts::alloy::{
-        BalancerV2Vault,
-        BalancerV2Vault::IVault::{BatchSwapStep, FundManagement},
+        BalancerQueries::IVault::{
+            BatchSwapStep as QueriesBatchSwapStep,
+            FundManagement as QueriesFundManagement,
+        },
+        BalancerV2Vault::{
+            self,
+            IVault::{BatchSwapStep, FundManagement},
+        },
     },
 };
 
@@ -55,5 +62,42 @@ impl Vault {
             to: self.address(),
             calldata,
         }]
+    }
+}
+
+/// Extension trait for BalancerQueries contract to provide quotes for common
+/// interactions like swaps / joins / exits without submitting a transaction.
+///
+/// Deployed at 0xE39B5e3B6D74016b2F6A9673D7d7493B6DF549d5 on all chains.
+///
+/// Further documentation: https://docs-v2.balancer.fi/reference/contracts/query-functions.html
+pub trait BalancerQueriesExt {
+    /// Execute on-chain query and return the actual amounts (high-level
+    /// contract call)
+    async fn execute_query_batch_swap(
+        &self,
+        kind: SwapKind,
+        swaps: Vec<QueriesBatchSwapStep>,
+        assets: Vec<Address>,
+        funds: QueriesFundManagement,
+    ) -> Result<Vec<I256>>;
+}
+
+impl BalancerQueriesExt for contracts::alloy::BalancerQueries::Instance {
+    async fn execute_query_batch_swap(
+        &self,
+        kind: SwapKind,
+        swaps: Vec<QueriesBatchSwapStep>,
+        assets: Vec<Address>,
+        funds: QueriesFundManagement,
+    ) -> Result<Vec<I256>> {
+        // Execute the query call directly
+        let asset_deltas = self
+            .queryBatchSwap(kind as _, swaps, assets, funds)
+            .call()
+            .await
+            .map_err(|e| anyhow!("V2 query_batch_swap RPC call failed: {e:?}"))?;
+
+        Ok(asset_deltas)
     }
 }
