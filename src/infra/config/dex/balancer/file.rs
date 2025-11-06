@@ -27,6 +27,10 @@ struct Config {
     /// default contract address will be used.
     v3_batch_router: Option<Address>,
 
+    /// Optional Balancer Queries contract address. If not specified, the
+    /// default contract address will be used.
+    queries: Option<Address>,
+
     /// Optional Permit2 contract address. If not specified, the
     /// default contract address will be used.
     permit2: Option<Address>,
@@ -71,12 +75,17 @@ pub async fn load(path: &Path) -> super::Config {
         .contains(&ApiVersion::V3)
         .then(|| BalancerV3BatchRouter::deployment_address(&config.chain_id.value().as_u64()))
         .flatten();
+    let queries_contract = enabled_api_versions.contains(&ApiVersion::V2).then(|| {
+        BalancerQueries::deployment_address(&(config.chain_id as u64))
+            .expect("Balancer Queries contract not found for chain")
+    });
 
     super::Config {
         sor: dex::balancer::Config {
             endpoint: config.endpoint,
             vault: config.vault.or(vault_contract),
             v3_batch_router: config.v3_batch_router.or(batch_router),
+            queries: config.queries.or(queries_contract),
             permit2: config.permit2.unwrap_or(contracts.permit2),
             settlement: base.contracts.settlement,
             block_stream: base.block_stream.clone(),

@@ -1,4 +1,4 @@
-use serde::{de, ser, Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer, de, ser};
 
 /// A type that never deserializes or serializes.
 ///
