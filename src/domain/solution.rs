@@ -144,7 +144,7 @@ impl Single {
                 sell_token?.ether_value(eth::Ether(
                     swap.0
                         .checked_add(gas_offset.0)?
-                        .checked_mul(gas_price.0 .0)?,
+                        .checked_mul(gas_price.0.0)?,
                 ))?,
             )
         } else {

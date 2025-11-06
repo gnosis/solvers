@@ -85,7 +85,7 @@ pub async fn load(path: &Path) -> super::Config {
             chain_id: config.chain_id,
             okx_credentials: config.okx_credentials.into(),
             block_stream: base.block_stream.clone(),
-            settlement_contract: base.contracts.settlement.0.into(),
+            settlement_contract: base.contracts.settlement,
         },
         base,
     }

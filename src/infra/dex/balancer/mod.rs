@@ -19,16 +19,22 @@ use {
         },
     },
     ethrpc::{
+        AlloyProvider,
         alloy::conversions::{IntoAlloy, IntoLegacy},
         block_stream::CurrentBlockWatcher,
     },
-    std::sync::atomic::{self, AtomicU64},
+    itertools::Itertools,
+    std::sync::{atomic, atomic::AtomicU64},
     tracing::Instrument,
 };
 
-mod dto;
+pub mod dto;
+pub mod query_swap_provider;
 mod v2;
 mod v3;
+
+// Re-export query swap provider types
+pub use query_swap_provider::{OnChainQuerySwapProvider, QuerySwapProvider};
 
 /// Bindings to the Balancer Smart Order Router (SOR) API.
 pub struct Sor {
@@ -39,6 +45,7 @@ pub struct Sor {
     permit2: v3::Permit2,
     settlement: Address,
     chain_id: Chain,
+    query_swap_provider: Box<dyn QuerySwapProvider>,
 }
 
 pub struct Config {
@@ -55,6 +62,9 @@ pub struct Config {
     /// The address of the Balancer V3 BatchRouter contract.
     /// Not supported on some chains.
     pub v3_batch_router: Option<Address>,
+
+    /// The address of the Balancer Queries contract for on-chain swap queries.
+    pub queries: Option<Address>,
 
     /// The address of the Permit2 contract.
     pub permit2: Address,
@@ -73,15 +83,22 @@ impl Sor {
     /// lost to time... See <https://github.com/cowprotocol/services/pull/171>.
     const GAS_PER_SWAP: u64 = 88_892;
 
-    pub fn new(config: Config) -> Result<Self, Error> {
+    pub fn new(
+        config: Config,
+        alloy_provider: AlloyProvider,
+        query_swap_provider: Box<dyn QuerySwapProvider>,
+    ) -> Result<Self, Error> {
         Ok(Self {
             client: super::Client::new(Default::default(), config.block_stream),
             endpoint: config.endpoint,
             v2_vault: config.vault.map(v2::Vault::new),
-            v3_batch_router: config.v3_batch_router.map(v3::Router::new),
+            v3_batch_router: config
+                .v3_batch_router
+                .map(|addr| v3::Router::new(addr, alloy_provider)),
             permit2: v3::Permit2::new(config.permit2),
             settlement: config.settlement,
             chain_id: Chain::from_domain(config.chain_id)?,
+            query_swap_provider,
         })
     }
 
@@ -111,9 +128,33 @@ impl Sor {
             return Err(Error::NotFound);
         }
 
+        // Execute on-chain query if BalancerQueries contract is available to get
+        // up-to-date amounts, otherwise use the SOR quote amounts
+        let (updated_swap_amount, updated_return_amount) =
+            match self.query_swap_provider.query_swap(order, &quote).await {
+                Ok(on_chain_amounts) => {
+                    tracing::debug!(
+                        swap = ?on_chain_amounts.swap_amount,
+                        return = ?on_chain_amounts.return_amount,
+                        "Using on-chain amounts"
+                    );
+                    (
+                        on_chain_amounts.swap_amount.into_legacy(),
+                        on_chain_amounts.return_amount.into_legacy(),
+                    )
+                }
+                Err(e) => {
+                    tracing::warn!(
+                        error = ?e,
+                        "On-chain query failed, using SOR quote amounts"
+                    );
+                    (quote.swap_amount_raw, quote.return_amount_raw)
+                }
+            };
+
         let (input, output) = match order.side {
-            order::Side::Buy => (quote.return_amount_raw, quote.swap_amount_raw),
-            order::Side::Sell => (quote.swap_amount_raw, quote.return_amount_raw),
+            order::Side::Buy => (updated_return_amount, updated_swap_amount),
+            order::Side::Sell => (updated_swap_amount, updated_return_amount),
         };
 
         let (max_input, min_output) = match order.side {
@@ -169,34 +210,13 @@ impl Sor {
         min_output: U256,
         v2_vault: &v2::Vault,
     ) -> Result<Vec<dex::Call>, Error> {
-        let kind = match order.side {
-            order::Side::Sell => v2::SwapKind::GivenIn,
-            order::Side::Buy => v2::SwapKind::GivenOut,
-        };
-        let swaps = quote
-            .swaps
-            .iter()
-            .map(|swap| {
-                Ok(BatchSwapStep {
-                    poolId: FixedBytes(swap.pool_id.as_v2()?.0),
-                    assetInIndex: U256::from(swap.asset_in_index),
-                    assetOutIndex: U256::from(swap.asset_out_index),
-                    amount: swap.amount.into_alloy(),
-                    userData: Bytes::copy_from_slice(&swap.user_data),
-                })
-            })
-            .collect::<Result<_, Error>>()?;
-        let assets = quote
+        let (kind, swaps, funds) = self.build_v2_swap_data(order, quote)?;
+        let assets: Vec<Address> = quote
             .token_addresses
             .iter()
-            .map(|addr| addr.into_alloy())
+            .cloned()
+            .map(IntoAlloy::into_alloy)
             .collect();
-        let funds = FundManagement {
-            sender: self.settlement,
-            fromInternalBalance: false,
-            recipient: self.settlement,
-            toInternalBalance: false,
-        };
         let limits = quote
             .token_addresses
             .iter()
@@ -234,13 +254,13 @@ impl Sor {
             .paths
             .iter()
             .map(|path| path_to_exact_amount_in(path, order.side, slippage))
-            .collect::<Result<_, Error>>()?;
-
+            .try_collect()?;
         let paths_out = quote
             .paths
             .iter()
             .map(|path| path_to_exact_amount_out(path, order.side, slippage))
-            .collect::<Result<_, Error>>()?;
+            .try_collect()?;
+
         Ok(match order.side {
             Side::Buy => v3_batch_router.swap_exact_amount_out(
                 paths_out,
@@ -255,6 +275,44 @@ impl Sor {
                 max_input,
             ),
         })
+    }
+
+    /// Build common V2 swap data (kind, swaps, funds) from order and quote
+    fn build_v2_swap_data(
+        &self,
+        order: &dex::Order,
+        quote: &dto::Quote,
+    ) -> Result<(v2::SwapKind, Vec<BatchSwapStep>, FundManagement), Error> {
+        // Determine swap kind based on order side
+        let kind = match order.side {
+            order::Side::Sell => v2::SwapKind::GivenIn,
+            order::Side::Buy => v2::SwapKind::GivenOut,
+        };
+
+        // Convert quote swaps to v2::Swap format
+        let swaps = quote
+            .swaps
+            .iter()
+            .map(|swap| {
+                Ok(BatchSwapStep {
+                    poolId: FixedBytes(swap.pool_id.as_v2()?.0),
+                    assetInIndex: U256::from(swap.asset_in_index),
+                    assetOutIndex: U256::from(swap.asset_out_index),
+                    amount: swap.amount.into_alloy(),
+                    userData: Bytes::copy_from_slice(&swap.user_data),
+                })
+            })
+            .collect::<Result<_, Error>>()?;
+
+        // Create funds structure
+        let funds = FundManagement {
+            sender: self.settlement,
+            fromInternalBalance: false,
+            recipient: self.settlement,
+            toInternalBalance: false,
+        };
+
+        Ok((kind, swaps, funds))
     }
 
     async fn quote(&self, query: &dto::Query<'_>) -> Result<dto::Quote, Error> {

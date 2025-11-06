@@ -3,38 +3,34 @@ use {
         domain::{dex, eth},
         infra::blockchain,
     },
-    alloy::primitives::U256,
-    contracts::{
-        alloy::support::{
-            AnyoneAuthenticator,
-            Swapper::{
-                self,
-                Swapper::{Allowance, Asset, Interaction},
-            },
+    alloy::{
+        primitives::{Address, U256},
+        providers::DynProvider,
+        rpc::types::state::{AccountOverride, StateOverridesBuilder},
+    },
+    contracts::alloy::support::{
+        AnyoneAuthenticator,
+        Swapper::{
+            self,
+            Swapper::{Allowance, Asset, Interaction},
         },
-        ethcontract::{state_overrides::StateOverride, web3},
     },
     ethrpc::alloy::conversions::{IntoAlloy, IntoLegacy},
-    std::collections::HashMap,
 };
 
 /// A DEX swap simulator.
 #[derive(Debug, Clone)]
 pub struct Simulator {
-    web3: ethrpc::Web3,
-    settlement: eth::ContractAddress,
-    authenticator: eth::ContractAddress,
+    web3: DynProvider,
+    settlement: Address,
+    authenticator: Address,
 }
 
 impl Simulator {
     /// Create a new simulator for computing DEX swap gas usage.
-    pub fn new(
-        url: &reqwest::Url,
-        settlement: eth::ContractAddress,
-        authenticator: eth::ContractAddress,
-    ) -> Self {
+    pub fn new(url: &reqwest::Url, settlement: Address, authenticator: Address) -> Self {
         Self {
-            web3: blockchain::rpc(url),
+            web3: blockchain::rpc(url).alloy,
             settlement,
             authenticator,
         }
@@ -43,41 +39,31 @@ impl Simulator {
     /// Simulate the gas needed by a single order DEX swap.
     ///
     /// This will return a `None` if the gas simulation is unavailable.
-    pub async fn gas(
-        &self,
-        owner: ethereum_types::Address,
-        swap: &dex::Swap,
-    ) -> Result<eth::Gas, Error> {
-        if owner == self.settlement.0 {
+    pub async fn gas(&self, owner: Address, swap: &dex::Swap) -> Result<eth::Gas, Error> {
+        if owner == self.settlement {
             // we can't have both the settlement and swapper contracts at the same address
             return Err(Error::SettlementContractIsOwner);
         }
 
-        let swapper = Swapper::Instance::new(owner.into_alloy(), self.web3.alloy.clone());
-
-        let overrides = HashMap::<_, _>::from_iter([
+        let swapper = Swapper::Instance::new(owner, self.web3.clone());
+        let overrides = StateOverridesBuilder::with_capacity(2)
             // Setup up our trader code that actually executes the settlement
-            (
-                swapper.address().into_legacy(),
-                StateOverride {
-                    code: Some(Swapper::Swapper::DEPLOYED_BYTECODE.clone().into_legacy()),
+            .append(
+                *swapper.address(),
+                AccountOverride {
+                    code: Some(Swapper::Swapper::DEPLOYED_BYTECODE.clone()),
                     ..Default::default()
                 },
-            ),
+            )
             // Override the CoW protocol solver authenticator with one that
             // allows any address to solve
-            (
-                self.authenticator.0,
-                StateOverride {
-                    code: Some(
-                        AnyoneAuthenticator::AnyoneAuthenticator::DEPLOYED_BYTECODE
-                            .clone()
-                            .into_legacy(),
-                    ),
+            .append(
+                self.authenticator,
+                AccountOverride {
+                    code: Some(AnyoneAuthenticator::AnyoneAuthenticator::DEPLOYED_BYTECODE.clone()),
                     ..Default::default()
                 },
-            ),
-        ]);
+            );
 
         let swapper_calls_arg = swap
             .calls
@@ -101,15 +87,9 @@ impl Simulator {
             amount: swap.allowance.amount.get().into_alloy(),
         };
         let gas = swapper
-            .swap(
-                self.settlement.0.into_alloy(),
-                sell,
-                buy,
-                allowance,
-                swapper_calls_arg,
-            )
+            .swap(self.settlement, sell, buy, allowance, swapper_calls_arg)
             .call()
-            .overrides(overrides.into_alloy())
+            .overrides(overrides)
             .await?;
 
         // `gas == 0` means that the simulation is not possible. See
@@ -130,9 +110,6 @@ impl Simulator {
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
-    #[error("web3 error: {0:?}")]
-    Web3(#[from] web3::error::Error),
-
     #[error("contract call error: {0:?}")]
     ContractCall(#[from] alloy::contract::Error),
 

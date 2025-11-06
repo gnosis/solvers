@@ -1,6 +1,6 @@
 use {
     crate::domain::eth,
-    serde::{de, Deserializer},
+    serde::{Deserializer, de},
     serde_with::DeserializeAs,
 };
 

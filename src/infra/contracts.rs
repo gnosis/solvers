@@ -1,4 +1,4 @@
-use {crate::domain::eth, alloy::primitives::Address, ethrpc::alloy::conversions::IntoAlloy};
+use {crate::domain::eth, alloy::primitives::Address};
 
 #[derive(Clone, Debug)]
 pub struct Contracts {
@@ -10,29 +10,14 @@ pub struct Contracts {
 impl Contracts {
     pub fn for_chain(chain: eth::ChainId) -> Self {
         Self {
-            settlement: contract_address_for_chain(
-                chain,
-                contracts::GPv2Settlement::raw_contract(),
+            settlement: contracts::alloy::GPv2Settlement::deployment_address(&(chain as u64))
+                .expect("contract address for all supported chains"),
+            authenticator: contracts::alloy::GPv2AllowListAuthentication::deployment_address(
+                &(chain as u64),
             )
-            .into_alloy(),
-            authenticator: contract_address_for_chain(
-                chain,
-                contracts::GPv2AllowListAuthentication::raw_contract(),
-            )
-            .into_alloy(),
+            .expect("contract address for all supported chains"),
             permit2: contracts::alloy::Permit2::deployment_address(&(chain as u64))
                 .expect("contract address for all supported chains"),
         }
     }
-}
-
-pub fn contract_address_for_chain(
-    chain: eth::ChainId,
-    contract: &contracts::ethcontract::Contract,
-) -> eth::H160 {
-    contract
-        .networks
-        .get(chain.network_id())
-        .expect("contract address for all supported chains")
-        .address
 }

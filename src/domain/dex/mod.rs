@@ -10,7 +10,7 @@ use {
     },
     alloy::primitives::Address,
     ethereum_types::U256,
-    ethrpc::alloy::conversions::IntoLegacy,
+    ethrpc::alloy::conversions::{IntoAlloy, IntoLegacy},
     std::fmt::{self, Debug, Formatter},
 };
 
@@ -117,7 +117,7 @@ impl Swap {
         gas_offset: eth::Gas,
     ) -> Option<solution::Solution> {
         let gas = if order.class == order::Class::Limit {
-            match simulator.gas(order.owner(), &self).await {
+            match simulator.gas(order.owner().into_alloy(), &self).await {
                 Ok(value) => value,
                 Err(infra::dex::simulator::Error::SettlementContractIsOwner) => self.gas,
                 Err(err) => {

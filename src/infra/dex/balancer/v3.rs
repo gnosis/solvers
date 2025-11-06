@@ -5,14 +5,16 @@
 use {
     crate::domain::dex,
     alloy::{
-        primitives::{aliases::U48, Address, Bytes, U160, U256},
+        primitives::{Address, Bytes, U160, U256, aliases::U48},
         sol_types::SolCall,
     },
+    anyhow::{Result, anyhow, ensure},
     contracts::alloy::{
         BalancerV3BatchRouter,
         BalancerV3BatchRouter::IBatchRouter::{SwapPathExactAmountIn, SwapPathExactAmountOut},
         Permit2 as Permit2Contract,
     },
+    ethrpc::AlloyProvider,
 };
 
 pub struct Permit2(Address);
@@ -43,7 +45,7 @@ impl Permit2 {
 
         // Transfers are done via Permit2, so we approve the balancer v3 router to spend
         // the input tokens
-        let mut calldata = Permit2Contract::Permit2::approveCall {
+        let calldata = Permit2Contract::Permit2::approveCall {
             token: token_in,
             spender,
             amount: U160::from(max_input),
@@ -51,24 +53,22 @@ impl Permit2 {
         }
         .abi_encode();
 
-        // As alloy encodes the last argument (expiration) as a U48 (6 bytes),
-        // we need to add 24 bytes to pad it into a U256 (32 bytes) (which is the
-        // expected for EVM arguments)
-        calldata.extend_from_slice(&[0u8; 24]);
-
         dex::Call { to, calldata }
     }
 }
 
-pub struct Router(Address);
+pub struct Router(BalancerV3BatchRouter::Instance);
 
 impl Router {
-    pub fn new(address: Address) -> Self {
-        Self(address)
+    pub fn new(address: Address, alloy_provider: AlloyProvider) -> Self {
+        Self(BalancerV3BatchRouter::Instance::new(
+            address,
+            alloy_provider,
+        ))
     }
 
     pub fn address(&self) -> Address {
-        self.0
+        *self.0.address()
     }
 
     pub fn swap_exact_amount_in(
@@ -96,6 +96,52 @@ impl Router {
                 calldata,
             },
         ]
+    }
+
+    /// Execute on-chain query for V3 swap and return the actual amounts
+    /// (high-level contract call)
+    pub async fn query_swap_exact_amount_in(
+        &self,
+        paths: Vec<SwapPathExactAmountIn>,
+    ) -> Result<U256> {
+        // Execute the query call directly
+        let swap_in_return = self
+            .0
+            .querySwapExactIn(paths, Address::ZERO, Self::user_data())
+            .call()
+            .await
+            .map_err(|e| anyhow!("V3 query_swap_exact_amount_in RPC call failed: {e:?}"))?;
+
+        // The result is (amounts_out, tokens_out, amounts_in)
+        // For exact amount in, we want the output amount (first element of amounts_out)
+        ensure!(
+            !swap_in_return.amountsOut.is_empty(),
+            "V3 query_swap_exact_in returned no output amounts"
+        );
+        Ok(swap_in_return.amountsOut[0])
+    }
+
+    /// Execute on-chain query for V3 swap and return the actual amounts
+    /// (high-level contract call)
+    pub async fn query_swap_exact_amount_out(
+        &self,
+        paths: Vec<SwapPathExactAmountOut>,
+    ) -> Result<U256> {
+        // Execute the query call directly
+        let swap_out_return = self
+            .0
+            .querySwapExactOut(paths, Address::ZERO, Self::user_data())
+            .call()
+            .await
+            .map_err(|e| anyhow!("V3 query_swap_exact_amount_out RPC call failed: {e:?}"))?;
+
+        // The result is (amounts_out, tokens_out, amounts_in)
+        // For exact amount out, we want the input amount (first element of amounts_in)
+        ensure!(
+            !swap_out_return.amountsIn.is_empty(),
+            "V3 query_swap_exact_out returned no input amounts"
+        );
+        Ok(swap_out_return.amountsIn[0])
     }
 
     pub fn swap_exact_amount_out(

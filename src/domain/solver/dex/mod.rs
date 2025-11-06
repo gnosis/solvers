@@ -13,7 +13,7 @@ use {
         },
         infra,
     },
-    futures::{future, stream, FutureExt, StreamExt},
+    futures::{FutureExt, StreamExt, future, stream},
     std::num::NonZeroUsize,
     tracing::Instrument,
 };

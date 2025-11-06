@@ -3,14 +3,18 @@ use {
         domain::{dex, eth, order},
         util,
     },
+    alloy::primitives::Address,
     base64::prelude::*,
     chrono::SecondsFormat,
-    ethrpc::{alloy::conversions::IntoAlloy, block_stream::CurrentBlockWatcher},
+    ethrpc::{
+        alloy::conversions::{IntoAlloy, IntoLegacy},
+        block_stream::CurrentBlockWatcher,
+    },
     futures::TryFutureExt,
     hmac::{Hmac, Mac},
-    hyper::{header::HeaderValue, StatusCode},
+    hyper::{StatusCode, header::HeaderValue},
     moka::future::Cache,
-    serde::{de::DeserializeOwned, Serialize},
+    serde::{Serialize, de::DeserializeOwned},
     sha2::Sha256,
     std::sync::atomic::{self, AtomicU64},
     tracing::Instrument,
@@ -46,7 +50,7 @@ pub struct Config {
 
     pub chain_id: eth::ChainId,
 
-    pub settlement_contract: eth::Address,
+    pub settlement_contract: Address,
 
     /// Credentials used to access OKX API.
     pub okx_credentials: OkxCredentialsConfig,
@@ -97,8 +101,8 @@ impl Okx {
             chain_index: config.chain_id as u64,
             // Funds first get moved in and out of the settlement contract so we have use
             // that address here to generate the correct calldata.
-            swap_receiver_address: config.settlement_contract.into(),
-            user_wallet_address: config.settlement_contract.into(),
+            swap_receiver_address: config.settlement_contract.into_legacy(),
+            user_wallet_address: config.settlement_contract.into_legacy(),
             ..Default::default()
         };
 

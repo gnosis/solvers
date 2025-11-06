@@ -10,14 +10,15 @@ use {
         dex::{minimum_surplus::MinimumSurplusLimits, slippage::SlippageLimits},
         eth,
     },
+    alloy::primitives::Address,
     ethrpc::block_stream::CurrentBlockWatcher,
     std::num::NonZeroUsize,
 };
 
 #[derive(Clone)]
 pub struct Contracts {
-    pub settlement: eth::ContractAddress,
-    pub authenticator: eth::ContractAddress,
+    pub settlement: Address,
+    pub authenticator: Address,
 }
 
 #[derive(Clone)]
