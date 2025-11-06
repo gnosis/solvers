@@ -306,7 +306,7 @@ impl Okx {
         })
     }
 
-    pub async fn send_get_request<T, U>(
+    async fn send_get_request<T, U>(
         &self,
         base_url: &reqwest::Url,
         endpoint: &str,
