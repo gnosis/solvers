@@ -70,6 +70,7 @@ pub fn from_domain(solutions: &[solution::Solution]) -> super::Solutions {
                     .collect(),
                 gas: solution.gas.map(|gas| gas.0.as_u64()),
                 flashloans: None,
+                wrappers: Default::default(),
             })
             .collect(),
     }
