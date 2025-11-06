@@ -8,13 +8,16 @@ use {
     std::{env, str::FromStr},
 };
 
+const DEFAULT_BUY_ORDERS_ENDPOINT: &str = "https://web3.okx.com/api/v5/dex/aggregator/";
+
 #[ignore]
 #[tokio::test]
 // To run this test, set the following environment variables accordingly to your
 // OKX setup: OKX_PROJECT_ID, OKX_API_KEY, OKX_SECRET_KEY, OKX_PASSPHRASE
 async fn swap_sell_regular() {
     let okx_config = okx_dex::Config {
-        endpoint: reqwest::Url::parse(okx_dex::DEFAULT_ENDPOINT).unwrap(),
+        sell_orders_endpoint: reqwest::Url::parse(okx_dex::DEFAULT_SELL_ORDERS_ENDPOINT).unwrap(),
+        buy_orders_endpoint: None,
         chain_id: crate::domain::eth::ChainId::Mainnet,
         okx_credentials: okx_dex::OkxCredentialsConfig {
             project_id: env::var("OKX_PROJECT_ID").unwrap(),
@@ -26,7 +29,6 @@ async fn swap_sell_regular() {
             H160::from_str("0x9008d19f58aabd9ed0d60971565aa8510560ab41").unwrap(),
         ),
         block_stream: None,
-        enable_buy_orders: false,
     };
 
     let order = Order {
@@ -59,7 +61,8 @@ async fn swap_sell_regular() {
 #[tokio::test]
 async fn swap_buy_disabled() {
     let okx_config = okx_dex::Config {
-        endpoint: reqwest::Url::parse("https://www.okx.com/api/v5/dex/aggregator/swap").unwrap(),
+        sell_orders_endpoint: reqwest::Url::parse(okx_dex::DEFAULT_SELL_ORDERS_ENDPOINT).unwrap(),
+        buy_orders_endpoint: None,
         chain_id: crate::domain::eth::ChainId::Mainnet,
         okx_credentials: okx_dex::OkxCredentialsConfig {
             project_id: String::new(),
@@ -71,7 +74,6 @@ async fn swap_buy_disabled() {
             H160::from_str("0x9008d19f58aabd9ed0d60971565aa8510560ab41").unwrap(),
         ),
         block_stream: None,
-        enable_buy_orders: false,
     };
 
     let order = Order {
@@ -102,7 +104,8 @@ async fn swap_buy_disabled() {
 // OKX setup: OKX_PROJECT_ID, OKX_API_KEY, OKX_SECRET_KEY, OKX_PASSPHRASE
 async fn swap_buy_enabled() {
     let okx_config = okx_dex::Config {
-        endpoint: reqwest::Url::parse(okx_dex::DEFAULT_ENDPOINT).unwrap(),
+        sell_orders_endpoint: reqwest::Url::parse(okx_dex::DEFAULT_SELL_ORDERS_ENDPOINT).unwrap(),
+        buy_orders_endpoint: Some(reqwest::Url::parse(DEFAULT_BUY_ORDERS_ENDPOINT).unwrap()),
         chain_id: crate::domain::eth::ChainId::Mainnet,
         okx_credentials: okx_dex::OkxCredentialsConfig {
             project_id: env::var("OKX_PROJECT_ID").unwrap(),
@@ -114,7 +117,6 @@ async fn swap_buy_enabled() {
             H160::from_str("0x9008d19f58aabd9ed0d60971565aa8510560ab41").unwrap(),
         ),
         block_stream: None,
-        enable_buy_orders: true,
     };
 
     let order = Order {
@@ -152,7 +154,8 @@ async fn swap_buy_enabled() {
 // OKX setup: OKX_PROJECT_ID, OKX_API_KEY, OKX_SECRET_KEY, OKX_PASSPHRASE
 async fn swap_api_error() {
     let okx_config = okx_dex::Config {
-        endpoint: reqwest::Url::parse(okx_dex::DEFAULT_ENDPOINT).unwrap(),
+        sell_orders_endpoint: reqwest::Url::parse(okx_dex::DEFAULT_SELL_ORDERS_ENDPOINT).unwrap(),
+        buy_orders_endpoint: None,
         chain_id: crate::domain::eth::ChainId::Mainnet,
         okx_credentials: okx_dex::OkxCredentialsConfig {
             project_id: env::var("OKX_PROJECT_ID").unwrap(),
@@ -164,7 +167,6 @@ async fn swap_api_error() {
             H160::from_str("0x9008d19f58aabd9ed0d60971565aa8510560ab41").unwrap(),
         ),
         block_stream: None,
-        enable_buy_orders: false,
     };
 
     let order = Order {
@@ -196,7 +198,8 @@ async fn swap_api_error() {
 // OKX setup: OKX_PROJECT_ID, OKX_API_KEY, OKX_SECRET_KEY, OKX_PASSPHRASE
 async fn swap_sell_insufficient_liquidity() {
     let okx_config = okx_dex::Config {
-        endpoint: reqwest::Url::parse(okx_dex::DEFAULT_ENDPOINT).unwrap(),
+        sell_orders_endpoint: reqwest::Url::parse(okx_dex::DEFAULT_SELL_ORDERS_ENDPOINT).unwrap(),
+        buy_orders_endpoint: None,
         chain_id: crate::domain::eth::ChainId::Mainnet,
         okx_credentials: okx_dex::OkxCredentialsConfig {
             project_id: env::var("OKX_PROJECT_ID").unwrap(),
@@ -208,7 +211,6 @@ async fn swap_sell_insufficient_liquidity() {
             H160::from_str("0x9008d19f58aabd9ed0d60971565aa8510560ab41").unwrap(),
         ),
         block_stream: None,
-        enable_buy_orders: false,
     };
 
     let order = Order {
@@ -240,7 +242,8 @@ async fn swap_sell_insufficient_liquidity() {
 // OKX setup: OKX_PROJECT_ID, OKX_API_KEY, OKX_SECRET_KEY, OKX_PASSPHRASE
 async fn swap_buy_insufficient_liquidity() {
     let okx_config = okx_dex::Config {
-        endpoint: reqwest::Url::parse(okx_dex::DEFAULT_ENDPOINT).unwrap(),
+        sell_orders_endpoint: reqwest::Url::parse(okx_dex::DEFAULT_SELL_ORDERS_ENDPOINT).unwrap(),
+        buy_orders_endpoint: Some(reqwest::Url::parse(DEFAULT_BUY_ORDERS_ENDPOINT).unwrap()),
         chain_id: crate::domain::eth::ChainId::Mainnet,
         okx_credentials: okx_dex::OkxCredentialsConfig {
             project_id: env::var("OKX_PROJECT_ID").unwrap(),
@@ -252,7 +255,6 @@ async fn swap_buy_insufficient_liquidity() {
             H160::from_str("0x9008d19f58aabd9ed0d60971565aa8510560ab41").unwrap(),
         ),
         block_stream: None,
-        enable_buy_orders: true,
     };
 
     let order = Order {

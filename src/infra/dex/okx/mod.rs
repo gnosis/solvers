@@ -18,27 +18,31 @@ use {
 
 mod dto;
 
-/// Default OKX v6 DEX aggregator API endpoint.
-pub const DEFAULT_ENDPOINT: &str = "https://web3.okx.com/api/v6/dex/aggregator/";
+/// Default OKX v6 DEX aggregator API endpoint (for sell orders - exactIn).
+pub const DEFAULT_SELL_ORDERS_ENDPOINT: &str = "https://web3.okx.com/api/v6/dex/aggregator/";
 
 const DEFAULT_DEX_APPROVED_ADDRESSES_CACHE_SIZE: u64 = 100;
 
 /// Bindings to the OKX swap API.
 pub struct Okx {
     client: super::Client,
-    endpoint: reqwest::Url,
+    sell_orders_endpoint: reqwest::Url,
+    buy_orders_endpoint: Option<reqwest::Url>,
     api_secret_key: String,
     defaults: dto::SwapRequest,
     /// Cache which stores a map of Token Address to contract address of
     /// OKX DEX approve contract.
     dex_approved_addresses: Cache<eth::TokenAddress, eth::ContractAddress>,
-    /// Enable buy order support (ExactOut mode).
-    enable_buy_orders: bool,
 }
 
 pub struct Config {
-    /// The URL for the 0KX swap API.
-    pub endpoint: reqwest::Url,
+    /// The URL for the OKX swap API for sell orders (exactIn mode).
+    /// Uses V6 API by default.
+    pub sell_orders_endpoint: reqwest::Url,
+
+    /// The URL for the OKX swap API for buy orders (exactOut mode).
+    /// Uses V5 API. If not specified, buy orders will not be supported.
+    pub buy_orders_endpoint: Option<reqwest::Url>,
 
     pub chain_id: eth::ChainId,
 
@@ -49,9 +53,6 @@ pub struct Config {
 
     /// The stream that yields every new block.
     pub block_stream: Option<CurrentBlockWatcher>,
-
-    /// Enable buy order support (ExactOut mode).
-    pub enable_buy_orders: bool,
 }
 
 pub struct OkxCredentialsConfig {
@@ -103,11 +104,11 @@ impl Okx {
 
         Ok(Self {
             client,
-            endpoint: config.endpoint,
+            sell_orders_endpoint: config.sell_orders_endpoint,
+            buy_orders_endpoint: config.buy_orders_endpoint,
             api_secret_key: config.okx_credentials.api_secret_key,
             defaults,
             dex_approved_addresses: Cache::new(DEFAULT_DEX_APPROVED_ADDRESSES_CACHE_SIZE),
-            enable_buy_orders: config.enable_buy_orders,
         })
     }
 
@@ -137,11 +138,12 @@ impl Okx {
 
         // For buy orders (ExactOut mode), the slippage is on the input token,
         // so we need to use U256::MAX allowance to cover the maximum possible input.
-        let allowance_amount = if self.enable_buy_orders && order.side == order::Side::Buy {
-            eth::U256::max_value()
-        } else {
-            swap_response.router_result.from_token_amount
-        };
+        let allowance_amount =
+            if self.buy_orders_endpoint.is_some() && order.side == order::Side::Buy {
+                eth::U256::max_value()
+            } else {
+                swap_response.router_result.from_token_amount
+            };
 
         Ok(dex::Swap {
             calls: vec![dex::Call {
@@ -177,33 +179,82 @@ impl Okx {
     /// Returns a tuple of the /swap API response and dex contract address for
     /// the sell token obtained from /approve-transaction API endpoint or an
     /// error.
+    ///
+    /// Routes to sell_orders_endpoint for sell orders (exactIn) and
+    /// buy_orders_endpoint for buy orders (exactOut) if configured.
     async fn handle_api_requests(
         &self,
         order: &dex::Order,
         slippage: &dex::Slippage,
     ) -> Result<(dto::SwapResponse, eth::ContractAddress), Error> {
         let swap_request_future = async {
-            let swap_request =
-                self.defaults
-                    .clone()
-                    .try_with_domain(order, slippage, self.enable_buy_orders)?;
-            self.send_get_request("swap", &swap_request).await
+            match order.side {
+                order::Side::Sell => {
+                    // Use V6 API for sell orders
+                    let swap_request = self.defaults.clone().with_domain(order, slippage);
+                    self.send_get_request(&self.sell_orders_endpoint, "swap", &swap_request)
+                        .await
+                }
+                order::Side::Buy => {
+                    // Use V5 API for buy orders if configured
+                    let endpoint = self
+                        .buy_orders_endpoint
+                        .as_ref()
+                        .ok_or(Error::OrderNotSupported)?;
+                    let swap_request_v6 = self.defaults.clone().with_domain(order, slippage);
+                    let swap_request_v5 = dto::SwapRequestV5::from_v6(&swap_request_v6);
+
+                    self.send_get_request(endpoint, "swap", &swap_request_v5)
+                        .await
+                }
+            }
         };
 
         let approve_transaction_request_future = async {
-            let approve_transaction_request = dto::ApproveTransactionRequest::with_domain(
-                self.defaults.chain_index,
-                order,
-                self.enable_buy_orders,
-            );
+            match order.side {
+                order::Side::Sell => {
+                    // Use V6 API for sell orders
+                    let approve_request = dto::ApproveTransactionRequest::with_domain(
+                        self.defaults.chain_index,
+                        order,
+                        self.buy_orders_endpoint.is_some(),
+                    );
 
-            let approve_transaction: dto::ApproveTransactionResponse = self
-                .send_get_request("approve-transaction", &approve_transaction_request)
-                .await?;
+                    let approve_transaction: dto::ApproveTransactionResponse = self
+                        .send_get_request(
+                            &self.sell_orders_endpoint,
+                            "approve-transaction",
+                            &approve_request,
+                        )
+                        .await?;
 
-            Ok(eth::ContractAddress(
-                approve_transaction.dex_contract_address,
-            ))
+                    Ok(eth::ContractAddress(
+                        approve_transaction.dex_contract_address,
+                    ))
+                }
+                order::Side::Buy => {
+                    // Use V5 API for buy orders if configured
+                    let endpoint = self
+                        .buy_orders_endpoint
+                        .as_ref()
+                        .ok_or(Error::OrderNotSupported)?;
+                    let approve_request_v6 = dto::ApproveTransactionRequest::with_domain(
+                        self.defaults.chain_index,
+                        order,
+                        true,
+                    );
+                    let approve_request_v5 =
+                        dto::ApproveTransactionRequestV5::from_v6(&approve_request_v6);
+
+                    let approve_transaction: dto::ApproveTransactionResponse = self
+                        .send_get_request(endpoint, "approve-transaction", &approve_request_v5)
+                        .await?;
+
+                    Ok(eth::ContractAddress(
+                        approve_transaction.dex_contract_address,
+                    ))
+                }
+            }
         };
 
         tokio::try_join!(
@@ -253,7 +304,12 @@ impl Okx {
         })
     }
 
-    async fn send_get_request<T, U>(&self, endpoint: &str, query: &T) -> Result<U, Error>
+    pub async fn send_get_request<T, U>(
+        &self,
+        base_url: &reqwest::Url,
+        endpoint: &str,
+        query: &T,
+    ) -> Result<U, Error>
     where
         T: Serialize,
         U: DeserializeOwned + Clone,
@@ -262,7 +318,7 @@ impl Okx {
             .client
             .request(
                 reqwest::Method::GET,
-                self.endpoint
+                base_url
                     .join(endpoint)
                     .map_err(|_| Error::RequestBuildFailed)?,
             )

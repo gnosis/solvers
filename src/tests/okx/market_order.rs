@@ -322,12 +322,12 @@ async fn buy_enabled() {
 node-url = 'http://localhost:8545'
 [dex]
 chain-id = '1'
-endpoint = 'http://{solver_addr}/'
+sell-orders-endpoint = 'http://{solver_addr}/'
+buy-orders-endpoint = 'http://{solver_addr}/'
 api-project-id = '1'
 api-key = '1234'
 api-secret-key = '1234567890123456'
 api-passphrase = 'pass'
-enable-buy-orders = true
 ",
         ))
     }
@@ -335,14 +335,13 @@ enable-buy-orders = true
     let api = mock::http::setup(vec![
         mock::http::Expectation::Get {
             path: mock::http::Path::exact(
-                "swap?chainIndex=1\
+                "swap?chainId=1\
                 &amount=200000000000000000000\
                 &fromTokenAddress=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2\
                 &toTokenAddress=0xe41d2489571d322189246dafa5ebde1f4699f498\
-                &slippagePercent=0.01\
+                &slippage=0.01\
                 &userWalletAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41\
-                &swapReceiverAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41\
-                &swapMode=exactOut"
+                &swapReceiverAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41"
             ),
             res: json!(
               {
@@ -434,7 +433,7 @@ enable-buy-orders = true
         },
         mock::http::Expectation::Get {
          path: mock::http::Path::exact(
-             "approve-transaction?chainIndex=1\
+             "approve-transaction?chainId=1\
              &tokenContractAddress=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2\
              &approveAmount=115792089237316195423570985008687907853269984665640564039457584007913129639935"
          ),
