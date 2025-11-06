@@ -224,10 +224,10 @@ pub struct ApproveTransactionRequest {
 }
 
 impl ApproveTransactionRequest {
-    pub fn with_domain(chain_index: u64, order: &dex::Order, enable_buy_orders: bool) -> Self {
+    pub fn with_domain(chain_index: u64, order: &dex::Order) -> Self {
         // For buy orders (ExactOut mode), we need to use U256::MAX allowance
         // because the exact input amount is not known in advance.
-        let approve_amount = if enable_buy_orders && matches!(order.side, order::Side::Buy) {
+        let approve_amount = if matches!(order.side, order::Side::Buy) {
             U256::MAX
         } else {
             order.amount.get()

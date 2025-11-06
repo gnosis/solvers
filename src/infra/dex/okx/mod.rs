@@ -221,7 +221,6 @@ impl Okx {
                     let approve_request = dto::ApproveTransactionRequest::with_domain(
                         self.defaults.chain_index,
                         order,
-                        self.buy_orders_endpoint.is_some(),
                     );
 
                     let approve_transaction: dto::ApproveTransactionResponse = self
@@ -245,7 +244,6 @@ impl Okx {
                     let approve_request_v6 = dto::ApproveTransactionRequest::with_domain(
                         self.defaults.chain_index,
                         order,
-                        true,
                     );
                     let approve_request_v5 =
                         dto::ApproveTransactionRequestV5::from_v6(&approve_request_v6);
