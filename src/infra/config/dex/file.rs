@@ -10,7 +10,7 @@ use {
         util::serialize,
     },
     bigdecimal::{BigDecimal, Zero},
-    ethrpc::alloy::conversions::IntoLegacy,
+    ethrpc::alloy::conversions::IntoAlloy,
     serde::{de::DeserializeOwned, Deserialize},
     serde_with::serde_as,
     std::{fmt::Debug, num::NonZeroUsize, path::Path, time::Duration},
@@ -148,22 +148,20 @@ pub async fn load<T: DeserializeOwned>(path: &Path) -> (super::Config, T) {
     // CoW Protocol contracts have the same address.
     let contracts = contracts::Contracts::for_chain(eth::ChainId::Mainnet);
     let (settlement, authenticator) = if let Some(settlement) = config.settlement {
-        let authenticator = eth::ContractAddress({
-            let web3 = blockchain::rpc(&config.node_url);
-            let settlement = ::contracts::GPv2Settlement::at(&web3, settlement);
-            settlement
-                .methods()
-                .authenticator()
-                .call()
-                .await
-                .unwrap_or_else(|e| panic!("error reading authenticator contract address: {e:?}"))
-        });
-        (eth::ContractAddress(settlement), authenticator)
+        let authenticator =
+            {
+                let web3 = blockchain::rpc(&config.node_url);
+                let settlement = ::contracts::alloy::GPv2Settlement::Instance::new(
+                    settlement.into_alloy(),
+                    web3.alloy.clone(),
+                );
+                settlement.authenticator().call().await.unwrap_or_else(|e| {
+                    panic!("error reading authenticator contract address: {e:?}")
+                })
+            };
+        (settlement.into_alloy(), authenticator)
     } else {
-        (
-            eth::ContractAddress(contracts.settlement.into_legacy()),
-            eth::ContractAddress(contracts.authenticator.into_legacy()),
-        )
+        (contracts.settlement, contracts.authenticator)
     };
 
     let block_stream = match config.current_block_poll_interval {
