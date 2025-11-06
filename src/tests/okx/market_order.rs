@@ -341,7 +341,8 @@ api-passphrase = 'pass'
                 &toTokenAddress=0xe41d2489571d322189246dafa5ebde1f4699f498\
                 &slippage=0.01\
                 &userWalletAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41\
-                &swapReceiverAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41"
+                &swapReceiverAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41\
+                &swapMode=exactOut"
             ),
             res: json!(
               {
