@@ -216,7 +216,7 @@ impl Okx {
         };
 
         let approve_transaction_request_future = async {
-            match order.side {
+            let approve_tx: dto::ApproveTransactionResponse = match order.side {
                 order::Side::Sell => {
                     // Use V6 API for sell orders
                     let approve_request = dto::ApproveTransactionRequest::with_domain(
@@ -224,17 +224,12 @@ impl Okx {
                         order,
                     );
 
-                    let approve_transaction: dto::ApproveTransactionResponse = self
-                        .send_get_request(
-                            &self.sell_orders_endpoint,
-                            "approve-transaction",
-                            &approve_request,
-                        )
-                        .await?;
-
-                    Ok(eth::ContractAddress(
-                        approve_transaction.dex_contract_address,
-                    ))
+                    self.send_get_request(
+                        &self.sell_orders_endpoint,
+                        "approve-transaction",
+                        &approve_request,
+                    )
+                    .await?
                 }
                 order::Side::Buy => {
                     // Use V5 API for buy orders if configured
@@ -249,15 +244,12 @@ impl Okx {
                     let approve_request_v5: dto::ApproveTransactionRequestV5 =
                         (&approve_request_v6).into();
 
-                    let approve_transaction: dto::ApproveTransactionResponse = self
-                        .send_get_request(endpoint, "approve-transaction", &approve_request_v5)
-                        .await?;
-
-                    Ok(eth::ContractAddress(
-                        approve_transaction.dex_contract_address,
-                    ))
+                    self.send_get_request(endpoint, "approve-transaction", &approve_request_v5)
+                        .await?
                 }
-            }
+            };
+
+            Ok(eth::ContractAddress(approve_tx.dex_contract_address))
         };
 
         tokio::try_join!(
