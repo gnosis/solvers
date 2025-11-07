@@ -117,8 +117,8 @@ pub struct SwapRequestV5 {
     pub swap_mode: SwapMode,
 }
 
-impl SwapRequestV5 {
-    pub fn from_v6(v6_request: &SwapRequest) -> Self {
+impl From<&SwapRequest> for SwapRequestV5 {
+    fn from(v6_request: &SwapRequest) -> Self {
         Self {
             chain_id: v6_request.chain_index,
             amount: v6_request.amount,
@@ -259,8 +259,8 @@ pub struct ApproveTransactionRequestV5 {
     pub approve_amount: U256,
 }
 
-impl ApproveTransactionRequestV5 {
-    pub fn from_v6(v6_request: &ApproveTransactionRequest) -> Self {
+impl From<&ApproveTransactionRequest> for ApproveTransactionRequestV5 {
+    fn from(v6_request: &ApproveTransactionRequest) -> Self {
         Self {
             chain_id: v6_request.chain_index,
             token_contract_address: v6_request.token_contract_address,

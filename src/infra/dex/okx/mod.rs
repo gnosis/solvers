@@ -206,7 +206,7 @@ impl Okx {
                         .as_ref()
                         .ok_or(Error::OrderNotSupported)?;
                     let swap_request_v6 = self.defaults.clone().with_domain(order, slippage);
-                    let swap_request_v5 = dto::SwapRequestV5::from_v6(&swap_request_v6);
+                    let swap_request_v5: dto::SwapRequestV5 = (&swap_request_v6).into();
 
                     self.send_get_request(endpoint, "swap", &swap_request_v5)
                         .await
@@ -245,8 +245,8 @@ impl Okx {
                         self.defaults.chain_index,
                         order,
                     );
-                    let approve_request_v5 =
-                        dto::ApproveTransactionRequestV5::from_v6(&approve_request_v6);
+                    let approve_request_v5: dto::ApproveTransactionRequestV5 =
+                        (&approve_request_v6).into();
 
                     let approve_transaction: dto::ApproveTransactionResponse = self
                         .send_get_request(endpoint, "approve-transaction", &approve_request_v5)
