@@ -45,7 +45,8 @@ pub struct Config {
     pub sell_orders_endpoint: reqwest::Url,
 
     /// The URL for the OKX swap API for buy orders (exactOut mode).
-    /// Uses V5 API. If not specified, buy orders will not be supported.
+    /// If specified, the URL must point to the V5 API. Otherwise, buy orders
+    /// will be ignored.
     pub buy_orders_endpoint: Option<reqwest::Url>,
 
     pub chain_id: eth::ChainId,

@@ -20,7 +20,8 @@ struct Config {
     sell_orders_endpoint: reqwest::Url,
 
     /// The URL endpoint for the OKX swap API for buy orders (exactOut mode).
-    /// Uses V5 API. If not specified, buy orders will be declined.
+    /// If specified, the URL must point to the V5 API. Otherwise, buy orders
+    /// will be ignored.
     #[serde(default)]
     #[serde_as(as = "Option<serde_with::DisplayFromStr>")]
     buy_orders_endpoint: Option<reqwest::Url>,
