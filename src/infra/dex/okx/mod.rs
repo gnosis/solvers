@@ -27,6 +27,15 @@ pub const DEFAULT_SELL_ORDERS_ENDPOINT: &str = "https://web3.okx.com/api/v6/dex/
 
 const DEFAULT_DEX_APPROVED_ADDRESSES_CACHE_SIZE: u64 = 100;
 
+/// Cache key for OKX DEX approve contract addresses.
+/// V5 and V6 APIs may return different contract addresses for the same token,
+/// so we need to cache separately by order side.
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+struct ApprovalCacheKey {
+    token: eth::TokenAddress,
+    side: order::Side,
+}
+
 /// Bindings to the OKX swap API.
 pub struct Okx {
     client: super::Client,
@@ -34,9 +43,11 @@ pub struct Okx {
     buy_orders_endpoint: Option<reqwest::Url>,
     api_secret_key: String,
     defaults: dto::SwapRequest,
-    /// Cache which stores a map of Token Address to contract address of
-    /// OKX DEX approve contract.
-    dex_approved_addresses: Cache<eth::TokenAddress, eth::ContractAddress>,
+    /// Cache which stores a map of (Token Address, Order Side) to contract
+    /// address of OKX DEX approve contract. Separate caching by side is
+    /// needed because V5 API (buy orders) and V6 API (sell orders) return
+    /// different addresses.
+    dex_approved_addresses: Cache<ApprovalCacheKey, eth::ContractAddress>,
 }
 
 pub struct Config {
@@ -249,7 +260,13 @@ impl Okx {
         tokio::try_join!(
             swap_request_future,
             self.dex_approved_addresses
-                .try_get_with(order.sell, approve_transaction_request_future)
+                .try_get_with(
+                    ApprovalCacheKey {
+                        token: order.sell,
+                        side: order.side,
+                    },
+                    approve_transaction_request_future
+                )
                 .map_err(
                     |_: std::sync::Arc<Error>| Error::ApproveTransactionRequestFailed(order.sell)
                 )
