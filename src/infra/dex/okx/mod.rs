@@ -190,95 +190,122 @@ impl Okx {
         })
     }
 
-    /// Invokes /swap and /approve-transaction API requests in parallel.
+    /// Routes API requests based on order side.
     ///
-    /// Returns a tuple of the /swap API response and dex contract address for
-    /// the sell token obtained from /approve-transaction API endpoint or an
-    /// error.
-    ///
-    /// Routes to sell_orders_endpoint for sell orders (exactIn) and
-    /// buy_orders_endpoint for buy orders (exactOut) if configured.
+    /// - Sell orders: Parallel execution of /swap and /approve-transaction
+    /// - Buy orders: Sequential execution (swap first, then approval with exact
+    ///   amount)
     async fn handle_api_requests(
         &self,
         order: &dex::Order,
         slippage: &dex::Slippage,
     ) -> Result<(dto::SwapResponse, eth::ContractAddress), Error> {
-        let swap_response: dto::SwapResponse = match order.side {
-            order::Side::Sell => {
-                // Use V6 API for sell orders
-                let swap_request = self.defaults.clone().with_domain(order, slippage);
-                self.send_get_request(&self.sell_orders_endpoint, "swap", &swap_request)
-                    .await
-            }
-            order::Side::Buy => {
-                // Use V5 API for buy orders if configured
-                let endpoint = self
-                    .buy_orders_endpoint
-                    .as_ref()
-                    .ok_or(Error::OrderNotSupported)?;
-                let swap_request_v6 = self.defaults.clone().with_domain(order, slippage);
-                let swap_request_v5: dto::SwapRequestV5 = (&swap_request_v6).into();
+        match order.side {
+            order::Side::Sell => self.handle_sell_order(order, slippage).await,
+            order::Side::Buy => self.handle_buy_order(order, slippage).await,
+        }
+    }
 
-                self.send_get_request(endpoint, "swap", &swap_request_v5)
-                    .await
-            }
-        }?;
+    /// Handle sell orders with parallel API requests.
+    ///
+    /// Since the approval amount is known upfront from `order.amount`,
+    /// we can execute `/swap` and `/approve-transaction` in parallel for better
+    /// performance.
+    async fn handle_sell_order(
+        &self,
+        order: &dex::Order,
+        slippage: &dex::Slippage,
+    ) -> Result<(dto::SwapResponse, eth::ContractAddress), Error> {
+        let swap_future = async {
+            let swap_request = self.defaults.clone().with_domain(order, slippage);
+            self.send_get_request(&self.sell_orders_endpoint, "swap", &swap_request)
+                .await
+        };
 
-        let approve_transaction_request_future = async {
-            let approval_amount = match order.side {
-                order::Side::Sell => order.amount.get(),
-                order::Side::Buy => {
-                    // For buy orders, we need to get the from_token_amount from
-                    // the swap response to know the required allowance.
-                    swap_response.router_result.from_token_amount
-                }
-            };
+        let approve_future = async {
             let approve_request = dto::ApproveTransactionRequest::new(
                 self.defaults.chain_index,
                 order.sell,
-                approval_amount,
+                order.amount.get(),
             );
 
-            let approve_tx: dto::ApproveTransactionResponse = match order.side {
-                order::Side::Sell => {
-                    // Use V6 API for sell orders
-                    self.send_get_request(
-                        &self.sell_orders_endpoint,
-                        "approve-transaction",
-                        &approve_request,
-                    )
-                    .await?
-                }
-                order::Side::Buy => {
-                    // Use V5 API for buy orders if configured
-                    let endpoint = self
-                        .buy_orders_endpoint
-                        .as_ref()
-                        .ok_or(Error::OrderNotSupported)?;
-                    let approve_request_v5: dto::ApproveTransactionRequestV5 =
-                        (&approve_request).into();
-
-                    self.send_get_request(endpoint, "approve-transaction", &approve_request_v5)
-                        .await?
-                }
-            };
+            let approve_tx: dto::ApproveTransactionResponse = self
+                .send_get_request(
+                    &self.sell_orders_endpoint,
+                    "approve-transaction",
+                    &approve_request,
+                )
+                .await?;
 
             Ok(eth::ContractAddress(approve_tx.dex_contract_address))
         };
 
-        let dex_approved_address = self
-            .dex_approved_addresses
+        tokio::try_join!(
+            swap_future,
+            self.cache_approval_address(order, approve_future)
+        )
+    }
+
+    /// Handle buy orders with sequential API requests.
+    ///
+    /// Since the approval amount depends on the swap response
+    /// (`from_token_amount`), we must execute `/swap` first, then
+    /// `/approve-transaction`.
+    async fn handle_buy_order(
+        &self,
+        order: &dex::Order,
+        slippage: &dex::Slippage,
+    ) -> Result<(dto::SwapResponse, eth::ContractAddress), Error> {
+        let endpoint = self
+            .buy_orders_endpoint
+            .as_ref()
+            .ok_or(Error::OrderNotSupported)?;
+
+        let swap_request_v6 = self.defaults.clone().with_domain(order, slippage);
+        let swap_request_v5: dto::SwapRequestV5 = (&swap_request_v6).into();
+        let swap_response: dto::SwapResponse = self
+            .send_get_request(endpoint, "swap", &swap_request_v5)
+            .await?;
+
+        let approve_future = async {
+            let approve_request = dto::ApproveTransactionRequest::new(
+                self.defaults.chain_index,
+                order.sell,
+                swap_response.router_result.from_token_amount,
+            );
+            let approve_request_v5: dto::ApproveTransactionRequestV5 = (&approve_request).into();
+
+            let approve_tx: dto::ApproveTransactionResponse = self
+                .send_get_request(endpoint, "approve-transaction", &approve_request_v5)
+                .await?;
+
+            Ok(eth::ContractAddress(approve_tx.dex_contract_address))
+        };
+
+        let dex_approved_address = self.cache_approval_address(order, approve_future).await?;
+
+        Ok((swap_response, dex_approved_address))
+    }
+
+    /// Helper to cache approval addresses.
+    async fn cache_approval_address<F>(
+        &self,
+        order: &dex::Order,
+        future: F,
+    ) -> Result<eth::ContractAddress, Error>
+    where
+        F: Future<Output = Result<eth::ContractAddress, Error>>,
+    {
+        self.dex_approved_addresses
             .try_get_with(
                 ApprovalCacheKey {
                     token: order.sell,
                     side: order.side,
                 },
-                approve_transaction_request_future,
+                future,
             )
             .map_err(|_: std::sync::Arc<Error>| Error::ApproveTransactionRequestFailed(order.sell))
-            .await?;
-
-        Ok((swap_response, dex_approved_address))
+            .await
     }
 
     /// OKX requires signature of the request to be added as dedicated HTTP

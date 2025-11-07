@@ -436,7 +436,7 @@ api-passphrase = 'pass'
          path: mock::http::Path::exact(
              "approve-transaction?chainId=1\
              &tokenContractAddress=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2\
-             &approveAmount=115792089237316195423570985008687907853269984665640564039457584007913129639935"
+             &approveAmount=30500000000000000"
          ),
          res: json!(
            {
