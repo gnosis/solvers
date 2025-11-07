@@ -80,7 +80,7 @@ async fn swap_buy_disabled() {
             H160::from_str("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48").unwrap(),
         ),
         side: crate::domain::order::Side::Buy,
-        amount: Amount::new(U256::from_dec_str("100000000").unwrap()),
+        amount: Amount::new(U256::from_dec_str("1000000000").unwrap()),
         owner: H160::from_str("0x6f9ffea7370310cd0f890dfde5e0e061059dcfb8").unwrap(),
     };
 
@@ -121,7 +121,7 @@ async fn swap_buy_enabled() {
             H160::from_str("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48").unwrap(),
         ),
         side: crate::domain::order::Side::Buy,
-        amount: Amount::new(U256::from_dec_str("100000000").unwrap()),
+        amount: Amount::new(U256::from_dec_str("1000000000").unwrap()),
         owner: H160::from_str("0x6f9ffea7370310cd0f890dfde5e0e061059dcfb8").unwrap(),
     };
 
