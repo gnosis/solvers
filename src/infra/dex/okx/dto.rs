@@ -3,7 +3,7 @@
 
 use {
     crate::{
-        domain::{dex, order},
+        domain::{dex, eth::TokenAddress, order},
         util::serialize,
     },
     bigdecimal::BigDecimal,
@@ -224,19 +224,11 @@ pub struct ApproveTransactionRequest {
 }
 
 impl ApproveTransactionRequest {
-    pub fn with_domain(chain_index: u64, order: &dex::Order) -> Self {
-        // For buy orders (ExactOut mode), we need to use U256::MAX allowance
-        // because the exact input amount is not known in advance.
-        let approve_amount = if matches!(order.side, order::Side::Buy) {
-            U256::MAX
-        } else {
-            order.amount.get()
-        };
-
+    pub fn new(chain_index: u64, token: TokenAddress, amount: U256) -> Self {
         Self {
             chain_index,
-            token_contract_address: order.sell.0,
-            approve_amount,
+            token_contract_address: token.0,
+            approve_amount: amount,
         }
     }
 }

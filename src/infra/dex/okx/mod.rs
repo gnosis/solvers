@@ -203,32 +203,41 @@ impl Okx {
         order: &dex::Order,
         slippage: &dex::Slippage,
     ) -> Result<(dto::SwapResponse, eth::ContractAddress), Error> {
-        let swap_request_future = async {
-            match order.side {
-                order::Side::Sell => {
-                    // Use V6 API for sell orders
-                    let swap_request = self.defaults.clone().with_domain(order, slippage);
-                    self.send_get_request(&self.sell_orders_endpoint, "swap", &swap_request)
-                        .await
-                }
-                order::Side::Buy => {
-                    // Use V5 API for buy orders if configured
-                    let endpoint = self
-                        .buy_orders_endpoint
-                        .as_ref()
-                        .ok_or(Error::OrderNotSupported)?;
-                    let swap_request_v6 = self.defaults.clone().with_domain(order, slippage);
-                    let swap_request_v5: dto::SwapRequestV5 = (&swap_request_v6).into();
-
-                    self.send_get_request(endpoint, "swap", &swap_request_v5)
-                        .await
-                }
+        let swap_response: dto::SwapResponse = match order.side {
+            order::Side::Sell => {
+                // Use V6 API for sell orders
+                let swap_request = self.defaults.clone().with_domain(order, slippage);
+                self.send_get_request(&self.sell_orders_endpoint, "swap", &swap_request)
+                    .await
             }
-        };
+            order::Side::Buy => {
+                // Use V5 API for buy orders if configured
+                let endpoint = self
+                    .buy_orders_endpoint
+                    .as_ref()
+                    .ok_or(Error::OrderNotSupported)?;
+                let swap_request_v6 = self.defaults.clone().with_domain(order, slippage);
+                let swap_request_v5: dto::SwapRequestV5 = (&swap_request_v6).into();
+
+                self.send_get_request(endpoint, "swap", &swap_request_v5)
+                    .await
+            }
+        }?;
 
         let approve_transaction_request_future = async {
-            let approve_request =
-                dto::ApproveTransactionRequest::with_domain(self.defaults.chain_index, order);
+            let approval_amount = match order.side {
+                order::Side::Sell => order.amount.get(),
+                order::Side::Buy => {
+                    // For buy orders, we need to get the from_token_amount from
+                    // the swap response to know the required allowance.
+                    swap_response.router_result.from_token_amount
+                }
+            };
+            let approve_request = dto::ApproveTransactionRequest::new(
+                self.defaults.chain_index,
+                order.sell,
+                approval_amount,
+            );
 
             let approve_tx: dto::ApproveTransactionResponse = match order.side {
                 order::Side::Sell => {
@@ -257,20 +266,19 @@ impl Okx {
             Ok(eth::ContractAddress(approve_tx.dex_contract_address))
         };
 
-        tokio::try_join!(
-            swap_request_future,
-            self.dex_approved_addresses
-                .try_get_with(
-                    ApprovalCacheKey {
-                        token: order.sell,
-                        side: order.side,
-                    },
-                    approve_transaction_request_future
-                )
-                .map_err(
-                    |_: std::sync::Arc<Error>| Error::ApproveTransactionRequestFailed(order.sell)
-                )
-        )
+        let dex_approved_address = self
+            .dex_approved_addresses
+            .try_get_with(
+                ApprovalCacheKey {
+                    token: order.sell,
+                    side: order.side,
+                },
+                approve_transaction_request_future,
+            )
+            .map_err(|_: std::sync::Arc<Error>| Error::ApproveTransactionRequestFailed(order.sell))
+            .await?;
+
+        Ok((swap_response, dex_approved_address))
     }
 
     /// OKX requires signature of the request to be added as dedicated HTTP
