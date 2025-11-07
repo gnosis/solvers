@@ -216,14 +216,12 @@ impl Okx {
         };
 
         let approve_transaction_request_future = async {
+            let approve_request =
+                dto::ApproveTransactionRequest::with_domain(self.defaults.chain_index, order);
+
             let approve_tx: dto::ApproveTransactionResponse = match order.side {
                 order::Side::Sell => {
                     // Use V6 API for sell orders
-                    let approve_request = dto::ApproveTransactionRequest::with_domain(
-                        self.defaults.chain_index,
-                        order,
-                    );
-
                     self.send_get_request(
                         &self.sell_orders_endpoint,
                         "approve-transaction",
@@ -237,12 +235,8 @@ impl Okx {
                         .buy_orders_endpoint
                         .as_ref()
                         .ok_or(Error::OrderNotSupported)?;
-                    let approve_request_v6 = dto::ApproveTransactionRequest::with_domain(
-                        self.defaults.chain_index,
-                        order,
-                    );
                     let approve_request_v5: dto::ApproveTransactionRequestV5 =
-                        (&approve_request_v6).into();
+                        (&approve_request).into();
 
                     self.send_get_request(endpoint, "approve-transaction", &approve_request_v5)
                         .await?
