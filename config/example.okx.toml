@@ -10,7 +10,7 @@ chain-id = "1"
 # sell-orders-endpoint = "https://web3.okx.com/api/v6/dex/aggregator/"
 
 # Buy orders endpoint (exactOut mode, uses V5 API, only supports Ethereum, Base, BSC, and Arbitrum chains and only Uni v2 and v3 protocols)
-# If not specified, buy orders will be declined.
+# If not specified, buy orders will be ignored.
 # buy-orders-endpoint = "https://www.okx.com/api/v5/dex/aggregator/"
 
 # OKX Project ID. Instruction on how to create a project:
