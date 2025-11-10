@@ -5,8 +5,13 @@ node-url = "http://localhost:8545"
 # More info here: https://www.okx.com/en-au/web3/build/docs/waas/walletapi-resources-supported-networks
 chain-id = "1"
 
-# Optionally specify a custom OKX Swap API endpoint
-# endpoint = "https://web3.okx.com/api/v6/dex/aggregator/"
+# Optionally specify custom OKX Swap API endpoints
+# Sell orders endpoint (exactIn mode, uses V6 API by default)
+# sell-orders-endpoint = "https://web3.okx.com/api/v6/dex/aggregator/"
+
+# Buy orders endpoint (exactOut mode, uses V5 API, only supports Ethereum, Base, BSC, and Arbitrum chains and only Uni v2 and v3 protocols)
+# If not specified, buy orders will be ignored.
+# buy-orders-endpoint = "https://www.okx.com/api/v5/dex/aggregator/"
 
 # OKX Project ID. Instruction on how to create a project:
 # https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#create-project

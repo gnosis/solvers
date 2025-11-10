@@ -13,10 +13,18 @@ use {
 #[derive(Deserialize)]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 struct Config {
-    /// The versioned URL endpoint for the OKX swap API.
-    #[serde(default = "default_endpoint")]
+    /// The URL endpoint for the OKX swap API for sell orders (exactIn mode).
+    /// Uses V6 API by default.
+    #[serde(default = "default_sell_orders_endpoint")]
     #[serde_as(as = "serde_with::DisplayFromStr")]
-    endpoint: reqwest::Url,
+    sell_orders_endpoint: reqwest::Url,
+
+    /// The URL endpoint for the OKX swap API for buy orders (exactOut mode).
+    /// If specified, the URL must point to the V5 API. Otherwise, buy orders
+    /// will be ignored.
+    #[serde(default)]
+    #[serde_as(as = "Option<serde_with::DisplayFromStr>")]
+    buy_orders_endpoint: Option<reqwest::Url>,
 
     /// Chain ID used to automatically determine contract addresses.
     #[serde_as(as = "serialize::ChainId")]
@@ -59,8 +67,8 @@ impl Into<okx::OkxCredentialsConfig> for OkxCredentialsConfig {
     }
 }
 
-fn default_endpoint() -> reqwest::Url {
-    okx::DEFAULT_ENDPOINT.parse().unwrap()
+fn default_sell_orders_endpoint() -> reqwest::Url {
+    okx::DEFAULT_SELL_ORDERS_ENDPOINT.parse().unwrap()
 }
 
 /// Load the OKX solver configuration from a TOML file.
@@ -73,7 +81,8 @@ pub async fn load(path: &Path) -> super::Config {
 
     super::Config {
         okx: okx::Config {
-            endpoint: config.endpoint,
+            sell_orders_endpoint: config.sell_orders_endpoint,
+            buy_orders_endpoint: config.buy_orders_endpoint,
             chain_id: config.chain_id,
             okx_credentials: config.okx_credentials.into(),
             block_stream: base.block_stream.clone(),

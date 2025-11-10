@@ -50,7 +50,7 @@ impl Display for Uid {
 }
 
 /// The trading side of an order.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Side {
     /// An order with a fixed buy amount and maximum sell amount.
     Buy,
