@@ -29,7 +29,6 @@ hmac = "0.12.1"
 humantime = "2.1.0"
 humantime-serde = "1.1.1"
 hyper = "0.14"
-itertools = "0.11"
 moka = { version = "0.12", features = ["future"] }
 num = "0.4"
 prometheus = "0.13"
