@@ -164,7 +164,7 @@ impl Okx {
         Ok(dex::Swap {
             calls: vec![dex::Call {
                 to: swap_response.tx.to.into_alloy(),
-                calldata: swap_response.tx.data.clone(),
+                calldata: swap_response.tx.data,
             }],
             input: eth::Asset {
                 token: swap_response
