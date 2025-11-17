@@ -108,10 +108,6 @@ impl Sor {
         slippage: &dex::Slippage,
         tokens: &auction::Tokens,
     ) -> Result<dex::Swap, Error> {
-        // Receiving this error indicates that V2 is now supported on the current chain.
-        let Some(v2_vault) = &self.v2_vault else {
-            return Err(Error::DisabledApiVersion(ApiVersion::V2));
-        };
         let query = dto::Query::from_domain(order, tokens, self.chain_id)?;
         let quote = {
             // Set up a tracing span to make debugging of API requests easier.
@@ -164,16 +160,22 @@ impl Sor {
 
         let gas = U256::from(quote.swaps.len()) * U256::from(Self::GAS_PER_SWAP);
         let (spender, calls) = match quote.protocol_version {
-            dto::ProtocolVersion::V2 => (
-                v2_vault.address(),
-                self.encode_v2_swap(
-                    order,
-                    &quote,
-                    max_input.into_alloy(),
-                    min_output.into_alloy(),
-                    v2_vault,
-                )?,
-            ),
+            dto::ProtocolVersion::V2 => {
+                // Check if V2 is available for this chain
+                let Some(v2_vault) = &self.v2_vault else {
+                    return Err(Error::DisabledApiVersion(ApiVersion::V2));
+                };
+                (
+                    v2_vault.address(),
+                    self.encode_v2_swap(
+                        order,
+                        &quote,
+                        max_input.into_alloy(),
+                        min_output.into_alloy(),
+                        v2_vault,
+                    )?,
+                )
+            }
             dto::ProtocolVersion::V3 => {
                 // In Balancer v3, the spender must be the Permit2 contract, as it's the one
                 // doing the transfer of funds from the settlement
