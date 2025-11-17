@@ -41,24 +41,33 @@ serde_with = "3"
 serde_repr = "0.1"
 sha2 = "0.10.8"
 thiserror = "1"
-tokio = { version = "1", features = ["macros", "rt-multi-thread", "signal", "time"] }
+tokio = { version = "1", features = [
+    "macros",
+    "rt-multi-thread",
+    "signal",
+    "time",
+] }
 toml = "0.7"
 tower = "0.4"
 tower-http = { version = "0.4", features = ["trace"] }
 tracing = "0.1"
 web3 = "0.19"
 
-contracts = { git = "https://github.com/cowprotocol/services.git", tag = "v2.336.0", package = "contracts" }
+contracts = { git = "https://github.com/cowprotocol/services.git", rev = "db12904", package = "contracts" }
 ethrpc = { git = "https://github.com/cowprotocol/services.git", tag = "v2.336.0", package = "ethrpc" }
-observe = { git = "https://github.com/cowprotocol/services.git", tag = "v2.336.0", package = "observe" , features = ["axum-tracing"]}
+observe = { git = "https://github.com/cowprotocol/services.git", tag = "v2.336.0", package = "observe", features = [
+    "axum-tracing",
+] }
 shared = { git = "https://github.com/cowprotocol/services.git", tag = "v2.336.0", package = "shared" }
-dto =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.336.0", package = "solvers-dto" }
-rate-limit =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.336.0", package = "rate-limit" }
-number =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.336.0", package = "number" }
+dto = { git = "https://github.com/cowprotocol/services.git", tag = "v2.336.0", package = "solvers-dto" }
+rate-limit = { git = "https://github.com/cowprotocol/services.git", tag = "v2.336.0", package = "rate-limit" }
+number = { git = "https://github.com/cowprotocol/services.git", tag = "v2.336.0", package = "number" }
 
 [dev-dependencies]
-ethrpc = { git = "https://github.com/cowprotocol/services.git", tag = "v2.336.0", package = "ethrpc", features = ["test-util"] }
-testlib =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.336.0", package = "testlib" }
+ethrpc = { git = "https://github.com/cowprotocol/services.git", tag = "v2.336.0", package = "ethrpc", features = [
+    "test-util",
+] }
+testlib = { git = "https://github.com/cowprotocol/services.git", tag = "v2.336.0", package = "testlib" }
 glob = "0.3"
 maplit = "1"
 tempfile = "3"

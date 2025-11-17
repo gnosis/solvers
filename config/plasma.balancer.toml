@@ -1,0 +1,9 @@
+node-url = "https://plasma-mainnet.rpc.url"  # Use actual Plasma RPC
+absolute-slippage = "40000000000000000" # Denominated in wei, optional
+relative-slippage = "0.001" # Percentage in the [0, 1] range
+
+[dex]
+endpoint = "https://api-v3.balancer.fi/"
+chain-id = "9745"
+
+enabled-api-versions = ["v3"]
