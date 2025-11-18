@@ -355,15 +355,11 @@ impl Okx {
         T: Serialize,
         U: DeserializeOwned + Clone,
     {
-        let mut request_builder = self
-            .client
-            .request(
-                reqwest::Method::GET,
-                base_url
-                    .join(endpoint)
-                    .map_err(|_| Error::RequestBuildFailed)?,
-            )
-            .query(query);
+        let url = base_url
+            .join(endpoint)
+            .map_err(|_| Error::RequestBuildFailed)?;
+        tracing::info!("newlog request url={:?}", url.to_string());
+        let mut request_builder = self.client.request(reqwest::Method::GET, url).query(query);
 
         let request = request_builder
             .try_clone()
@@ -393,6 +389,11 @@ impl Okx {
         .await?;
 
         Self::handle_api_error(response.code, &response.msg)?;
+        tracing::info!(
+            "newlog response.len={:?}, response.msg={:?}",
+            response.data.len(),
+            response.msg
+        );
         response.data.first().cloned().ok_or(Error::NotFound)
     }
 }
