@@ -389,10 +389,11 @@ impl Okx {
         .await?;
 
         tracing::info!(
-            "newlog response.len={:?}, response.msg={:?}, response.code={:?}",
+            "newlog response.len={:?}, response.msg={:?}, response.code={:?}, request={:?}",
             response.data.len(),
             response.msg,
-            response.code
+            response.code,
+            request
         );
         Self::handle_api_error(response.code, &response.msg)?;
         response.data.first().cloned().ok_or(Error::NotFound)
