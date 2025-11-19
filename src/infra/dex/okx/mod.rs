@@ -358,7 +358,6 @@ impl Okx {
         let url = base_url
             .join(endpoint)
             .map_err(|_| Error::RequestBuildFailed)?;
-        tracing::info!("newlog request url={:?}", url.to_string());
         let mut request_builder = self.client.request(reqwest::Method::GET, url).query(query);
 
         let request = request_builder
@@ -371,6 +370,7 @@ impl Okx {
             .to_rfc3339_opts(SecondsFormat::Millis, true)
             .to_string();
         let signature = self.generate_signature(&request, timestamp)?;
+        tracing::info!("newlog request={:?}", request);
 
         request_builder = request_builder.header(
             "OK-ACCESS-TIMESTAMP",
