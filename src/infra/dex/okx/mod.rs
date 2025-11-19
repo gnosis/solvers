@@ -131,10 +131,9 @@ impl Okx {
         // Always send the price impact protection percent to the API.
         // When set to 1.0 (100%), OKX disables the feature.
         // The config defaults to 1.0 to disable protection by default.
-        let price_impact_protection = dto::PriceImpactProtectionPercent(
+        let price_impact_protection =
             bigdecimal::BigDecimal::from_f64(config.price_impact_protection_percent)
-                .expect("valid price impact protection percent"),
-        );
+                .expect("valid price impact protection percent");
 
         let defaults = dto::SwapRequest {
             chain_index: config.chain_id as u64,
