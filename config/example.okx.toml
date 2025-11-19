@@ -43,17 +43,9 @@ api-passphrase = "$OKX_PASSPHRASE"
 # Optional: Price impact protection percentage (between 0.0 - 1.0).
 # OKX API documentation: https://web3.okx.com/build/dev-docs/wallet-api/dex-swap
 #
-# When priceImpactProtectionPercent is set, if the estimated price impact is above
-# the percentage indicated, an error will be returned. For example, if set to 0.25,
-# any quote with a price impact higher than 25% will return an error.
-#
 # When set to 1.0 (100%), the feature is disabled - all trades are allowed.
-#
-# Default: 1.0 (100% - feature disabled, allows all trades)
 # Note: If this field is omitted entirely, OKX API defaults to 0.9 (90% protection),
 # but this config defaults to 1.0 to disable the feature by default.
 #
 # Examples:
 # price-impact-protection-percent = 1.0   # Disabled (default) - allow all trades
-# price-impact-protection-percent = 0.9   # Use OKX default - reject >90% impact
-# price-impact-protection-percent = 0.25  # Strict - reject >25% price impact
