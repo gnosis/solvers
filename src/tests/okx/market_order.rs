@@ -18,7 +18,8 @@ async fn sell() {
                 &slippagePercent=0.01\
                 &userWalletAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41\
                 &swapReceiverAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41\
-                &swapMode=exactIn"
+                &swapMode=exactIn\
+                &priceImpactProtectionPercent=1"
             ),
             res: json!(
               {
@@ -342,7 +343,8 @@ api-passphrase = 'pass'
                 &slippage=0.01\
                 &userWalletAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41\
                 &swapReceiverAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41\
-                &swapMode=exactOut"
+                &swapMode=exactOut\
+                &priceImpactProtectionPercent=1"
             ),
             res: json!(
               {
@@ -566,7 +568,8 @@ async fn sell_twice() {
                  fromTokenAddress=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&\
                  toTokenAddress=0xe41d2489571d322189246dafa5ebde1f4699f498&slippagePercent=0.01&\
                  userWalletAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41&\
-                 swapReceiverAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41&swapMode=exactIn",
+                 swapReceiverAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41&swapMode=exactIn&\
+                 priceImpactProtectionPercent=1",
             ),
             res: json!(
              {
@@ -819,7 +822,8 @@ async fn sell_twice_parallel() {
                  fromTokenAddress=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&\
                  toTokenAddress=0xe41d2489571d322189246dafa5ebde1f4699f498&slippagePercent=0.01&\
                  userWalletAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41&\
-                 swapReceiverAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41&swapMode=exactIn",
+                 swapReceiverAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41&swapMode=exactIn&\
+                 priceImpactProtectionPercent=1",
             ),
             res: json!(
              {

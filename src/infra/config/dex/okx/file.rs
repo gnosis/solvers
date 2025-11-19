@@ -52,7 +52,8 @@ struct Config {
 
     /// The percentage (between 0.0 - 1.0) of the price impact allowed.
     /// When set to 1.0 (100%), the feature is disabled (default).
-    /// OKX API default is 0.9 (90%) if not specified.
+    /// Note: OKX API default is 0.9 (90%) if this parameter is NOT sent,
+    /// but we default to 1.0 to disable the feature by default.
     #[serde(default = "default_price_impact_protection_percent")]
     price_impact_protection_percent: f64,
 }

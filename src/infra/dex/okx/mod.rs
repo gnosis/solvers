@@ -130,16 +130,13 @@ impl Okx {
             super::Client::new(client, config.block_stream)
         };
 
-        let price_impact_protection = if config.price_impact_protection_percent < 1.0 {
-            Some(dto::PriceImpactProtectionPercent(
-                bigdecimal::BigDecimal::from_str(
-                    &config.price_impact_protection_percent.to_string(),
-                )
+        // Always send the price impact protection percent to the API.
+        // When set to 1.0 (100%), OKX disables the feature.
+        // The config defaults to 1.0 to disable protection by default.
+        let price_impact_protection = Some(dto::PriceImpactProtectionPercent(
+            bigdecimal::BigDecimal::from_str(&config.price_impact_protection_percent.to_string())
                 .expect("valid price impact protection percent"),
-            ))
-        } else {
-            None // When set to 1.0 (100%), disable by not sending the parameter
-        };
+        ));
 
         let defaults = dto::SwapRequest {
             chain_index: config.chain_id as u64,

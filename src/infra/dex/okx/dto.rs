@@ -51,8 +51,7 @@ pub struct SwapRequest {
 
     /// The percentage (between 0.0 - 1.0) of the price impact allowed.
     /// When set to 1.0 (100%), the feature is disabled.
-    /// Default is 0.9 (90%) per OKX API documentation.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    /// OKX API default is 0.9 (90%) if this parameter is not sent.
     pub price_impact_protection_percent: Option<PriceImpactProtectionPercent>,
 }
 
@@ -128,7 +127,6 @@ pub struct SwapRequestV5 {
 
     /// The percentage (between 0.0 - 1.0) of the price impact allowed.
     /// When set to 1.0 (100%), the feature is disabled.
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub price_impact_protection_percent: Option<PriceImpactProtectionPercent>,
 }
 
