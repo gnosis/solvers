@@ -29,6 +29,7 @@ async fn swap_sell_regular() {
         },
         settlement_contract: address!("0x9008d19f58aabd9ed0d60971565aa8510560ab41"),
         block_stream: None,
+        price_impact_protection_percent: 1.0,
     };
 
     let order = Order {
@@ -74,6 +75,7 @@ async fn swap_buy_disabled() {
         },
         settlement_contract: address!("0x9008d19f58aabd9ed0d60971565aa8510560ab41"),
         block_stream: None,
+        price_impact_protection_percent: 1.0,
     };
 
     let order = Order {
@@ -117,6 +119,7 @@ async fn swap_buy_enabled() {
         },
         settlement_contract: address!("0x9008d19f58aabd9ed0d60971565aa8510560ab41"),
         block_stream: None,
+        price_impact_protection_percent: 1.0,
     };
 
     let order = Order {
@@ -167,6 +170,7 @@ async fn swap_api_error() {
         },
         settlement_contract: address!("0x9008d19f58aabd9ed0d60971565aa8510560ab41"),
         block_stream: None,
+        price_impact_protection_percent: 1.0,
     };
 
     let order = Order {
@@ -211,6 +215,7 @@ async fn swap_sell_insufficient_liquidity() {
         },
         settlement_contract: address!("0x9008d19f58aabd9ed0d60971565aa8510560ab41"),
         block_stream: None,
+        price_impact_protection_percent: 1.0,
     };
 
     let order = Order {
@@ -255,6 +260,7 @@ async fn swap_buy_insufficient_liquidity() {
         },
         settlement_contract: address!("0x9008d19f58aabd9ed0d60971565aa8510560ab41"),
         block_stream: None,
+        price_impact_protection_percent: 1.0,
     };
 
     let order = Order {

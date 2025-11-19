@@ -48,11 +48,21 @@ pub struct SwapRequest {
     /// Swap mode: "exactIn" for sell orders (default), "exactOut" for buy
     /// orders
     pub swap_mode: SwapMode,
+
+    /// The percentage (between 0.0 - 1.0) of the price impact allowed.
+    /// When set to 1.0 (100%), the feature is disabled.
+    /// Default is 0.9 (90%) per OKX API documentation.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub price_impact_protection_percent: Option<PriceImpactProtectionPercent>,
 }
 
 /// A OKX slippage amount.
 #[derive(Clone, Debug, Default, Serialize)]
 pub struct Slippage(BigDecimal);
+
+/// A OKX price impact protection percentage (between 0.0 - 1.0).
+#[derive(Clone, Debug, Serialize)]
+pub struct PriceImpactProtectionPercent(pub BigDecimal);
 
 /// A OKX swap mode.
 #[derive(Clone, Debug, Serialize, Default)]
@@ -115,6 +125,11 @@ pub struct SwapRequestV5 {
     /// Swap mode: "exactIn" for sell orders (default), "exactOut" for buy
     /// orders
     pub swap_mode: SwapMode,
+
+    /// The percentage (between 0.0 - 1.0) of the price impact allowed.
+    /// When set to 1.0 (100%), the feature is disabled.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub price_impact_protection_percent: Option<PriceImpactProtectionPercent>,
 }
 
 impl From<&SwapRequest> for SwapRequestV5 {
@@ -128,6 +143,7 @@ impl From<&SwapRequest> for SwapRequestV5 {
             user_wallet_address: v6_request.user_wallet_address,
             swap_receiver_address: v6_request.swap_receiver_address,
             swap_mode: v6_request.swap_mode.clone(),
+            price_impact_protection_percent: v6_request.price_impact_protection_percent.clone(),
         }
     }
 }

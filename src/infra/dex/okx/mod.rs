@@ -16,7 +16,10 @@ use {
     moka::future::Cache,
     serde::{Serialize, de::DeserializeOwned},
     sha2::Sha256,
-    std::sync::atomic::{self, AtomicU64},
+    std::{
+        str::FromStr,
+        sync::atomic::{self, AtomicU64},
+    },
     tracing::Instrument,
 };
 
@@ -83,6 +86,10 @@ pub struct Config {
 
     /// The stream that yields every new block.
     pub block_stream: Option<CurrentBlockWatcher>,
+
+    /// The percentage (between 0.0 - 1.0) of the price impact allowed.
+    /// When set to 1.0 (100%), the feature is disabled.
+    pub price_impact_protection_percent: f64,
 }
 
 pub struct OkxCredentialsConfig {
@@ -123,12 +130,24 @@ impl Okx {
             super::Client::new(client, config.block_stream)
         };
 
+        let price_impact_protection = if config.price_impact_protection_percent < 1.0 {
+            Some(dto::PriceImpactProtectionPercent(
+                bigdecimal::BigDecimal::from_str(
+                    &config.price_impact_protection_percent.to_string(),
+                )
+                .expect("valid price impact protection percent"),
+            ))
+        } else {
+            None // When set to 1.0 (100%), disable by not sending the parameter
+        };
+
         let defaults = dto::SwapRequest {
             chain_index: config.chain_id as u64,
             // Funds first get moved in and out of the settlement contract so we have use
             // that address here to generate the correct calldata.
             swap_receiver_address: config.settlement_contract.into_legacy(),
             user_wallet_address: config.settlement_contract.into_legacy(),
+            price_impact_protection_percent: price_impact_protection,
             ..Default::default()
         };
 
