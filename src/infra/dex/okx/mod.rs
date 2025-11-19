@@ -5,6 +5,7 @@ use {
     },
     alloy::primitives::Address,
     base64::prelude::*,
+    bigdecimal::FromPrimitive,
     chrono::SecondsFormat,
     ethrpc::{
         alloy::conversions::{IntoAlloy, IntoLegacy},
@@ -16,10 +17,7 @@ use {
     moka::future::Cache,
     serde::{Serialize, de::DeserializeOwned},
     sha2::Sha256,
-    std::{
-        str::FromStr,
-        sync::atomic::{self, AtomicU64},
-    },
+    std::sync::atomic::{self, AtomicU64},
     tracing::Instrument,
 };
 
@@ -133,10 +131,10 @@ impl Okx {
         // Always send the price impact protection percent to the API.
         // When set to 1.0 (100%), OKX disables the feature.
         // The config defaults to 1.0 to disable protection by default.
-        let price_impact_protection = Some(dto::PriceImpactProtectionPercent(
-            bigdecimal::BigDecimal::from_str(&config.price_impact_protection_percent.to_string())
+        let price_impact_protection = dto::PriceImpactProtectionPercent(
+            bigdecimal::BigDecimal::from_f64(config.price_impact_protection_percent)
                 .expect("valid price impact protection percent"),
-        ));
+        );
 
         let defaults = dto::SwapRequest {
             chain_index: config.chain_id as u64,

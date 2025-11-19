@@ -52,7 +52,7 @@ pub struct SwapRequest {
     /// The percentage (between 0.0 - 1.0) of the price impact allowed.
     /// When set to 1.0 (100%), the feature is disabled.
     /// OKX API default is 0.9 (90%) if this parameter is not sent.
-    pub price_impact_protection_percent: Option<PriceImpactProtectionPercent>,
+    pub price_impact_protection_percent: PriceImpactProtectionPercent,
 }
 
 /// A OKX slippage amount.
@@ -60,7 +60,7 @@ pub struct SwapRequest {
 pub struct Slippage(BigDecimal);
 
 /// A OKX price impact protection percentage (between 0.0 - 1.0).
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug, Default, Serialize)]
 pub struct PriceImpactProtectionPercent(pub BigDecimal);
 
 /// A OKX swap mode.
@@ -127,7 +127,7 @@ pub struct SwapRequestV5 {
 
     /// The percentage (between 0.0 - 1.0) of the price impact allowed.
     /// When set to 1.0 (100%), the feature is disabled.
-    pub price_impact_protection_percent: Option<PriceImpactProtectionPercent>,
+    pub price_impact_protection_percent: PriceImpactProtectionPercent,
 }
 
 impl From<&SwapRequest> for SwapRequestV5 {
