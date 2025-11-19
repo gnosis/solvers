@@ -19,7 +19,7 @@ pub enum Dex {
     OneInch(oneinch::OneInch),
     ZeroEx(zeroex::ZeroEx),
     ParaSwap(paraswap::ParaSwap),
-    Okx(okx::Okx),
+    Okx(Box<okx::Okx>),
 }
 
 impl Dex {
