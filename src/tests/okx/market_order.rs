@@ -19,7 +19,7 @@ async fn sell() {
                 &userWalletAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41\
                 &swapReceiverAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41\
                 &swapMode=exactIn\
-                &priceImpactProtectionPercent=1.000000000000000"
+                &priceImpactProtectionPercent=1"
             ),
             res: json!(
               {
@@ -344,7 +344,7 @@ api-passphrase = 'pass'
                 &userWalletAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41\
                 &swapReceiverAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41\
                 &swapMode=exactOut\
-                &priceImpactProtectionPercent=1.000000000000000"
+                &priceImpactProtectionPercent=1"
             ),
             res: json!(
               {
@@ -569,7 +569,7 @@ async fn sell_twice() {
                  toTokenAddress=0xe41d2489571d322189246dafa5ebde1f4699f498&slippagePercent=0.01&\
                  userWalletAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41&\
                  swapReceiverAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41&swapMode=exactIn&\
-                 priceImpactProtectionPercent=1.000000000000000",
+                 priceImpactProtectionPercent=1",
             ),
             res: json!(
              {
@@ -823,7 +823,7 @@ async fn sell_twice_parallel() {
                  toTokenAddress=0xe41d2489571d322189246dafa5ebde1f4699f498&slippagePercent=0.01&\
                  userWalletAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41&\
                  swapReceiverAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41&swapMode=exactIn&\
-                 priceImpactProtectionPercent=1.000000000000000",
+                 priceImpactProtectionPercent=1",
             ),
             res: json!(
              {

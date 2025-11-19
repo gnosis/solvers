@@ -133,7 +133,8 @@ impl Okx {
         // The config defaults to 1.0 to disable protection by default.
         let price_impact_protection =
             bigdecimal::BigDecimal::from_f64(config.price_impact_protection_percent)
-                .expect("valid price impact protection percent");
+                .expect("valid price impact protection percent")
+                .normalized();
 
         let defaults = dto::SwapRequest {
             chain_index: config.chain_id as u64,

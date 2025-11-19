@@ -22,7 +22,7 @@ async fn sell() {
                 &userWalletAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41\
                 &swapReceiverAddress=0x9008d19f58aabd9ed0d60971565aa8510560ab41\
                 &swapMode=exactIn\
-                &priceImpactProtectionPercent=1.000000000000000"
+                &priceImpactProtectionPercent=1"
             ),
             res: json!(
               {
