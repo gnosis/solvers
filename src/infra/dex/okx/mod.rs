@@ -128,12 +128,20 @@ impl Okx {
             super::Client::new(client, config.block_stream)
         };
 
-        // Always send the price impact protection percent to the API.
-        // When set to 1.0 (100%), OKX disables the feature.
-        // The config defaults to 1.0 to disable protection by default.
+        if config.price_impact_protection_percent < 0.0
+            || config.price_impact_protection_percent > 1.0
+        {
+            return Err(CreationError::InvalidPriceImpactProtection(
+                config.price_impact_protection_percent,
+            ));
+        }
         let price_impact_protection =
             bigdecimal::BigDecimal::from_f64(config.price_impact_protection_percent)
-                .expect("valid price impact protection percent")
+                .ok_or_else(|| {
+                    CreationError::InvalidPriceImpactProtection(
+                        config.price_impact_protection_percent,
+                    )
+                })?
                 .normalized();
 
         let defaults = dto::SwapRequest {
@@ -459,6 +467,8 @@ pub enum CreationError {
     Header(#[from] reqwest::header::InvalidHeaderValue),
     #[error(transparent)]
     Client(#[from] reqwest::Error),
+    #[error("invalid price impact protection percent {0}, must be between 0.0 and 1.0")]
+    InvalidPriceImpactProtection(f64),
 }
 
 #[derive(Debug, thiserror::Error)]
