@@ -386,7 +386,11 @@ impl Okx {
             <dto::Response<U>, dto::Error>;
             request_builder
         )
-        .await?;
+        .await;
+        if let Err(err) = &response {
+            tracing::info!("newlog error={:?}, request={:?}", err.to_string(), request);
+        }
+        let response = response?;
 
         tracing::info!(
             "newlog response.len={:?}, response.msg={:?}, response.code={:?}, request={:?}",
