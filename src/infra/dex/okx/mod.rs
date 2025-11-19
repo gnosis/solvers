@@ -41,6 +41,8 @@ pub struct Okx {
     client: super::Client,
     sell_orders_endpoint: reqwest::Url,
     buy_orders_endpoint: Option<reqwest::Url>,
+    sell_orders_signature_base_url: reqwest::Url,
+    buy_orders_signature_base_url: Option<reqwest::Url>,
     api_secret_key: String,
     defaults: dto::SwapRequest,
     /// Cache which stores a map of (Token Address, Order Side) to contract
@@ -59,6 +61,18 @@ pub struct Config {
     /// If specified, the URL must point to the V5 API. Otherwise, buy orders
     /// will be ignored.
     pub buy_orders_endpoint: Option<reqwest::Url>,
+
+    /// Optional base URL to use for signature generation for sell orders.
+    /// This is useful when requests go through a proxy but signatures must be
+    /// generated using the original OKX API URL path.
+    /// If not specified, uses sell_orders_endpoint for signature generation.
+    pub sell_orders_signature_base_url: Option<reqwest::Url>,
+
+    /// Optional base URL to use for signature generation for buy orders.
+    /// This is useful when requests go through a proxy but signatures must be
+    /// generated using the original OKX API URL path.
+    /// If not specified, uses buy_orders_endpoint for signature generation.
+    pub buy_orders_signature_base_url: Option<reqwest::Url>,
 
     pub chain_id: eth::ChainId,
 
@@ -120,8 +134,14 @@ impl Okx {
 
         Ok(Self {
             client,
-            sell_orders_endpoint: config.sell_orders_endpoint,
-            buy_orders_endpoint: config.buy_orders_endpoint,
+            sell_orders_endpoint: config.sell_orders_endpoint.clone(),
+            buy_orders_endpoint: config.buy_orders_endpoint.clone(),
+            sell_orders_signature_base_url: config
+                .sell_orders_signature_base_url
+                .unwrap_or(config.sell_orders_endpoint),
+            buy_orders_signature_base_url: config
+                .buy_orders_signature_base_url
+                .or(config.buy_orders_endpoint),
             api_secret_key: config.okx_credentials.api_secret_key,
             defaults,
             dex_approved_addresses: Cache::new(DEFAULT_DEX_APPROVED_ADDRESSES_CACHE_SIZE),
@@ -218,8 +238,13 @@ impl Okx {
     ) -> Result<(dto::SwapResponse, eth::ContractAddress), Error> {
         let swap_future = async {
             let swap_request = self.defaults.clone().with_domain(order, slippage);
-            self.send_get_request(&self.sell_orders_endpoint, "swap", &swap_request)
-                .await
+            self.send_get_request(
+                &self.sell_orders_endpoint,
+                &self.sell_orders_signature_base_url,
+                "swap",
+                &swap_request,
+            )
+            .await
         };
 
         let approve_future = async {
@@ -232,6 +257,7 @@ impl Okx {
             let approve_tx: dto::ApproveTransactionResponse = self
                 .send_get_request(
                     &self.sell_orders_endpoint,
+                    &self.sell_orders_signature_base_url,
                     "approve-transaction",
                     &approve_request,
                 )
@@ -261,10 +287,15 @@ impl Okx {
             .as_ref()
             .ok_or(Error::OrderNotSupported)?;
 
+        let signature_base_url = self
+            .buy_orders_signature_base_url
+            .as_ref()
+            .ok_or(Error::OrderNotSupported)?;
+
         let swap_request_v6 = self.defaults.clone().with_domain(order, slippage);
         let swap_request_v5: dto::SwapRequestV5 = (&swap_request_v6).into();
         let swap_response: dto::SwapResponse = self
-            .send_get_request(endpoint, "swap", &swap_request_v5)
+            .send_get_request(endpoint, signature_base_url, "swap", &swap_request_v5)
             .await?;
 
         let approve_future = async {
@@ -276,7 +307,12 @@ impl Okx {
             let approve_request_v5: dto::ApproveTransactionRequestV5 = (&approve_request).into();
 
             let approve_tx: dto::ApproveTransactionResponse = self
-                .send_get_request(endpoint, "approve-transaction", &approve_request_v5)
+                .send_get_request(
+                    endpoint,
+                    signature_base_url,
+                    "approve-transaction",
+                    &approve_request_v5,
+                )
                 .await?;
 
             Ok(eth::ContractAddress(approve_tx.dex_contract_address))
@@ -314,12 +350,13 @@ impl Okx {
     fn generate_signature(
         &self,
         request: &reqwest::Request,
+        signature_base_url: &reqwest::Url,
         timestamp: &str,
     ) -> Result<String, Error> {
         let mut data = String::new();
         data.push_str(timestamp);
         data.push_str(request.method().as_str());
-        data.push_str(request.url().path());
+        data.push_str(signature_base_url.path());
         data.push('?');
         data.push_str(request.url().query().ok_or(Error::SignRequestFailed)?);
 
@@ -348,6 +385,7 @@ impl Okx {
     async fn send_get_request<T, U>(
         &self,
         base_url: &reqwest::Url,
+        signature_base_url: &reqwest::Url,
         endpoint: &str,
         query: &T,
     ) -> Result<U, Error>
@@ -371,10 +409,14 @@ impl Okx {
             .build()
             .map_err(|_| Error::RequestBuildFailed)?;
 
+        let signature_url = signature_base_url
+            .join(endpoint)
+            .map_err(|_| Error::RequestBuildFailed)?;
+
         let timestamp = &chrono::Utc::now()
             .to_rfc3339_opts(SecondsFormat::Millis, true)
             .to_string();
-        let signature = self.generate_signature(&request, timestamp)?;
+        let signature = self.generate_signature(&request, &signature_url, timestamp)?;
 
         request_builder = request_builder.header(
             "OK-ACCESS-TIMESTAMP",

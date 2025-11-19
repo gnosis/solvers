@@ -78,9 +78,9 @@ async fn run_with(args: cli::Args, bind: Option<oneshot::Sender<SocketAddr>>) {
         cli::Command::Okx { config } => {
             let config = config::dex::okx::file::load(&config).await;
             Solver::Dex(solver::Dex::new(
-                dex::Dex::Okx(
+                dex::Dex::Okx(Box::new(
                     dex::okx::Okx::try_new(config.okx).expect("invalid OKX configuration"),
-                ),
+                )),
                 config.base.clone(),
             ))
         }

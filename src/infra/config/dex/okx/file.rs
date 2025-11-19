@@ -26,6 +26,22 @@ struct Config {
     #[serde_as(as = "Option<serde_with::DisplayFromStr>")]
     buy_orders_endpoint: Option<reqwest::Url>,
 
+    /// Optional base URL to use for signature generation for sell orders.
+    /// This is useful when requests go through a proxy but signatures must be
+    /// generated using the original OKX API URL path.
+    /// If not specified, uses sell_orders_endpoint for signature generation.
+    #[serde(default)]
+    #[serde_as(as = "Option<serde_with::DisplayFromStr>")]
+    sell_orders_signature_base_url: Option<reqwest::Url>,
+
+    /// Optional base URL to use for signature generation for buy orders.
+    /// This is useful when requests go through a proxy but signatures must be
+    /// generated using the original OKX API URL path.
+    /// If not specified, uses buy_orders_endpoint for signature generation.
+    #[serde(default)]
+    #[serde_as(as = "Option<serde_with::DisplayFromStr>")]
+    buy_orders_signature_base_url: Option<reqwest::Url>,
+
     /// Chain ID used to automatically determine contract addresses.
     #[serde_as(as = "serialize::ChainId")]
     chain_id: eth::ChainId,
@@ -83,6 +99,8 @@ pub async fn load(path: &Path) -> super::Config {
         okx: okx::Config {
             sell_orders_endpoint: config.sell_orders_endpoint,
             buy_orders_endpoint: config.buy_orders_endpoint,
+            sell_orders_signature_base_url: config.sell_orders_signature_base_url,
+            buy_orders_signature_base_url: config.buy_orders_signature_base_url,
             chain_id: config.chain_id,
             okx_credentials: config.okx_credentials.into(),
             block_stream: base.block_stream.clone(),
