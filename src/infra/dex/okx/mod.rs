@@ -218,8 +218,13 @@ impl Okx {
     ) -> Result<(dto::SwapResponse, eth::ContractAddress), Error> {
         let swap_future = async {
             let swap_request = self.defaults.clone().with_domain(order, slippage);
-            self.send_get_request(&self.sell_orders_endpoint, "swap", &swap_request)
-                .await
+            self.send_get_request(
+                &self.sell_orders_endpoint,
+                "swap",
+                &swap_request,
+                "/api/v6/dex/aggregator/swap",
+            )
+            .await
         };
 
         let approve_future = async {
@@ -234,6 +239,7 @@ impl Okx {
                     &self.sell_orders_endpoint,
                     "approve-transaction",
                     &approve_request,
+                    "/api/v6/dex/aggregator/approve-transaction",
                 )
                 .await?;
 
@@ -264,7 +270,12 @@ impl Okx {
         let swap_request_v6 = self.defaults.clone().with_domain(order, slippage);
         let swap_request_v5: dto::SwapRequestV5 = (&swap_request_v6).into();
         let swap_response: dto::SwapResponse = self
-            .send_get_request(endpoint, "swap", &swap_request_v5)
+            .send_get_request(
+                endpoint,
+                "swap",
+                &swap_request_v5,
+                "/api/v5/dex/aggregator/swap",
+            )
             .await?;
 
         let approve_future = async {
@@ -276,7 +287,12 @@ impl Okx {
             let approve_request_v5: dto::ApproveTransactionRequestV5 = (&approve_request).into();
 
             let approve_tx: dto::ApproveTransactionResponse = self
-                .send_get_request(endpoint, "approve-transaction", &approve_request_v5)
+                .send_get_request(
+                    endpoint,
+                    "approve-transaction",
+                    &approve_request_v5,
+                    "/api/v5/dex/aggregator/approve-transaction",
+                )
                 .await?;
 
             Ok(eth::ContractAddress(approve_tx.dex_contract_address))
@@ -315,11 +331,12 @@ impl Okx {
         &self,
         request: &reqwest::Request,
         timestamp: &str,
+        path: &str,
     ) -> Result<String, Error> {
         let mut data = String::new();
         data.push_str(timestamp);
         data.push_str(request.method().as_str());
-        data.push_str(request.url().path());
+        data.push_str(path);
         data.push('?');
         data.push_str(request.url().query().ok_or(Error::SignRequestFailed)?);
 
@@ -350,6 +367,7 @@ impl Okx {
         base_url: &reqwest::Url,
         endpoint: &str,
         query: &T,
+        path: &str,
     ) -> Result<U, Error>
     where
         T: Serialize,
@@ -369,7 +387,7 @@ impl Okx {
         let timestamp = &chrono::Utc::now()
             .to_rfc3339_opts(SecondsFormat::Millis, true)
             .to_string();
-        let signature = self.generate_signature(&request, timestamp)?;
+        let signature = self.generate_signature(&request, timestamp, path)?;
         tracing::info!("newlog request={:?}", request);
 
         request_builder = request_builder.header(
