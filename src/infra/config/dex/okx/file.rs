@@ -49,6 +49,13 @@ struct Config {
     /// OKX API credentials
     #[serde(flatten)]
     okx_credentials: OkxCredentialsConfig,
+
+    /// The percentage (between 0.0 - 1.0) of the price impact allowed.
+    /// When set to 1.0 (100%), the feature is disabled (default).
+    /// Note: OKX API default is 0.9 (90%) if this parameter is NOT sent,
+    /// but we default to 1.0 to disable the feature by default.
+    #[serde(default = "default_price_impact_protection_percent")]
+    price_impact_protection_percent: f64,
 }
 
 #[derive(Deserialize)]
@@ -87,6 +94,10 @@ fn default_sell_orders_endpoint() -> reqwest::Url {
     okx::DEFAULT_SELL_ORDERS_ENDPOINT.parse().unwrap()
 }
 
+fn default_price_impact_protection_percent() -> f64 {
+    1.0 // 100% - feature disabled by default
+}
+
 /// Load the OKX solver configuration from a TOML file.
 ///
 /// # Panics
@@ -105,6 +116,7 @@ pub async fn load(path: &Path) -> super::Config {
             okx_credentials: config.okx_credentials.into(),
             block_stream: base.block_stream.clone(),
             settlement_contract: base.contracts.settlement,
+            price_impact_protection_percent: config.price_impact_protection_percent,
         },
         base,
     }

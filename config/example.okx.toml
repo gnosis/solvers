@@ -39,3 +39,13 @@ api-secret-key = "$OKX_SECRET_KEY"
 # OKX Secret key passphrase. Instruction on how to get a passphrase:
 # https://www.okx.com/en-au/web3/build/docs/waas/introduction-to-developer-portal-interface#generate-api-keys
 api-passphrase = "$OKX_PASSPHRASE"
+
+# Optional: Price impact protection percentage (between 0.0 - 1.0).
+# OKX API documentation: https://web3.okx.com/build/dev-docs/wallet-api/dex-swap
+#
+# When set to 1.0 (100%), the feature is disabled - all trades are allowed.
+# Note: If this field is omitted entirely, OKX API defaults to 0.9 (90% protection),
+# but this config defaults to 1.0 to disable the feature by default.
+#
+# Examples:
+# price-impact-protection-percent = 1.0   # Disabled (default) - allow all trades
