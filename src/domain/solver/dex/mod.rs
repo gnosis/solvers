@@ -52,7 +52,7 @@ pub struct Dex {
     internalize_interactions: bool,
 
     /// Optional maximum number of orders to solve per auction.
-    max_orders_per_auction: Option<usize>,
+    max_orders_per_auction: Option<NonZeroUsize>,
 }
 
 /// The amount of time we aim the solver to finish before the final deadline is
@@ -112,10 +112,11 @@ impl Dex {
         auction: &'a auction::Auction,
     ) -> impl stream::Stream<Item = solution::Solution> + 'a {
         stream::iter(
-            auction
-                .orders
-                .iter()
-                .take(self.max_orders_per_auction.unwrap_or(auction.orders.len())),
+            auction.orders.iter().take(
+                self.max_orders_per_auction
+                    .map(NonZeroUsize::get)
+                    .unwrap_or(auction.orders.len()),
+            ),
         )
         .enumerate()
         .map(|(i, order)| {

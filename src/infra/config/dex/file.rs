@@ -92,7 +92,7 @@ struct Config {
 
     /// Optional maximum number of orders to solve per auction.
     /// If not set, all orders will be processed.
-    max_orders_per_auction: Option<usize>,
+    max_orders_per_auction: Option<NonZeroUsize>,
 }
 
 fn default_relative_slippage() -> BigDecimal {
