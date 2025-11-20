@@ -49,9 +49,9 @@ pub struct SwapRequest {
     /// orders
     pub swap_mode: SwapMode,
 
-    /// The percentage (between 0.0 - 1.0) of the price impact allowed.
-    /// When set to 1.0 (100%), the feature is disabled.
-    /// OKX API default is 0.9 (90%) if this parameter is not sent.
+    /// The percentage of the price impact allowed.
+    /// When set to 100%, the feature is disabled.
+    /// OKX API default is 90% if this parameter is not sent.
     #[serde_as(as = "serde_with::DisplayFromStr")]
     pub price_impact_protection_percent: BigDecimal,
 }
@@ -122,8 +122,8 @@ pub struct SwapRequestV5 {
     /// orders
     pub swap_mode: SwapMode,
 
-    /// The percentage (between 0.0 - 1.0) of the price impact allowed.
-    /// When set to 1.0 (100%), the feature is disabled.
+    /// The percentage of the price impact allowed.
+    /// When set to 100%, the feature is disabled.
     #[serde_as(as = "serde_with::DisplayFromStr")]
     pub price_impact_protection_percent: BigDecimal,
 }

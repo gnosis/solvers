@@ -85,8 +85,8 @@ pub struct Config {
     /// The stream that yields every new block.
     pub block_stream: Option<CurrentBlockWatcher>,
 
-    /// The percentage (between 0.0 - 1.0) of the price impact allowed.
-    /// When set to 1.0 (100%), the feature is disabled.
+    /// The percentage of the price impact allowed.
+    /// When set to 100%, the feature is disabled.
     pub price_impact_protection_percent: f64,
 }
 
@@ -129,7 +129,7 @@ impl Okx {
         };
 
         if config.price_impact_protection_percent < 0.0
-            || config.price_impact_protection_percent > 1.0
+            || config.price_impact_protection_percent > 100.0
         {
             return Err(CreationError::InvalidPriceImpactProtection(
                 config.price_impact_protection_percent,
