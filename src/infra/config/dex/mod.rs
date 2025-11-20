@@ -33,4 +33,5 @@ pub struct Config {
     pub gas_offset: eth::Gas,
     pub block_stream: Option<CurrentBlockWatcher>,
     pub internalize_interactions: bool,
+    pub max_orders_per_auction: Option<NonZeroUsize>,
 }

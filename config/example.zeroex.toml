@@ -2,6 +2,11 @@ node-url = "http://localhost:8545"
 absolute-slippage = "40000000000000000" # Denominated in wei, optional
 relative-slippage = "0.001" # Percentage in the [0, 1] range
 
+# Optional: Maximum number of orders to solve per auction.
+# If not set, all orders in the auction will be processed.
+# This is useful for limiting API usage or processing time.
+# max-orders-per-auction = 10
+
 [dex]
 # See here how to get a free key: https://0x.org/docs/introduction/getting-started
 api-key = "$YOUR_API_KEY"

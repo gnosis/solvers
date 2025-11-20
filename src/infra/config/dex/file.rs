@@ -89,6 +89,10 @@ struct Config {
     /// contract buffers.
     #[serde(default = "default_internalize_interactions")]
     internalize_interactions: bool,
+
+    /// Optional maximum number of orders to solve per auction.
+    /// If not set, all orders will be processed.
+    max_orders_per_auction: Option<NonZeroUsize>,
 }
 
 fn default_relative_slippage() -> BigDecimal {
@@ -201,6 +205,7 @@ pub async fn load<T: DeserializeOwned>(path: &Path) -> (super::Config, T) {
         gas_offset: eth::Gas(config.gas_offset),
         block_stream,
         internalize_interactions: config.internalize_interactions,
+        max_orders_per_auction: config.max_orders_per_auction,
     };
     (config, dex)
 }
