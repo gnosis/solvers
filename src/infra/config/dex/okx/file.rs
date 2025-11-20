@@ -50,10 +50,9 @@ struct Config {
     #[serde(flatten)]
     okx_credentials: OkxCredentialsConfig,
 
-    /// The percentage (between 0.0 - 1.0) of the price impact allowed.
-    /// When set to 1.0 (100%), the feature is disabled (default).
-    /// Note: OKX API default is 0.9 (90%) if this parameter is NOT sent,
-    /// but we default to 1.0 to disable the feature by default.
+    /// The percentage of the price impact allowed.
+    /// When set to 100%, the feature is disabled (default).
+    /// Note: OKX API default is 90% if this parameter is NOT sent.
     #[serde(default = "default_price_impact_protection_percent")]
     price_impact_protection_percent: f64,
 }
