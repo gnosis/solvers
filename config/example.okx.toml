@@ -1,5 +1,10 @@
 node-url = "http://localhost:8545"
 
+# Optional: Maximum number of orders to solve per auction.
+# If not set, all orders in the auction will be processed.
+# This is useful for limiting API usage or processing time.
+# max-orders-per-auction = 10
+
 [dex]
 # Specify which chain to use, 1 for Ethereum.
 # More info here: https://www.okx.com/en-au/web3/build/docs/waas/walletapi-resources-supported-networks
