@@ -50,9 +50,6 @@ pub struct Dex {
     /// Whether to internalize the solution interactions using the Settlement
     /// contract buffer.
     internalize_interactions: bool,
-
-    /// Optional maximum number of orders to solve per auction.
-    max_orders_per_auction: Option<NonZeroUsize>,
 }
 
 /// The amount of time we aim the solver to finish before the final deadline is
@@ -79,7 +76,6 @@ impl Dex {
             rate_limiter,
             gas_offset: config.gas_offset,
             internalize_interactions: config.internalize_interactions,
-            max_orders_per_auction: config.max_orders_per_auction,
         }
     }
 
@@ -111,22 +107,16 @@ impl Dex {
         &'a self,
         auction: &'a auction::Auction,
     ) -> impl stream::Stream<Item = solution::Solution> + 'a {
-        stream::iter(
-            auction.orders.iter().take(
-                self.max_orders_per_auction
-                    .map(NonZeroUsize::get)
-                    .unwrap_or(auction.orders.len()),
-            ),
-        )
-        .enumerate()
-        .map(|(i, order)| {
-            let span = tracing::info_span!("solve", order = %order.uid);
-            self.solve_order(order, &auction.tokens, auction.gas_price)
-                .map(move |solution| solution.map(|s| s.with_id(solution::Id(i as u64))))
-                .instrument(span)
-        })
-        .buffer_unordered(self.concurrent_requests.get())
-        .filter_map(future::ready)
+        stream::iter(auction.orders.iter())
+            .enumerate()
+            .map(|(i, order)| {
+                let span = tracing::info_span!("solve", order = %order.uid);
+                self.solve_order(order, &auction.tokens, auction.gas_price)
+                    .map(move |solution| solution.map(|s| s.with_id(solution::Id(i as u64))))
+                    .instrument(span)
+            })
+            .buffer_unordered(self.concurrent_requests.get())
+            .filter_map(future::ready)
     }
 
     async fn try_solve(
