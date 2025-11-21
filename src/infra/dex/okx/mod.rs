@@ -396,6 +396,7 @@ impl Okx {
             0 => return Ok(()),
             82000 => Error::NotFound, // Insufficient liquidity
             82104 => Error::NotFound, // Token not supported
+            82112 => Error::NotFound, // Internal OKX risk validation failed
             50011 => Error::RateLimited,
             _ => Error::Api {
                 code,
