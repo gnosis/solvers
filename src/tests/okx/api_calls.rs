@@ -18,6 +18,8 @@ async fn swap_sell_regular() {
     let okx_config = okx_dex::Config {
         sell_orders_endpoint: reqwest::Url::parse(okx_dex::DEFAULT_SELL_ORDERS_ENDPOINT).unwrap(),
         buy_orders_endpoint: None,
+        sell_orders_signature_base_url: None,
+        buy_orders_signature_base_url: None,
         chain_id: crate::domain::eth::ChainId::Mainnet,
         okx_credentials: okx_dex::OkxCredentialsConfig {
             project_id: env::var("OKX_PROJECT_ID").unwrap(),
@@ -27,6 +29,7 @@ async fn swap_sell_regular() {
         },
         settlement_contract: address!("0x9008d19f58aabd9ed0d60971565aa8510560ab41"),
         block_stream: None,
+        price_impact_protection_percent: 1.0,
     };
 
     let order = Order {
@@ -61,6 +64,8 @@ async fn swap_buy_disabled() {
     let okx_config = okx_dex::Config {
         sell_orders_endpoint: reqwest::Url::parse(okx_dex::DEFAULT_SELL_ORDERS_ENDPOINT).unwrap(),
         buy_orders_endpoint: None,
+        sell_orders_signature_base_url: None,
+        buy_orders_signature_base_url: None,
         chain_id: crate::domain::eth::ChainId::Mainnet,
         okx_credentials: okx_dex::OkxCredentialsConfig {
             project_id: String::new(),
@@ -70,6 +75,7 @@ async fn swap_buy_disabled() {
         },
         settlement_contract: address!("0x9008d19f58aabd9ed0d60971565aa8510560ab41"),
         block_stream: None,
+        price_impact_protection_percent: 1.0,
     };
 
     let order = Order {
@@ -102,6 +108,8 @@ async fn swap_buy_enabled() {
     let okx_config = okx_dex::Config {
         sell_orders_endpoint: reqwest::Url::parse(okx_dex::DEFAULT_SELL_ORDERS_ENDPOINT).unwrap(),
         buy_orders_endpoint: Some(reqwest::Url::parse(DEFAULT_BUY_ORDERS_ENDPOINT).unwrap()),
+        sell_orders_signature_base_url: None,
+        buy_orders_signature_base_url: None,
         chain_id: crate::domain::eth::ChainId::Mainnet,
         okx_credentials: okx_dex::OkxCredentialsConfig {
             project_id: env::var("OKX_PROJECT_ID").unwrap(),
@@ -111,6 +119,7 @@ async fn swap_buy_enabled() {
         },
         settlement_contract: address!("0x9008d19f58aabd9ed0d60971565aa8510560ab41"),
         block_stream: None,
+        price_impact_protection_percent: 1.0,
     };
 
     let order = Order {
@@ -150,6 +159,8 @@ async fn swap_api_error() {
     let okx_config = okx_dex::Config {
         sell_orders_endpoint: reqwest::Url::parse(okx_dex::DEFAULT_SELL_ORDERS_ENDPOINT).unwrap(),
         buy_orders_endpoint: None,
+        sell_orders_signature_base_url: None,
+        buy_orders_signature_base_url: None,
         chain_id: crate::domain::eth::ChainId::Mainnet,
         okx_credentials: okx_dex::OkxCredentialsConfig {
             project_id: env::var("OKX_PROJECT_ID").unwrap(),
@@ -159,6 +170,7 @@ async fn swap_api_error() {
         },
         settlement_contract: address!("0x9008d19f58aabd9ed0d60971565aa8510560ab41"),
         block_stream: None,
+        price_impact_protection_percent: 1.0,
     };
 
     let order = Order {
@@ -192,6 +204,8 @@ async fn swap_sell_insufficient_liquidity() {
     let okx_config = okx_dex::Config {
         sell_orders_endpoint: reqwest::Url::parse(okx_dex::DEFAULT_SELL_ORDERS_ENDPOINT).unwrap(),
         buy_orders_endpoint: None,
+        sell_orders_signature_base_url: None,
+        buy_orders_signature_base_url: None,
         chain_id: crate::domain::eth::ChainId::Mainnet,
         okx_credentials: okx_dex::OkxCredentialsConfig {
             project_id: env::var("OKX_PROJECT_ID").unwrap(),
@@ -201,6 +215,7 @@ async fn swap_sell_insufficient_liquidity() {
         },
         settlement_contract: address!("0x9008d19f58aabd9ed0d60971565aa8510560ab41"),
         block_stream: None,
+        price_impact_protection_percent: 1.0,
     };
 
     let order = Order {
@@ -234,6 +249,8 @@ async fn swap_buy_insufficient_liquidity() {
     let okx_config = okx_dex::Config {
         sell_orders_endpoint: reqwest::Url::parse(okx_dex::DEFAULT_SELL_ORDERS_ENDPOINT).unwrap(),
         buy_orders_endpoint: Some(reqwest::Url::parse(DEFAULT_BUY_ORDERS_ENDPOINT).unwrap()),
+        sell_orders_signature_base_url: None,
+        buy_orders_signature_base_url: None,
         chain_id: crate::domain::eth::ChainId::Mainnet,
         okx_credentials: okx_dex::OkxCredentialsConfig {
             project_id: env::var("OKX_PROJECT_ID").unwrap(),
@@ -243,6 +260,7 @@ async fn swap_buy_insufficient_liquidity() {
         },
         settlement_contract: address!("0x9008d19f58aabd9ed0d60971565aa8510560ab41"),
         block_stream: None,
+        price_impact_protection_percent: 1.0,
     };
 
     let order = Order {

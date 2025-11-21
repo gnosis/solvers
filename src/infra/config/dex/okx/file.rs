@@ -26,6 +26,22 @@ struct Config {
     #[serde_as(as = "Option<serde_with::DisplayFromStr>")]
     buy_orders_endpoint: Option<reqwest::Url>,
 
+    /// Optional base URL to use for signature generation for sell orders.
+    /// This is useful when requests go through a proxy but signatures must be
+    /// generated using the original OKX API URL path.
+    /// If not specified, uses sell_orders_endpoint for signature generation.
+    #[serde(default)]
+    #[serde_as(as = "Option<serde_with::DisplayFromStr>")]
+    sell_orders_signature_base_url: Option<reqwest::Url>,
+
+    /// Optional base URL to use for signature generation for buy orders.
+    /// This is useful when requests go through a proxy but signatures must be
+    /// generated using the original OKX API URL path.
+    /// If not specified, uses buy_orders_endpoint for signature generation.
+    #[serde(default)]
+    #[serde_as(as = "Option<serde_with::DisplayFromStr>")]
+    buy_orders_signature_base_url: Option<reqwest::Url>,
+
     /// Chain ID used to automatically determine contract addresses.
     #[serde_as(as = "serialize::ChainId")]
     chain_id: eth::ChainId,
@@ -33,6 +49,12 @@ struct Config {
     /// OKX API credentials
     #[serde(flatten)]
     okx_credentials: OkxCredentialsConfig,
+
+    /// The percentage of the price impact allowed.
+    /// When set to 100%, the feature is disabled (default).
+    /// Note: OKX API default is 90% if this parameter is NOT sent.
+    #[serde(default = "default_price_impact_protection_percent")]
+    price_impact_protection_percent: f64,
 }
 
 #[derive(Deserialize)]
@@ -71,6 +93,10 @@ fn default_sell_orders_endpoint() -> reqwest::Url {
     okx::DEFAULT_SELL_ORDERS_ENDPOINT.parse().unwrap()
 }
 
+fn default_price_impact_protection_percent() -> f64 {
+    1.0 // 100% - feature disabled by default
+}
+
 /// Load the OKX solver configuration from a TOML file.
 ///
 /// # Panics
@@ -83,10 +109,13 @@ pub async fn load(path: &Path) -> super::Config {
         okx: okx::Config {
             sell_orders_endpoint: config.sell_orders_endpoint,
             buy_orders_endpoint: config.buy_orders_endpoint,
+            sell_orders_signature_base_url: config.sell_orders_signature_base_url,
+            buy_orders_signature_base_url: config.buy_orders_signature_base_url,
             chain_id: config.chain_id,
             okx_credentials: config.okx_credentials.into(),
             block_stream: base.block_stream.clone(),
             settlement_contract: base.contracts.settlement,
+            price_impact_protection_percent: config.price_impact_protection_percent,
         },
         base,
     }
