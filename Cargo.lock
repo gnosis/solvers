@@ -1956,6 +1956,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "contracts"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?rev=db12904#db129043227dc5c4be552906071fa1a54a6673ae"
+dependencies = [
+ "alloy",
+ "anyhow",
+ "ethcontract",
+ "ethcontract-generate",
+ "paste",
+ "serde_json",
+]
+
+[[package]]
 name = "convert_case"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4372,7 +4385,7 @@ version = "0.1.0"
 source = "git+https://github.com/cowprotocol/services.git?tag=v2.335.0#1784fe704d7ea761072ce5ae2a8557ee881e8a46"
 dependencies = [
  "alloy",
- "contracts",
+ "contracts 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.335.0)",
  "futures",
  "moka",
  "thiserror 1.0.61",
@@ -5739,7 +5752,7 @@ dependencies = [
  "chrono",
  "clap",
  "const-hex",
- "contracts",
+ "contracts 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.335.0)",
  "dashmap",
  "database",
  "derivative",
@@ -5874,7 +5887,7 @@ dependencies = [
  "bigdecimal",
  "chrono",
  "clap",
- "contracts",
+ "contracts 0.1.0 (git+https://github.com/cowprotocol/services.git?rev=db12904)",
  "ethereum-types",
  "ethrpc",
  "futures",
