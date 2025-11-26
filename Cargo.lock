@@ -790,7 +790,7 @@ checksum = "a23eb6b1614318a8071c9b2521f36b424b2c83db5eb3a0fead4a6c0809af6e61"
 [[package]]
 name = "app-data"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.336.0#6c521a8760da7eaf03326cf44f6c8d072b69fd83"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.337.1#a151fba903c63ee265f0ac45779cdacff5a93c46"
 dependencies = [
  "alloy",
  "anyhow",
@@ -1721,7 +1721,7 @@ dependencies = [
 [[package]]
 name = "bytes-hex"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.336.0#6c521a8760da7eaf03326cf44f6c8d072b69fd83"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.337.1#a151fba903c63ee265f0ac45779cdacff5a93c46"
 dependencies = [
  "const-hex",
  "serde",
@@ -1790,7 +1790,7 @@ checksum = "613afe47fcd5fac7ccf1db93babcb082c5994d996f20b8b159f2ad1658eb5724"
 [[package]]
 name = "chain"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.336.0#6c521a8760da7eaf03326cf44f6c8d072b69fd83"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.337.1#a151fba903c63ee265f0ac45779cdacff5a93c46"
 dependencies = [
  "alloy",
  "derive_more 1.0.0",
@@ -1945,7 +1945,7 @@ dependencies = [
 [[package]]
 name = "contracts"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.336.0#6c521a8760da7eaf03326cf44f6c8d072b69fd83"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.337.1#a151fba903c63ee265f0ac45779cdacff5a93c46"
 dependencies = [
  "alloy",
  "anyhow",
@@ -2202,7 +2202,7 @@ checksum = "2a2330da5de22e8a3cb63252ce2abb30116bf5265e89c0e01bc17015ce30a476"
 [[package]]
 name = "database"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.336.0#6c521a8760da7eaf03326cf44f6c8d072b69fd83"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.337.1#a151fba903c63ee265f0ac45779cdacff5a93c46"
 dependencies = [
  "bigdecimal",
  "chrono",
@@ -2566,7 +2566,7 @@ dependencies = [
 [[package]]
 name = "ethrpc"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.336.0#6c521a8760da7eaf03326cf44f6c8d072b69fd83"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.337.1#a151fba903c63ee265f0ac45779cdacff5a93c46"
 dependencies = [
  "alloy",
  "anyhow",
@@ -3961,7 +3961,7 @@ dependencies = [
 [[package]]
 name = "model"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.336.0#6c521a8760da7eaf03326cf44f6c8d072b69fd83"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.337.1#a151fba903c63ee265f0ac45779cdacff5a93c46"
 dependencies = [
  "alloy",
  "anyhow",
@@ -4173,7 +4173,7 @@ dependencies = [
 [[package]]
 name = "number"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.336.0#6c521a8760da7eaf03326cf44f6c8d072b69fd83"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.337.1#a151fba903c63ee265f0ac45779cdacff5a93c46"
 dependencies = [
  "alloy",
  "anyhow",
@@ -4210,7 +4210,7 @@ dependencies = [
 [[package]]
 name = "observe"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.336.0#6c521a8760da7eaf03326cf44f6c8d072b69fd83"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.337.1#a151fba903c63ee265f0ac45779cdacff5a93c46"
 dependencies = [
  "async-trait",
  "atty",
@@ -4369,7 +4369,7 @@ dependencies = [
 [[package]]
 name = "order-validation"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.336.0#6c521a8760da7eaf03326cf44f6c8d072b69fd83"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.337.1#a151fba903c63ee265f0ac45779cdacff5a93c46"
 dependencies = [
  "alloy",
  "contracts",
@@ -4923,7 +4923,7 @@ dependencies = [
 [[package]]
 name = "rate-limit"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.336.0#6c521a8760da7eaf03326cf44f6c8d072b69fd83"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.337.1#a151fba903c63ee265f0ac45779cdacff5a93c46"
 dependencies = [
  "anyhow",
  "futures",
@@ -5726,7 +5726,7 @@ dependencies = [
 [[package]]
 name = "shared"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.336.0#6c521a8760da7eaf03326cf44f6c8d072b69fd83"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.337.1#a151fba903c63ee265f0ac45779cdacff5a93c46"
 dependencies = [
  "alloy",
  "anyhow",
@@ -5916,7 +5916,7 @@ dependencies = [
 [[package]]
 name = "solvers-dto"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.336.0#6c521a8760da7eaf03326cf44f6c8d072b69fd83"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.337.1#a151fba903c63ee265f0ac45779cdacff5a93c46"
 dependencies = [
  "app-data",
  "bigdecimal",
@@ -6349,7 +6349,7 @@ checksum = "8f50febec83f5ee1df3015341d8bd429f2d1cc62bcba7ea2076759d315084683"
 [[package]]
 name = "testlib"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.336.0#6c521a8760da7eaf03326cf44f6c8d072b69fd83"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.337.1#a151fba903c63ee265f0ac45779cdacff5a93c46"
 dependencies = [
  "alloy",
  "anyhow",
