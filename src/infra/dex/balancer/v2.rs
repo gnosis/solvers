@@ -11,8 +11,7 @@ use {
     anyhow::{Result, anyhow},
     contracts::alloy::{
         BalancerQueries::IVault::{
-            BatchSwapStep as QueriesBatchSwapStep,
-            FundManagement as QueriesFundManagement,
+            BatchSwapStep as QueriesBatchSwapStep, FundManagement as QueriesFundManagement,
         },
         BalancerV2Vault::{
             self,

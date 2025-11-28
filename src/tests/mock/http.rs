@@ -3,8 +3,7 @@ use {
         fmt::{self, Debug, Formatter},
         net::SocketAddr,
         sync::{
-            Arc,
-            Mutex,
+            Arc, Mutex,
             atomic::{AtomicBool, Ordering},
         },
     },

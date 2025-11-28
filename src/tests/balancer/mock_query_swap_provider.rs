@@ -5,14 +5,12 @@
 use {
     crate::{
         domain::{
-            auction,
-            dex,
+            auction, dex,
             eth::{self, H160},
             order,
         },
         infra::dex::balancer::{
-            self,
-            dto,
+            self, dto,
             query_swap_provider::{MockQuerySwapProvider, OnChainAmounts, QuerySwapProvider},
         },
         tests::{self, mock},

@@ -66,7 +66,6 @@ impl ApiVersion {
 pub async fn load(path: &Path) -> super::Config {
     let (base, config) = file::load::<Config>(path).await;
     let contracts = infra::contracts::Contracts::for_chain(config.chain_id);
-
     let enabled_api_versions = config.enabled_api_versions.unwrap_or_else(ApiVersion::all);
     let vault_contract = enabled_api_versions
         .contains(&ApiVersion::V2)
