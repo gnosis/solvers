@@ -5,7 +5,8 @@
 use {
     crate::{
         domain::{self, auction, eth, order, solution},
-        infra, util,
+        infra,
+        util,
     },
     alloy::primitives::Address,
     ethereum_types::U256,

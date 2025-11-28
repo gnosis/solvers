@@ -56,7 +56,7 @@ tower-http = { version = "0.4", features = ["trace"] }
 tracing = "0.1"
 web3 = "0.19"
 
-contracts = { git = "https://github.com/cowprotocol/services.git", rev = "db12904", package = "contracts" }
+contracts = { git = "https://github.com/cowprotocol/services.git", tag = "v2.336.0", package = "contracts" }
 ethrpc = { git = "https://github.com/cowprotocol/services.git", tag = "v2.336.0", package = "ethrpc" }
 observe = { git = "https://github.com/cowprotocol/services.git", tag = "v2.336.0", package = "observe", features = [
     "axum-tracing",

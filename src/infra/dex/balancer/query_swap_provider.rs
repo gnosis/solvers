@@ -13,13 +13,16 @@
 use {
     crate::{
         domain::{
-            dex, eth,
+            dex,
+            eth,
             order::{self, Side},
         },
         infra::{
             blockchain,
             dex::balancer::{
-                Error, convert_path_steps, dto,
+                Error,
+                convert_path_steps,
+                dto,
                 v2::{self, BalancerQueriesExt},
                 v3,
             },

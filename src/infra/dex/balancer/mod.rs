@@ -1,7 +1,8 @@
 use {
     crate::{
         domain::{
-            auction, dex,
+            auction,
+            dex,
             eth::{self, TokenAddress},
             order::{self, Side},
         },
@@ -12,7 +13,9 @@ use {
     contracts::alloy::{
         BalancerV2Vault::IVault::{BatchSwapStep, FundManagement},
         BalancerV3BatchRouter::IBatchRouter::{
-            SwapPathExactAmountIn, SwapPathExactAmountOut, SwapPathStep,
+            SwapPathExactAmountIn,
+            SwapPathExactAmountOut,
+            SwapPathStep,
         },
     },
     ethrpc::{

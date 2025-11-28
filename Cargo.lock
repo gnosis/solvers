@@ -2015,19 +2015,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "contracts"
-version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?rev=db12904#db129043227dc5c4be552906071fa1a54a6673ae"
-dependencies = [
- "alloy",
- "anyhow",
- "ethcontract",
- "ethcontract-generate",
- "paste",
- "serde_json",
-]
-
-[[package]]
 name = "convert_case"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4436,7 +4423,7 @@ version = "0.1.0"
 source = "git+https://github.com/cowprotocol/services.git?tag=v2.336.0#6c521a8760da7eaf03326cf44f6c8d072b69fd83"
 dependencies = [
  "alloy",
- "contracts 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.336.0)",
+ "contracts",
  "futures",
  "moka",
  "thiserror 1.0.69",
@@ -5381,9 +5368,9 @@ dependencies = [
 
 [[package]]
 name = "rustls-pki-types"
-version = "1.13.0"
+version = "1.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "94182ad936a0c91c324cd46c6511b9510ed16af436d7b5bab34beab0afd55f7a"
+checksum = "708c0f9d5f54ba0272468c1d306a52c495b31fa155e91bc25371e6df7996908c"
 dependencies = [
  "zeroize",
 ]
@@ -5822,7 +5809,7 @@ dependencies = [
  "chrono",
  "clap",
  "const-hex",
- "contracts 0.1.0 (git+https://github.com/cowprotocol/services.git?tag=v2.336.0)",
+ "contracts",
  "dashmap",
  "database",
  "derivative",
@@ -5960,7 +5947,7 @@ dependencies = [
  "bigdecimal",
  "chrono",
  "clap",
- "contracts 0.1.0 (git+https://github.com/cowprotocol/services.git?rev=db12904)",
+ "contracts",
  "ethereum-types",
  "ethrpc",
  "futures",
@@ -6940,9 +6927,9 @@ dependencies = [
 
 [[package]]
 name = "tracing-subscriber"
-version = "0.3.20"
+version = "0.3.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2054a14f5307d601f88daf0553e1cbf472acc4f2c51afab632431cdcd72124d5"
+checksum = "2f30143827ddab0d256fd843b7a66d164e9f271cfa0dde49142c5ca0ca291f1e"
 dependencies = [
  "matchers",
  "nu-ansi-term",
