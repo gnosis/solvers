@@ -80,7 +80,7 @@ impl SwapRequest {
             from_token_address: order.sell.0,
             to_token_address: order.buy.0,
             amount: order.amount.get(),
-            slippage_percent: Slippage(slippage.round(6).as_factor().clone()),
+            slippage_percent: Slippage(slippage.as_factor().clone()),
             swap_mode,
             ..self
         }
