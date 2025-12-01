@@ -238,25 +238,16 @@ impl OnChainQuerySwapProvider {
             }
         };
 
-        // For V3, the result is a single amount
-        // We need to determine which is the input and which is the output based on
-        // order side
-        let (swap_amount, return_amount) = match order.side {
-            order::Side::Sell => {
-                // For sell orders: swap_amount is the input (known), return_amount is the
-                // output (queried)
-                (quote.swap_amount_raw.into_alloy(), result)
-            }
-            order::Side::Buy => {
-                // For buy orders: swap_amount is the input (queried), return_amount is the
-                // output (known)
-                (result, quote.return_amount_raw.into_alloy())
-            }
-        };
-
+        // swap_amount: the given/exact amount from SOR
+        //
+        // The on-chain query result is always the "calculated" amount:
+        // - For sell orders: result = output amount (what user receives)
+        // - For buy orders: result = input amount (what user needs to pay)
+        //
+        // return_amount: the calculated amount from on-chain query
         Ok(OnChainAmounts {
-            swap_amount,
-            return_amount,
+            swap_amount: quote.swap_amount_raw.into_alloy(),
+            return_amount: result,
         })
     }
 
