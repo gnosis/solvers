@@ -84,7 +84,7 @@ impl Fills {
             }
         };
 
-        if amount < smallest_fill {
+        if amount < smallest_fill || amount.is_zero() {
             tracing::trace!(?amount, "order no longer worth filling");
             return None;
         }
