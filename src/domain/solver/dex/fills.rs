@@ -38,6 +38,10 @@ impl Fills {
     /// Returns which dex query should be tried for the given order. Takes
     /// information of previous partial fill attempts into account.
     pub fn dex_order(&self, order: &order::Order, tokens: &auction::Tokens) -> Option<dex::Order> {
+        // Do not attempt solving for same sell and buy token
+        if order.sell.token == order.buy.token {
+            return None;
+        }
         if !order.partially_fillable {
             return Some(dex::Order::new(order));
         }
