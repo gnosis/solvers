@@ -32,6 +32,8 @@ async fn run_with(args: cli::Args, bind: Option<oneshot::Sender<SocketAddr>>) {
         None,
     );
     observe::tracing::initialize_reentrant(&obs_config);
+    #[cfg(unix)]
+    observe::heap_dump_handler::spawn_heap_dump_handler();
     tracing::info!("running solver engine with {args:#?}");
 
     let solver = match args.command {

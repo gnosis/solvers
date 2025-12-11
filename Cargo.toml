@@ -56,6 +56,10 @@ dto =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.339.1", 
 rate-limit =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.339.1", package = "rate-limit" }
 number =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.339.1", package = "number" }
 
+# Memory allocator
+tikv-jemallocator = { version = "0.6", features = ["unprefixed_malloc_on_supported_platforms", "profiling"] }
+jemalloc_pprof = { version = "0.8", features = ["symbolize"] }
+
 [dev-dependencies]
 ethrpc = { git = "https://github.com/cowprotocol/services.git", tag = "v2.339.1", package = "ethrpc", features = ["test-util"] }
 testlib =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.339.1", package = "testlib" }
