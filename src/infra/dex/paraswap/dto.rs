@@ -3,10 +3,10 @@
 
 use {
     crate::{
-        domain::{auction, dex, order},
+        domain::{auction, dex, eth, order},
         util::serialize,
     },
-    ethereum_types::{H160, U256},
+    alloy::primitives::U256,
     serde::{Deserialize, Serialize},
     serde_with::serde_as,
 };
@@ -19,10 +19,10 @@ use {
 #[serde(rename_all = "camelCase")]
 pub struct SwapQuery {
     /// Source token address.
-    pub src_token: H160,
+    pub src_token: eth::Address,
 
     /// Destination token address.
-    pub dest_token: H160,
+    pub dest_token: eth::Address,
 
     /// Source token decimals.
     pub src_decimals: u8,
@@ -53,7 +53,7 @@ pub struct SwapQuery {
     pub max_impact: u8,
 
     /// The address of the signer.
-    pub user_address: H160,
+    pub user_address: eth::Address,
 
     /// A relative slippage tolerance denominated in bps.
     pub slippage: u16,
@@ -130,14 +130,14 @@ pub struct PriceRoute {
     #[serde_as(as = "serialize::U256")]
     pub gas_cost: U256,
     /// The token transfer proxy that requires an allowance.
-    pub token_transfer_proxy: H160,
+    pub token_transfer_proxy: eth::Address,
 }
 
 #[serde_as]
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TxParams {
-    pub to: H160,
+    pub to: eth::Address,
 
     #[serde_as(as = "serialize::Hex")]
     pub data: Vec<u8>,

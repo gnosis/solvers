@@ -34,7 +34,6 @@ use {
         BalancerQueries::IVault::{BatchSwapStep, FundManagement},
         BalancerV3BatchRouter::IBatchRouter::{SwapPathExactAmountIn, SwapPathExactAmountOut},
     },
-    ethrpc::alloy::conversions::IntoAlloy,
     itertools::Itertools,
 };
 
@@ -122,12 +121,7 @@ impl OnChainQuerySwapProvider {
         quote: &dto::Quote,
     ) -> Result<OnChainAmounts> {
         let (kind, swaps, funds) = self.build_v2_swap_data(order, quote)?;
-        let assets: Vec<Address> = quote
-            .token_addresses
-            .iter()
-            .copied()
-            .map(IntoAlloy::into_alloy)
-            .collect();
+        let assets: Vec<Address> = quote.token_addresses.to_vec();
 
         // Execute the on-chain query
         let asset_deltas = self
@@ -170,24 +164,26 @@ impl OnChainQuerySwapProvider {
             })?;
 
         // Get the deltas for token_in and token_out (convert to absolute values)
-        let amount_in = eth::U256::from_dec_str(&asset_deltas[token_in_index].abs().to_string())
-            .map_err(|e| {
-                anyhow!(
-                    "failed to parse token_in delta '{}' into U256: {e:?}",
-                    asset_deltas[token_in_index]
-                )
-            })?;
-        let amount_out = eth::U256::from_dec_str(&asset_deltas[token_out_index].abs().to_string())
-            .map_err(|e| {
-                anyhow!(
-                    "failed to parse token_out delta '{}' into U256: {e:?}",
-                    asset_deltas[token_out_index]
-                )
-            })?;
+        let amount_in =
+            eth::U256::from_str_radix(&asset_deltas[token_in_index].abs().to_string(), 10)
+                .map_err(|e| {
+                    anyhow!(
+                        "failed to parse token_in delta '{}' into U256: {e:?}",
+                        asset_deltas[token_in_index]
+                    )
+                })?;
+        let amount_out =
+            eth::U256::from_str_radix(&asset_deltas[token_out_index].abs().to_string(), 10)
+                .map_err(|e| {
+                    anyhow!(
+                        "failed to parse token_out delta '{}' into U256: {e:?}",
+                        asset_deltas[token_out_index]
+                    )
+                })?;
 
         Ok(OnChainAmounts {
-            swap_amount: amount_in.into_alloy(),
-            return_amount: amount_out.into_alloy(),
+            swap_amount: amount_in,
+            return_amount: amount_out,
         })
     }
 
@@ -246,7 +242,7 @@ impl OnChainQuerySwapProvider {
         //
         // return_amount: the calculated amount from on-chain query
         Ok(OnChainAmounts {
-            swap_amount: quote.swap_amount_raw.into_alloy(),
+            swap_amount: quote.swap_amount_raw,
             return_amount: result,
         })
     }
@@ -277,7 +273,7 @@ impl OnChainQuerySwapProvider {
                     ),
                     assetInIndex: U256::from(swap.asset_in_index),
                     assetOutIndex: U256::from(swap.asset_out_index),
-                    amount: swap.amount.into_alloy(),
+                    amount: swap.amount,
                     userData: Bytes::copy_from_slice(&swap.user_data),
                 })
             })
@@ -305,15 +301,15 @@ impl OnChainQuerySwapProvider {
             tokenIn: path
                 .tokens
                 .first()
-                .map(|t| t.address.into_alloy())
+                .map(|t| t.address)
                 .ok_or(Error::InvalidPath)?,
             exactAmountIn: match side {
-                Side::Buy => slippage.add(path.input_amount_raw).into_alloy(),
-                Side::Sell => path.input_amount_raw.into_alloy(),
+                Side::Buy => slippage.add(path.input_amount_raw),
+                Side::Sell => path.input_amount_raw,
             },
             minAmountOut: match side {
-                Side::Buy => path.output_amount_raw.into_alloy(),
-                Side::Sell => slippage.sub(path.output_amount_raw).into_alloy(),
+                Side::Buy => path.output_amount_raw,
+                Side::Sell => slippage.sub(path.output_amount_raw),
             },
             steps: convert_path_steps(path)?,
         })
@@ -330,15 +326,15 @@ impl OnChainQuerySwapProvider {
             tokenIn: path
                 .tokens
                 .first()
-                .map(|t| t.address.into_alloy())
+                .map(|t| t.address)
                 .ok_or(Error::InvalidPath)?,
             maxAmountIn: match side {
-                Side::Buy => slippage.add(path.input_amount_raw).into_alloy(),
-                Side::Sell => path.input_amount_raw.into_alloy(),
+                Side::Buy => slippage.add(path.input_amount_raw),
+                Side::Sell => path.input_amount_raw,
             },
             exactAmountOut: match side {
-                Side::Buy => path.output_amount_raw.into_alloy(),
-                Side::Sell => slippage.sub(path.output_amount_raw).into_alloy(),
+                Side::Buy => path.output_amount_raw,
+                Side::Sell => slippage.sub(path.output_amount_raw),
             },
             steps: convert_path_steps(path)?,
         })

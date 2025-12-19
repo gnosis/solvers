@@ -25,7 +25,7 @@ struct Config {
     pub ignore_bad_usd_price: bool,
 
     /// The solver address.
-    pub address: eth::H160,
+    pub address: eth::Address,
 
     /// This is needed when configuring ParaSwap to use
     /// the gated API for partners.
@@ -56,7 +56,7 @@ pub async fn load(path: &Path) -> super::Config {
             address: config.address,
             api_key: config.api_key,
             partner: config.partner,
-            chain_id: ChainId::new(config.chain_id.into()).unwrap(),
+            chain_id: ChainId::new(config.chain_id).unwrap(),
             block_stream: base.block_stream.clone(),
         },
         base,

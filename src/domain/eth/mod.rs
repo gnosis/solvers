@@ -2,21 +2,21 @@ mod chain;
 
 pub use {
     self::chain::ChainId,
-    ethereum_types::{H160, U256},
+    alloy::primitives::{Address, U256},
 };
 
 /// A contract address.
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct ContractAddress(pub H160);
+pub struct ContractAddress(pub Address);
 
 /// An ERC20 token address.
 ///
 /// https://eips.ethereum.org/EIPS/eip-20
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct TokenAddress(pub H160);
+pub struct TokenAddress(pub Address);
 
-impl From<H160> for TokenAddress {
-    fn from(inner: H160) -> Self {
+impl From<Address> for TokenAddress {
+    fn from(inner: Address) -> Self {
         Self(inner)
     }
 }
@@ -48,22 +48,6 @@ impl std::ops::Add for Gas {
 
     fn add(self, rhs: Self) -> Self::Output {
         Self(self.0 + rhs.0)
-    }
-}
-
-/// An address. Can be an EOA or a smart contract address.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Address(pub H160);
-
-impl From<H160> for Address {
-    fn from(value: H160) -> Self {
-        Self(value)
-    }
-}
-
-impl From<Address> for H160 {
-    fn from(value: Address) -> Self {
-        value.0
     }
 }
 

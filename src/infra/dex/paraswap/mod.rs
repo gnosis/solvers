@@ -3,8 +3,7 @@ use {
         domain::{auction, dex, eth},
         util,
     },
-    ethereum_types::Address,
-    ethrpc::{alloy::conversions::IntoAlloy, block_stream::CurrentBlockWatcher},
+    ethrpc::block_stream::CurrentBlockWatcher,
 };
 
 mod dto;
@@ -29,7 +28,7 @@ pub struct Config {
     pub ignore_bad_usd_price: bool,
 
     /// The solver address.
-    pub address: Address,
+    pub address: eth::Address,
 
     /// ParaSwap provides a gated API for partners that requires authentication
     /// by specifying this as header in the HTTP request.
@@ -81,7 +80,7 @@ impl ParaSwap {
         .await?;
         Ok(dex::Swap {
             calls: vec![dex::Call {
-                to: swap.tx_params.to.into_alloy(),
+                to: swap.tx_params.to,
                 calldata: swap.tx_params.data,
             }],
             input: eth::Asset {
@@ -93,7 +92,7 @@ impl ParaSwap {
                 amount: swap.price_route.dest_amount,
             },
             allowance: dex::Allowance {
-                spender: swap.price_route.token_transfer_proxy.into_alloy(),
+                spender: swap.price_route.token_transfer_proxy,
                 amount: dex::Amount::new(swap.price_route.src_amount),
             },
             gas: eth::Gas(swap.price_route.gas_cost),

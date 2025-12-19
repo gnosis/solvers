@@ -15,7 +15,6 @@ use {
             Swapper::{Allowance, Asset, Interaction},
         },
     },
-    ethrpc::alloy::conversions::{IntoAlloy, IntoLegacy},
 };
 
 /// A DEX swap simulator.
@@ -75,16 +74,16 @@ impl Simulator {
             })
             .collect();
         let sell = Asset {
-            token: swap.input.token.0.into_alloy(),
-            amount: swap.input.amount.into_alloy(),
+            token: swap.input.token.0,
+            amount: swap.input.amount,
         };
         let buy = Asset {
-            token: swap.output.token.0.into_alloy(),
-            amount: swap.output.amount.into_alloy(),
+            token: swap.output.token.0,
+            amount: swap.output.amount,
         };
         let allowance = Allowance {
             spender: swap.allowance.spender,
-            amount: swap.allowance.amount.get().into_alloy(),
+            amount: swap.allowance.amount.get(),
         };
         let gas = swapper
             .swap(self.settlement, sell, buy, allowance, swapper_calls_arg)
@@ -103,7 +102,7 @@ impl Simulator {
             );
             swap.gas
         } else {
-            eth::Gas(gas.into_legacy())
+            eth::Gas(gas)
         })
     }
 }

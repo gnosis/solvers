@@ -2,7 +2,6 @@
 
 use {
     crate::{domain::eth, util},
-    ethereum_types::Address,
     std::fmt::{self, Debug, Display, Formatter},
 };
 
@@ -19,10 +18,8 @@ pub struct Order {
 
 impl Order {
     /// Returns the order's owner address.
-    pub fn owner(&self) -> Address {
-        let mut bytes = [0_u8; 20];
-        bytes.copy_from_slice(&self.uid.0[32..52]);
-        bytes.into()
+    pub fn owner(&self) -> eth::Address {
+        eth::Address::from_slice(&self.uid.0[32..52])
     }
 
     /// Returns `true` if the order expects a solver-computed fee.

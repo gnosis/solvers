@@ -10,7 +10,6 @@ use {
         util::serialize,
     },
     bigdecimal::{BigDecimal, Zero},
-    ethrpc::alloy::conversions::IntoAlloy,
     serde::{Deserialize, de::DeserializeOwned},
     serde_with::serde_as,
     std::{fmt::Debug, num::NonZeroUsize, path::Path, time::Duration},
@@ -27,7 +26,7 @@ struct Config {
 
     /// Optional CoW Protocol Settlement contract address. If not specified,
     /// the default Settlement contract address will be used.
-    settlement: Option<eth::H160>,
+    settlement: Option<eth::Address>,
 
     /// The relative slippage allowed by the solver.
     #[serde(default = "default_relative_slippage")]
@@ -104,7 +103,7 @@ fn default_concurrent_requests() -> NonZeroUsize {
 }
 
 fn default_smallest_partial_fill() -> eth::U256 {
-    eth::U256::exp10(16) // 0.01 ETH
+    eth::U256::from(10).pow(eth::U256::from(16)) // 0.01 ETH
 }
 
 fn default_back_off_growth_factor() -> f64 {
@@ -122,7 +121,7 @@ fn default_max_back_off() -> Duration {
 fn default_gas_offset() -> eth::U256 {
     // Rough estimation of the gas overhead of settling a single
     // trade via the settlement contract.
-    106_391.into()
+    eth::U256::from(106_391)
 }
 
 fn default_internalize_interactions() -> bool {
@@ -148,18 +147,17 @@ pub async fn load<T: DeserializeOwned>(path: &Path) -> (super::Config, T) {
     // CoW Protocol contracts have the same address.
     let contracts = contracts::Contracts::for_chain(eth::ChainId::Mainnet);
     let (settlement, authenticator) = if let Some(settlement) = config.settlement {
-        let authenticator =
-            {
-                let web3 = blockchain::rpc(&config.node_url);
-                let settlement = ::contracts::alloy::GPv2Settlement::Instance::new(
-                    settlement.into_alloy(),
-                    web3.alloy.clone(),
-                );
-                settlement.authenticator().call().await.unwrap_or_else(|e| {
-                    panic!("error reading authenticator contract address: {e:?}")
-                })
-            };
-        (settlement.into_alloy(), authenticator)
+        let authenticator = {
+            let web3 = blockchain::rpc(&config.node_url);
+            let settlement =
+                ::contracts::alloy::GPv2Settlement::Instance::new(settlement, web3.alloy.clone());
+            settlement
+                .authenticator()
+                .call()
+                .await
+                .unwrap_or_else(|e| panic!("error reading authenticator contract address: {e:?}"))
+        };
+        (settlement, authenticator)
     } else {
         (contracts.settlement, contracts.authenticator)
     };

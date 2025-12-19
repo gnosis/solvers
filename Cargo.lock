@@ -5826,7 +5826,6 @@ dependencies = [
  "chrono",
  "clap",
  "contracts",
- "ethereum-types",
  "ethrpc",
  "futures",
  "glob",

@@ -4,7 +4,7 @@ use {
         util,
     },
     alloy::primitives::{Address, address},
-    ethrpc::{alloy::conversions::IntoAlloy, block_stream::CurrentBlockWatcher},
+    ethrpc::block_stream::CurrentBlockWatcher,
     hyper::StatusCode,
     std::sync::atomic::{self, AtomicU64},
     tracing::Instrument,
@@ -64,7 +64,7 @@ impl ZeroEx {
         let defaults = dto::Query {
             taker: config.settlement.0,
             excluded_sources: config.excluded_sources,
-            chain_id: config.chain_id.value().as_u64(),
+            chain_id: config.chain_id.value(),
             ..Default::default()
         };
 
@@ -94,7 +94,7 @@ impl ZeroEx {
 
         Ok(dex::Swap {
             calls: vec![dex::Call {
-                to: quote.transaction.to.into_alloy(),
+                to: quote.transaction.to,
                 calldata: quote.transaction.data,
             }],
             input: eth::Asset {
@@ -109,7 +109,7 @@ impl ZeroEx {
                 spender: quote
                     .issues
                     .allowance
-                    .map(|allowance| allowance.spender.into_alloy())
+                    .map(|allowance| allowance.spender)
                     .unwrap_or(DEFAULT_ALLOWANCE_TARGET),
                 amount: dex::Amount::new(quote.sell_amount),
             },

@@ -4,9 +4,9 @@ use {
         infra::dex::balancer::Error,
         util::serialize,
     },
+    alloy::primitives::{B256, U256},
     bigdecimal::{BigDecimal, num_bigint::BigInt},
-    ethereum_types::{H160, H256, U256},
-    number::conversions::u256_to_big_decimal,
+    number::conversions::alloy::u256_to_big_decimal,
     serde::{Deserialize, Serialize, Serializer},
     serde_with::serde_as,
 };
@@ -133,9 +133,9 @@ struct Variables {
     /// SwapType either exact_in or exact_out (also givenIn or givenOut).
     swap_type: SwapType,
     /// Token address of the tokenIn.
-    token_in: H160,
+    token_in: eth::Address,
     /// Token address of the tokenOut.
-    token_out: H160,
+    token_out: eth::Address,
 }
 
 /// Balancer SOR API supported chains.
@@ -218,7 +218,7 @@ pub struct Data {
 #[serde(rename_all = "camelCase")]
 pub struct Quote {
     /// The token addresses included in the swap route.
-    pub token_addresses: Vec<H160>,
+    pub token_addresses: Vec<eth::Address>,
     /// The swap route.
     pub swaps: Vec<Swap>,
     /// The swap route (different representation than `swaps` suitable for
@@ -236,10 +236,10 @@ pub struct Quote {
     pub return_amount_raw: U256,
     /// The input (sell) token.
     #[serde(with = "address_default_when_empty")]
-    pub token_in: H160,
+    pub token_in: eth::Address,
     /// The output (buy) token.
     #[serde(with = "address_default_when_empty")]
-    pub token_out: H160,
+    pub token_out: eth::Address,
     /// Which balancer version the trade needs to be routed through.
     pub protocol_version: ProtocolVersion,
 }
@@ -288,12 +288,12 @@ pub struct Swap {
 #[derive(Debug, PartialEq, Deserialize)]
 #[serde(untagged)]
 pub enum PoolId {
-    V2(H256),
-    V3(H160),
+    V2(B256),
+    V3(eth::Address),
 }
 
 impl PoolId {
-    pub fn as_v2(&self) -> Result<H256, Error> {
+    pub fn as_v2(&self) -> Result<B256, Error> {
         if let Self::V2(h256) = self {
             Ok(*h256)
         } else {
@@ -301,7 +301,7 @@ impl PoolId {
         }
     }
 
-    pub fn as_v3(&self) -> Result<H160, Error> {
+    pub fn as_v3(&self) -> Result<eth::Address, Error> {
         if let Self::V3(h160) = self {
             Ok(*h160)
         } else {
@@ -312,7 +312,7 @@ impl PoolId {
 
 impl Default for PoolId {
     fn default() -> Self {
-        Self::V2(H256::default())
+        Self::V2(B256::default())
     }
 }
 
@@ -334,24 +334,24 @@ pub struct Path {
 #[derive(Debug, Default, PartialEq, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PathToken {
-    pub address: H160,
+    pub address: eth::Address,
 }
 
 /// Balancer SOR responds with `address: ""` on error cases.
 mod address_default_when_empty {
     use {
-        ethereum_types::H160,
+        crate::domain::eth,
         serde::{Deserialize as _, Deserializer, de},
         std::borrow::Cow,
     };
 
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<H160, D::Error>
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<eth::Address, D::Error>
     where
         D: Deserializer<'de>,
     {
         let value = Cow::<str>::deserialize(deserializer)?;
         if value.is_empty() {
-            return Ok(H160::default());
+            return Ok(eth::Address::default());
         }
         value.parse().map_err(de::Error::custom)
     }
@@ -391,8 +391,9 @@ mod value_or_string {
 mod tests {
     use {
         super::*,
+        alloy::primitives::address,
         maplit::hashmap,
-        number::conversions::big_decimal_to_u256,
+        number::conversions::alloy::big_decimal_to_u256,
         serde_json::json,
         std::str::FromStr,
     };
@@ -400,13 +401,13 @@ mod tests {
     #[test]
     fn test_query_serialization() {
         let tokens = auction::Tokens(hashmap! {
-            eth::TokenAddress(H160::from_str("0x2170ed0880ac9a755fd29b2688956bd959f933f8").unwrap()) => auction::Token {
+            eth::TokenAddress(address!("0x2170ed0880ac9a755fd29b2688956bd959f933f8")) => auction::Token {
                 decimals: Some(18),
                 reference_price: None,
                 available_balance: U256::from(1000),
                 trusted: true,
             },
-            eth::TokenAddress(H160::from_str("0xdac17f958d2ee523a2206206994597c13d831ec7").unwrap()) => auction::Token {
+            eth::TokenAddress(address!("0xdac17f958d2ee523a2206206994597c13d831ec7")) => auction::Token {
                 decimals: Some(24),
                 reference_price: None,
                 available_balance: U256::from(1000),
@@ -414,15 +415,11 @@ mod tests {
             },
         });
         let order = dex::Order {
-            sell: H160::from_str("0x2170ed0880ac9a755fd29b2688956bd959f933f8")
-                .unwrap()
-                .into(),
-            buy: H160::from_str("0xdac17f958d2ee523a2206206994597c13d831ec7")
-                .unwrap()
-                .into(),
+            sell: address!("0x2170ed0880ac9a755fd29b2688956bd959f933f8").into(),
+            buy: address!("0xdac17f958d2ee523a2206206994597c13d831ec7").into(),
             side: order::Side::Buy,
             amount: dex::Amount::new(U256::from(1000)),
-            owner: H160::from_str("0x9008d19f58aabd9ed0d60971565aa8510560ab41").unwrap(),
+            owner: address!("0x9008d19f58aabd9ed0d60971565aa8510560ab41"),
         };
         let chain = Chain::Mainnet;
         let query = Query::from_domain(&order, &tokens, chain).unwrap();

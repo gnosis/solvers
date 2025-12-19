@@ -2,8 +2,8 @@
 
 use {
     crate::domain::{auction, dex::shared, eth},
+    alloy::primitives::U256,
     bigdecimal::{BigDecimal, Zero},
-    ethereum_types::U256,
     std::cmp,
 };
 
@@ -103,7 +103,7 @@ mod tests {
             (
                 eth::Asset {
                     token: token("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"),
-                    amount: 500_000_000_000_000_000_u128.into(), // 0.5 WETH
+                    amount: alloy::primitives::U256::from(500_000_000_000_000_000_u128), // 0.5 WETH
                 },
                 "0.04",
                 520_000_000_000_000_000_u128,
@@ -113,7 +113,7 @@ mod tests {
             (
                 eth::Asset {
                     token: token("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"),
-                    amount: 5_000_000_000_000_000_000_u128.into(), // 5 WETH
+                    amount: alloy::primitives::U256::from(5_000_000_000_000_000_000_u128), // 5 WETH
                 },
                 "0.01",
                 5_050_000_000_000_000_000_u128,
@@ -122,7 +122,7 @@ mod tests {
             (
                 eth::Asset {
                     token: token("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"),
-                    amount: 10_000_000_000_u128.into(), // 10K USDC
+                    amount: alloy::primitives::U256::from(10_000_000_000_u128), // 10K USDC
                 },
                 "0.01",
                 10_100_000_000_u128,

@@ -2,8 +2,8 @@
 
 use {
     crate::domain::{auction, dex::shared, eth},
+    alloy::primitives::U256,
     bigdecimal::{BigDecimal, One, ToPrimitive, Zero},
-    ethereum_types::U256,
     std::cmp,
 };
 
@@ -140,7 +140,7 @@ mod tests {
             (
                 eth::Asset {
                     token: token("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"),
-                    amount: 1_000_000_000_000_000_000_u128.into(),
+                    amount: U256::from(1_000_000_000_000_000_000_u128),
                 },
                 "0.01",
                 990_000_000_000_000_000_u128,
@@ -150,7 +150,7 @@ mod tests {
             (
                 eth::Asset {
                     token: token("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"),
-                    amount: 100_000_000_000_000_000_000_u128.into(),
+                    amount: U256::from(100_000_000_000_000_000_000_u128),
                 },
                 "0.0002",
                 99_980_000_000_000_000_000_u128,
@@ -160,7 +160,7 @@ mod tests {
             (
                 eth::Asset {
                     token: token("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"),
-                    amount: 1_000_000_000_u128.into(), // 1K USDC
+                    amount: U256::from(1_000_000_000_u128), // 1K USDC
                 },
                 "0.01",
                 990_000_000_u128,
@@ -171,7 +171,7 @@ mod tests {
             (
                 eth::Asset {
                     token: token("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"),
-                    amount: 1_000_000_000_000_u128.into(), // 1M USDC
+                    amount: U256::from(1_000_000_000_000_u128), // 1M USDC
                 },
                 "0.000033911",
                 999_966_089_222_u128,
@@ -181,7 +181,7 @@ mod tests {
             (
                 eth::Asset {
                     token: token("0xDEf1CA1fb7FBcDC777520aa7f396b4E015F497aB"),
-                    amount: 1_000_000_000_000_000_000_000_u128.into(), // 1K COW
+                    amount: U256::from(1_000_000_000_000_000_000_000_u128), // 1K COW
                 },
                 "0.01",
                 990_000_000_000_000_000_000_u128,
@@ -192,7 +192,7 @@ mod tests {
             (
                 eth::Asset {
                     token: token("0xDEf1CA1fb7FBcDC777520aa7f396b4E015F497aB"),
-                    amount: 1_000_000_000_000_000_000_000_000_u128.into(), // 1M COW
+                    amount: U256::from(1_000_000_000_000_000_000_000_000_u128), // 1M COW
                 },
                 "0.000350877",
                 999_649_122_807_017_543_859_649_u128,
@@ -200,8 +200,8 @@ mod tests {
             ),
         ] {
             let relative = Slippage::new(relative.parse().unwrap());
-            let min = ethereum_types::U256::from(min);
-            let max = ethereum_types::U256::from(max);
+            let min = U256::from(min);
+            let max = U256::from(max);
 
             let computed = slippage.relative(&asset, &tokens);
 
@@ -251,7 +251,7 @@ mod tests {
         // Test with zero amount - should not panic and use relative slippage fallback
         let asset_with_zero_amount = eth::Asset {
             token: token("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"),
-            amount: 0.into(), // Zero amount
+            amount: U256::ZERO, // Zero amount
         };
 
         // This should not panic and should return the relative slippage (1%)
