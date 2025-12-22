@@ -2,9 +2,7 @@ use {
     crate::{
         domain::eth,
         infra::{config::dex::file, contracts, dex::zeroex},
-        util::serialize,
     },
-    ethrpc::alloy::conversions::IntoLegacy,
     serde::Deserialize,
     serde_with::serde_as,
     std::path::Path,
@@ -16,7 +14,6 @@ use {
 struct Config {
     /// Chain ID used to automatically determine the address of the settlement
     /// contract and for metrics.
-    #[serde_as(as = "serialize::ChainId")]
     chain_id: eth::ChainId,
 
     /// The versioned URL endpoint for the 0x swap API.
@@ -54,7 +51,7 @@ pub async fn load(path: &Path) -> super::Config {
             endpoint: config.endpoint,
             api_key: config.api_key,
             excluded_sources: config.excluded_sources,
-            settlement: eth::ContractAddress(settlement.into_legacy()),
+            settlement: eth::ContractAddress(settlement),
             block_stream: base.block_stream.clone(),
         },
         base,

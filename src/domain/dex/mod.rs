@@ -8,9 +8,7 @@ use {
         infra,
         util,
     },
-    alloy::primitives::Address,
-    ethereum_types::U256,
-    ethrpc::alloy::conversions::{IntoAlloy, IntoLegacy},
+    alloy::primitives::{Address, U256},
     std::fmt::{self, Debug, Formatter},
 };
 
@@ -28,7 +26,7 @@ pub struct Order {
     pub buy: eth::TokenAddress,
     pub side: order::Side,
     pub amount: Amount,
-    pub owner: eth::H160,
+    pub owner: eth::Address,
 }
 
 impl Order {
@@ -98,7 +96,7 @@ pub struct Swap {
 impl Swap {
     pub fn allowance(&self) -> solution::Allowance {
         solution::Allowance {
-            spender: self.allowance.spender.into_legacy(),
+            spender: self.allowance.spender,
             asset: eth::Asset {
                 token: self.input.token,
                 amount: self.allowance.amount.0,
@@ -117,7 +115,7 @@ impl Swap {
         gas_offset: eth::Gas,
     ) -> Option<solution::Solution> {
         let gas = if order.class == order::Class::Limit {
-            match simulator.gas(order.owner().into_alloy(), &self).await {
+            match simulator.gas(order.owner(), &self).await {
                 Ok(value) => value,
                 Err(infra::dex::simulator::Error::SettlementContractIsOwner) => self.gas,
                 Err(err) => {
@@ -137,7 +135,7 @@ impl Swap {
             .into_iter()
             .map(|call| {
                 solution::Interaction::Custom(solution::CustomInteraction {
-                    target: call.to.into_legacy(),
+                    target: call.to,
                     value: eth::Ether::default(),
                     calldata: call.calldata,
                     inputs: vec![self.input],
@@ -159,8 +157,10 @@ impl Swap {
     }
 
     pub fn satisfies(&self, order: &domain::order::Order) -> bool {
-        self.output.amount.full_mul(order.sell.amount)
-            >= self.input.amount.full_mul(order.buy.amount)
+        self.output
+            .amount
+            .widening_mul::<_, _, 512, 8>(order.sell.amount)
+            >= self.input.amount.widening_mul(order.buy.amount)
     }
 
     pub fn satisfies_with_minimum_surplus(
@@ -169,8 +169,10 @@ impl Swap {
         minimum_surplus: &minimum_surplus::MinimumSurplus,
     ) -> bool {
         let required_buy_amount = minimum_surplus.add(order.buy.amount);
-        self.output.amount.full_mul(order.sell.amount)
-            >= self.input.amount.full_mul(required_buy_amount)
+        self.output
+            .amount
+            .widening_mul::<_, _, 512, 8>(order.sell.amount)
+            >= self.input.amount.widening_mul(required_buy_amount)
     }
 }
 

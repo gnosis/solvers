@@ -2,8 +2,8 @@
 
 use {
     crate::domain::eth,
+    alloy::primitives::U256,
     bigdecimal::{BigDecimal, num_bigint::ToBigInt},
-    ethereum_types::U256,
     num::{BigInt, BigUint, One, rational::Ratio},
 };
 
@@ -39,13 +39,11 @@ pub fn biguint_to_u256(i: &BigUint) -> Option<U256> {
     if bytes.len() > 32 {
         return None;
     }
-    Some(U256::from_big_endian(&bytes))
+    Some(U256::from_be_slice(&bytes))
 }
 
 pub fn u256_to_biguint(i: &U256) -> BigUint {
-    let mut bytes = [0_u8; 32];
-    i.to_big_endian(&mut bytes);
-    BigUint::from_bytes_be(&bytes)
+    BigUint::from_bytes_be(&i.to_be_bytes::<32>())
 }
 
 pub fn u256_to_bigdecimal(i: &U256) -> BigDecimal {
@@ -94,8 +92,8 @@ mod tests {
             ("0.003", 3, 1000),
         ] {
             let result = decimal_to_rational(&value.parse().unwrap()).unwrap();
-            assert_eq!(result.numer().as_u64(), numer);
-            assert_eq!(result.denom().as_u64(), denom);
+            assert_eq!(u64::try_from(result.numer()).unwrap(), numer);
+            assert_eq!(u64::try_from(result.denom()).unwrap(), denom);
         }
     }
 
@@ -117,12 +115,12 @@ mod tests {
     #[test]
     fn decimal_to_and_from_ether() {
         for (decimal, ether) in [
-            ("0.01", 10_000_000_000_000_000_u128),
-            ("4.20", 4_200_000_000_000_000_000),
-            ("10", 10_000_000_000_000_000_000),
+            ("0.01", U256::from(10_000_000_000_000_000_u128)),
+            ("4.20", U256::from(4_200_000_000_000_000_000_u128)),
+            ("10", U256::from(10_000_000_000_000_000_000_u128)),
         ] {
             let decimal = decimal.parse().unwrap();
-            let ether = eth::Ether(ether.into());
+            let ether = eth::Ether(ether);
 
             assert_eq!(decimal_to_ether(&decimal).unwrap(), ether);
             assert_eq!(ether_to_decimal(&ether), decimal);

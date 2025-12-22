@@ -3,7 +3,7 @@ use {
         domain::{auction, eth, order},
         util,
     },
-    ethereum_types::{Address, U256},
+    alloy::primitives::U256,
     std::collections::HashMap,
 };
 
@@ -323,7 +323,7 @@ pub enum Interaction {
 /// to fulfill the trade.
 #[derive(Debug)]
 pub struct CustomInteraction {
-    pub target: Address,
+    pub target: eth::Address,
     pub value: eth::Ether,
     pub calldata: Vec<u8>,
     /// Indicated whether the interaction should be internalized (skips its
@@ -343,6 +343,6 @@ pub struct CustomInteraction {
 /// Approval required to make some `[CustomInteraction]` possible.
 #[derive(Debug, Clone, Copy)]
 pub struct Allowance {
-    pub spender: Address,
+    pub spender: eth::Address,
     pub asset: eth::Asset,
 }

@@ -68,7 +68,9 @@ pub fn from_domain(solutions: &[solution::Solution]) -> super::Solutions {
                         }
                     })
                     .collect(),
-                gas: solution.gas.map(|gas| gas.0.as_u64()),
+                gas: solution
+                    .gas
+                    .map(|gas| u64::try_from(gas.0).expect("value overflows u64::MAX")),
                 flashloans: None,
                 wrappers: Default::default(),
             })
@@ -80,7 +82,7 @@ fn interaction_data_from_domain(interaction_data: &[eth::Interaction]) -> Vec<Ca
     interaction_data
         .iter()
         .map(|interaction| Call {
-            target: interaction.target.0,
+            target: interaction.target,
             value: interaction.value.0,
             calldata: interaction.calldata.clone(),
         })

@@ -3,14 +3,11 @@ use {
         domain::{dex, eth, order},
         util,
     },
-    alloy::primitives::Address,
+    alloy::primitives::{Address, U256},
     base64::prelude::*,
     bigdecimal::FromPrimitive,
     chrono::SecondsFormat,
-    ethrpc::{
-        alloy::conversions::{IntoAlloy, IntoLegacy},
-        block_stream::CurrentBlockWatcher,
-    },
+    ethrpc::block_stream::CurrentBlockWatcher,
     futures::TryFutureExt,
     hmac::{Hmac, Mac},
     hyper::{StatusCode, header::HeaderValue},
@@ -148,8 +145,8 @@ impl Okx {
             chain_index: config.chain_id as u64,
             // Funds first get moved in and out of the settlement contract so we have use
             // that address here to generate the correct calldata.
-            swap_receiver_address: config.settlement_contract.into_legacy(),
-            user_wallet_address: config.settlement_contract.into_legacy(),
+            swap_receiver_address: config.settlement_contract,
+            user_wallet_address: config.settlement_contract,
             price_impact_protection_percent: price_impact_protection,
             ..Default::default()
         };
@@ -191,21 +188,21 @@ impl Okx {
         let gas = swap_response
             .tx
             .gas
-            .checked_add(swap_response.tx.gas / 2)
+            .checked_add(swap_response.tx.gas / U256::from(2))
             .ok_or(Error::GasCalculationFailed)?;
 
         // For buy orders (ExactOut mode), the slippage is on the input token,
         // so we need to use U256::MAX allowance to cover the maximum possible input.
         let allowance_amount =
             if self.buy_orders_endpoint.is_some() && order.side == order::Side::Buy {
-                eth::U256::max_value()
+                eth::U256::MAX
             } else {
                 swap_response.router_result.from_token_amount
             };
 
         Ok(dex::Swap {
             calls: vec![dex::Call {
-                to: swap_response.tx.to.into_alloy(),
+                to: swap_response.tx.to,
                 calldata: swap_response.tx.data.clone(),
             }],
             input: eth::Asset {
@@ -225,7 +222,7 @@ impl Okx {
                 amount: swap_response.router_result.to_token_amount,
             },
             allowance: dex::Allowance {
-                spender: dex_contract_address.0.into_alloy(),
+                spender: dex_contract_address.0,
                 amount: dex::Amount::new(allowance_amount),
             },
             gas: eth::Gas(gas),

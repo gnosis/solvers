@@ -3,11 +3,15 @@
 
 use {
     crate::{
-        domain::{dex, eth::TokenAddress, order},
+        domain::{
+            dex,
+            eth::{self, TokenAddress},
+            order,
+        },
         util::serialize,
     },
+    alloy::primitives::U256,
     bigdecimal::BigDecimal,
-    ethereum_types::{H160, U256},
     serde::{Deserialize, Serialize},
     serde_with::serde_as,
 };
@@ -31,19 +35,19 @@ pub struct SwapRequest {
     pub amount: U256,
 
     /// Contract address of a token to be sent
-    pub from_token_address: H160,
+    pub from_token_address: eth::Address,
 
     /// Contract address of a token to be received
-    pub to_token_address: H160,
+    pub to_token_address: eth::Address,
 
     /// Limit of price slippage you are willing to accept
     pub slippage_percent: Slippage,
 
     /// User's wallet address. Where the sell tokens will be taken from.
-    pub user_wallet_address: H160,
+    pub user_wallet_address: eth::Address,
 
     /// Where the buy tokens get sent to.
-    pub swap_receiver_address: H160,
+    pub swap_receiver_address: eth::Address,
 
     /// Swap mode: "exactIn" for sell orders (default), "exactOut" for buy
     /// orders
@@ -103,20 +107,20 @@ pub struct SwapRequestV5 {
     pub amount: U256,
 
     /// Contract address of a token to be sent
-    pub from_token_address: H160,
+    pub from_token_address: eth::Address,
 
     /// Contract address of a token to be received
-    pub to_token_address: H160,
+    pub to_token_address: eth::Address,
 
     /// Limit of price slippage you are willing to accept (V5 uses slippage
     /// instead of slippagePercent)
     pub slippage: Slippage,
 
     /// User's wallet address. Where the sell tokens will be taken from.
-    pub user_wallet_address: H160,
+    pub user_wallet_address: eth::Address,
 
     /// Where the buy tokens get sent to.
-    pub swap_receiver_address: H160,
+    pub swap_receiver_address: eth::Address,
 
     /// Swap mode: "exactIn" for sell orders (default), "exactOut" for buy
     /// orders
@@ -191,7 +195,7 @@ pub struct SwapResponseRouterResult {
 #[serde(rename_all = "camelCase")]
 pub struct SwapResponseFromToToken {
     /// Address of the token smart contract.
-    pub token_contract_address: H160,
+    pub token_contract_address: eth::Address,
 }
 
 /// A OKX API swap response - contract related information.
@@ -207,7 +211,7 @@ pub struct SwapResponseTx {
     pub gas: U256,
 
     /// The contract address of OKX DEX router.
-    pub to: H160,
+    pub to: eth::Address,
 
     /// Call data.
     #[serde_as(as = "serialize::Hex")]
@@ -227,7 +231,7 @@ pub struct ApproveTransactionRequest {
     pub chain_index: u64,
 
     /// Contract address of a token to be permitted.
-    pub token_contract_address: H160,
+    pub token_contract_address: eth::Address,
 
     /// The amount of token that needs to be permitted (in minimal divisible
     /// units).
@@ -255,7 +259,7 @@ pub struct ApproveTransactionRequestV5 {
     pub chain_id: u64,
 
     /// Contract address of a token to be permitted.
-    pub token_contract_address: H160,
+    pub token_contract_address: eth::Address,
 
     /// The amount of token that needs to be permitted (in minimal divisible
     /// units).
@@ -282,7 +286,7 @@ impl From<&ApproveTransactionRequest> for ApproveTransactionRequestV5 {
 #[serde(rename_all = "camelCase")]
 pub struct ApproveTransactionResponse {
     /// The contract address of OKX DEX approve.
-    pub dex_contract_address: H160,
+    pub dex_contract_address: eth::Address,
 }
 
 /// A OKX API response - generic wrapper for success and failure cases.

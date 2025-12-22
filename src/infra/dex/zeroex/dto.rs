@@ -3,10 +3,10 @@
 
 use {
     crate::{
-        domain::{dex, order},
+        domain::{dex, eth, order},
         util::serialize,
     },
-    ethereum_types::{H160, U256},
+    alloy::primitives::U256,
     serde::{Deserialize, Serialize},
     serde_with::serde_as,
 };
@@ -23,17 +23,17 @@ pub struct Query {
     pub chain_id: u64,
 
     /// Contract address of a token to buy.
-    pub buy_token: H160,
+    pub buy_token: eth::Address,
 
     /// Contract address of a token to sell.
-    pub sell_token: H160,
+    pub sell_token: eth::Address,
 
     /// Amount of a token to sell, set in atoms.
     #[serde_as(as = "serialize::U256")]
     pub sell_amount: U256,
 
     /// The address which will fill the quote.
-    pub taker: H160,
+    pub taker: eth::Address,
 
     /// Limit of price slippage you are willing to accept. Values are in basis
     /// points [ 0 .. 10000 ].
@@ -123,7 +123,7 @@ impl From<Quote> for Option<ValidQuote> {
 #[serde(rename_all = "camelCase")]
 pub struct QuoteTransaction {
     /// The address of the contract to call in order to execute the swap.
-    pub to: H160,
+    pub to: eth::Address,
 
     /// The swap calldata.
     #[serde_as(as = "serialize::Hex")]
@@ -151,7 +151,7 @@ pub struct Allowance {
     #[serde_as(as = "serialize::U256")]
     pub actual: U256,
     /// The address to set the allowance on
-    pub spender: H160,
+    pub spender: eth::Address,
 }
 
 #[derive(Deserialize)]

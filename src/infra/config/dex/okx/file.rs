@@ -2,7 +2,6 @@ use {
     crate::{
         domain::eth,
         infra::{config::dex::file, dex::okx},
-        util::serialize,
     },
     serde::Deserialize,
     serde_with::serde_as,
@@ -43,7 +42,6 @@ struct Config {
     buy_orders_signature_base_url: Option<reqwest::Url>,
 
     /// Chain ID used to automatically determine contract addresses.
-    #[serde_as(as = "serialize::ChainId")]
     chain_id: eth::ChainId,
 
     /// OKX API credentials

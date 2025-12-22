@@ -7,7 +7,7 @@ use {
         domain::{
             auction,
             dex,
-            eth::{self, H160},
+            eth::{self, Address},
             order,
         },
         infra::dex::balancer::{
@@ -17,10 +17,8 @@ use {
         },
         tests::{self, mock},
     },
-    alloy::primitives::U256,
-    ethrpc::alloy::conversions::IntoAlloy,
+    alloy::primitives::{U256, address},
     serde_json::json,
-    std::str::FromStr,
 };
 
 #[tokio::test]
@@ -34,11 +32,11 @@ async fn test_mock_provider_success() {
     });
 
     let order = dex::Order {
-        sell: eth::TokenAddress(H160::from_low_u64_be(1)),
-        buy: eth::TokenAddress(H160::from_low_u64_be(2)),
+        sell: eth::TokenAddress(Address::with_last_byte(1)),
+        buy: eth::TokenAddress(Address::with_last_byte(2)),
         side: order::Side::Sell,
         amount: dex::Amount::new(eth::U256::from(1000000000000000000u64)),
-        owner: H160::from_low_u64_be(5),
+        owner: Address::with_last_byte(5),
     };
 
     let result = mock_provider
@@ -59,11 +57,11 @@ async fn test_mock_provider_error() {
         .returning(|_, _| Err(anyhow::anyhow!("invalid path")));
 
     let order = dex::Order {
-        sell: eth::TokenAddress(H160::from_low_u64_be(1)),
-        buy: eth::TokenAddress(H160::from_low_u64_be(2)),
+        sell: eth::TokenAddress(Address::with_last_byte(1)),
+        buy: eth::TokenAddress(Address::with_last_byte(2)),
         side: order::Side::Sell,
         amount: dex::Amount::new(eth::U256::from(1000000000000000000u64)),
-        owner: H160::from_low_u64_be(5),
+        owner: Address::with_last_byte(5),
     };
 
     // Test that the mock provider returns an error
@@ -133,9 +131,7 @@ async fn test_mock_provider_affects_swap_result() {
     mock_provider.expect_query_swap().returning(|_, _| {
         Ok(OnChainAmounts {
             swap_amount: U256::from(1000000000000000000u64),
-            return_amount: eth::U256::from_dec_str("300000000000000000000")
-                .unwrap()
-                .into_alloy(),
+            return_amount: eth::U256::from(300000000000000000000u128),
         })
     });
 
@@ -144,11 +140,11 @@ async fn test_mock_provider_affects_swap_result() {
         block_stream: None,
         endpoint: format!("http://{}/sor", api.address).parse().unwrap(), // Use mock server address
         chain_id: eth::ChainId::Mainnet,
-        vault: Some(H160::from_low_u64_be(1).into_alloy()),
-        queries: Some(H160::from_low_u64_be(2).into_alloy()),
+        vault: Some(Address::with_last_byte(1)),
+        queries: Some(Address::with_last_byte(2)),
         v3_batch_router: None,
-        permit2: H160::from_low_u64_be(3).into_alloy(),
-        settlement: H160::from_low_u64_be(4).into_alloy(),
+        permit2: Address::with_last_byte(3),
+        settlement: Address::with_last_byte(4),
     };
     let web3 = ethrpc::mock::web3();
 
@@ -157,24 +153,18 @@ async fn test_mock_provider_affects_swap_result() {
 
     // Create a test order (sell order)
     let order = dex::Order {
-        sell: eth::TokenAddress(
-            H160::from_str("0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2").unwrap(),
-        ),
-        buy: eth::TokenAddress(
-            H160::from_str("0xba100000625a3754423978a60c9317c58a424e3d").unwrap(),
-        ),
+        sell: eth::TokenAddress(address!("0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2")),
+        buy: eth::TokenAddress(address!("0xba100000625a3754423978a60c9317c58a424e3d")),
         side: order::Side::Sell,
         amount: dex::Amount::new(eth::U256::from(1000000000000000000u64)),
-        owner: H160::from_low_u64_be(5),
+        owner: Address::with_last_byte(5),
     };
 
     // Create test tokens
     let tokens = auction::Tokens(
         [
             (
-                eth::TokenAddress(
-                    H160::from_str("0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2").unwrap(),
-                ),
+                eth::TokenAddress(address!("0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2")),
                 auction::Token {
                     decimals: Some(18),
                     reference_price: Some(auction::Price(eth::Ether(eth::U256::from(
@@ -185,15 +175,13 @@ async fn test_mock_provider_affects_swap_result() {
                 },
             ),
             (
-                eth::TokenAddress(
-                    H160::from_str("0xba100000625a3754423978a60c9317c58a424e3d").unwrap(),
-                ),
+                eth::TokenAddress(address!("0xba100000625a3754423978a60c9317c58a424e3d")),
                 auction::Token {
                     decimals: Some(18),
                     reference_price: Some(auction::Price(eth::Ether(eth::U256::from(
                         4327903683155778u64,
                     )))),
-                    available_balance: eth::U256::from_dec_str("1583034704488033979459").unwrap(),
+                    available_balance: eth::U256::from(1583034704488033979459u128),
                     trusted: true,
                 },
             ),
@@ -212,7 +200,7 @@ async fn test_mock_provider_affects_swap_result() {
     // return_amount from our mock provider
     assert_eq!(
         swap_result.output.amount,
-        eth::U256::from_dec_str("300000000000000000000").unwrap()
+        eth::U256::from(300000000000000000000u128)
     );
     assert_eq!(
         swap_result.input.amount,
@@ -227,12 +215,12 @@ async fn test_mock_provider_affects_swap_result() {
 // Helper function to create a dummy quote for testing
 fn create_dummy_quote() -> dto::Quote {
     dto::Quote {
-        token_addresses: vec![H160::from_low_u64_be(1), H160::from_low_u64_be(2)],
+        token_addresses: vec![Address::with_last_byte(1), Address::with_last_byte(2)],
         swaps: vec![],
         swap_amount_raw: eth::U256::from(1000000000000000000u64),
         return_amount_raw: eth::U256::from(2275987844420653881u64),
-        token_in: H160::from_low_u64_be(1),
-        token_out: H160::from_low_u64_be(2),
+        token_in: Address::with_last_byte(1),
+        token_out: Address::with_last_byte(2),
         protocol_version: dto::ProtocolVersion::V2,
         paths: vec![],
     }
