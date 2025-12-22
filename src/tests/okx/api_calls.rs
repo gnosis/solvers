@@ -4,8 +4,7 @@ use {
         infra::dex::okx as okx_dex,
     },
     alloy::primitives::address,
-    ethereum_types::H160,
-    std::{env, str::FromStr},
+    std::env,
 };
 
 const DEFAULT_BUY_ORDERS_ENDPOINT: &str = "https://web3.okx.com/api/v5/dex/aggregator/";
@@ -33,15 +32,11 @@ async fn swap_sell_regular() {
     };
 
     let order = Order {
-        sell: TokenAddress::from(
-            H160::from_str("0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2").unwrap(),
-        ),
-        buy: TokenAddress::from(
-            H160::from_str("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48").unwrap(),
-        ),
+        sell: TokenAddress::from(address!("0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2")),
+        buy: TokenAddress::from(address!("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")),
         side: crate::domain::order::Side::Sell,
-        amount: Amount::new(U256::from_dec_str("100000000000000000").unwrap()),
-        owner: H160::from_str("0x6f9ffea7370310cd0f890dfde5e0e061059dcfb8").unwrap(),
+        amount: Amount::new(U256::from(100000000000000000_u128)),
+        owner: address!("0x6f9ffea7370310cd0f890dfde5e0e061059dcfb8"),
     };
 
     let slippage = Slippage::one_percent();
@@ -79,15 +74,11 @@ async fn swap_buy_disabled() {
     };
 
     let order = Order {
-        buy: TokenAddress::from(
-            H160::from_str("0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2").unwrap(),
-        ),
-        sell: TokenAddress::from(
-            H160::from_str("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48").unwrap(),
-        ),
+        buy: TokenAddress::from(address!("0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2")),
+        sell: TokenAddress::from(address!("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")),
         side: crate::domain::order::Side::Buy,
-        amount: Amount::new(U256::from_dec_str("1000000000").unwrap()),
-        owner: H160::from_str("0x6f9ffea7370310cd0f890dfde5e0e061059dcfb8").unwrap(),
+        amount: Amount::new(U256::from(1000000000_u128)),
+        owner: address!("0x6f9ffea7370310cd0f890dfde5e0e061059dcfb8"),
     };
 
     let slippage = Slippage::one_percent();
@@ -123,15 +114,11 @@ async fn swap_buy_enabled() {
     };
 
     let order = Order {
-        sell: TokenAddress::from(
-            H160::from_str("0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2").unwrap(),
-        ),
-        buy: TokenAddress::from(
-            H160::from_str("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48").unwrap(),
-        ),
+        sell: TokenAddress::from(address!("0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2")),
+        buy: TokenAddress::from(address!("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")),
         side: crate::domain::order::Side::Buy,
-        amount: Amount::new(U256::from_dec_str("1000000000").unwrap()),
-        owner: H160::from_str("0x6f9ffea7370310cd0f890dfde5e0e061059dcfb8").unwrap(),
+        amount: Amount::new(U256::from(1000000000_u128)),
+        owner: address!("0x6f9ffea7370310cd0f890dfde5e0e061059dcfb8"),
     };
 
     let slippage = Slippage::one_percent();
@@ -174,15 +161,11 @@ async fn swap_api_error() {
     };
 
     let order = Order {
-        sell: TokenAddress::from(
-            H160::from_str("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee").unwrap(),
-        ),
-        buy: TokenAddress::from(
-            H160::from_str("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48").unwrap(),
-        ),
+        sell: TokenAddress::from(address!("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")),
+        buy: TokenAddress::from(address!("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")),
         side: crate::domain::order::Side::Sell,
-        amount: Amount::new(U256::from_str("0").unwrap()),
-        owner: H160::from_str("6f9ffea7370310cd0f890dfde5e0e061059dcfb8").unwrap(),
+        amount: Amount::new(U256::ZERO),
+        owner: address!("6f9ffea7370310cd0f890dfde5e0e061059dcfb8"),
     };
 
     let slippage = Slippage::one_percent();
@@ -219,15 +202,11 @@ async fn swap_sell_insufficient_liquidity() {
     };
 
     let order = Order {
-        sell: TokenAddress::from(
-            H160::from_str("0xC8CD2BE653759aed7B0996315821AAe71e1FEAdF").unwrap(),
-        ),
-        buy: TokenAddress::from(
-            H160::from_str("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48").unwrap(),
-        ),
+        sell: TokenAddress::from(address!("0xC8CD2BE653759aed7B0996315821AAe71e1FEAdF")),
+        buy: TokenAddress::from(address!("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")),
         side: crate::domain::order::Side::Sell,
-        amount: Amount::new(U256::from_dec_str("10000000000000").unwrap()),
-        owner: H160::from_str("6f9ffea7370310cd0f890dfde5e0e061059dcfb8").unwrap(),
+        amount: Amount::new(U256::from(10000000000000_u128)),
+        owner: address!("6f9ffea7370310cd0f890dfde5e0e061059dcfb8"),
     };
 
     let slippage = Slippage::one_percent();
@@ -264,15 +243,11 @@ async fn swap_buy_insufficient_liquidity() {
     };
 
     let order = Order {
-        sell: TokenAddress::from(
-            H160::from_str("0xC8CD2BE653759aed7B0996315821AAe71e1FEAdF").unwrap(),
-        ),
-        buy: TokenAddress::from(
-            H160::from_str("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48").unwrap(),
-        ),
+        sell: TokenAddress::from(address!("0xC8CD2BE653759aed7B0996315821AAe71e1FEAdF")),
+        buy: TokenAddress::from(address!("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")),
         side: crate::domain::order::Side::Buy,
-        amount: Amount::new(U256::from_dec_str("10000000000000").unwrap()),
-        owner: H160::from_str("6f9ffea7370310cd0f890dfde5e0e061059dcfb8").unwrap(),
+        amount: Amount::new(U256::from(10000000000000_u128)),
+        owner: address!("6f9ffea7370310cd0f890dfde5e0e061059dcfb8"),
     };
 
     let slippage = Slippage::one_percent();

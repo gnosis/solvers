@@ -2,9 +2,7 @@ use {
     crate::{
         domain::eth,
         infra::{config::dex::file, contracts, dex::oneinch},
-        util::serialize,
     },
-    ethrpc::alloy::conversions::IntoLegacy,
     serde::Deserialize,
     serde_with::serde_as,
     std::path::Path,
@@ -16,7 +14,6 @@ use {
 struct Config {
     /// Chain ID used to automatically determine the address of the settlement
     /// contract and for metrics.
-    #[serde_as(as = "serialize::ChainId")]
     chain_id: eth::ChainId,
 
     /// The URL endpoint for the 1inch API.
@@ -31,7 +28,7 @@ struct Config {
 
     /// The referrer address to use. Referrers are entitled to a portion of
     /// the positive slippage that 1Inch collects.
-    referrer: Option<eth::H160>,
+    referrer: Option<eth::Address>,
 
     // The following configuration options tweak the complexity of the 1Inch
     // route that the API returns. Unfortunately, the exact definition (and
@@ -54,7 +51,7 @@ pub async fn load(path: &Path) -> super::Config {
 
     super::Config {
         oneinch: oneinch::Config {
-            settlement: eth::ContractAddress(settlement.into_legacy()),
+            settlement: eth::ContractAddress(settlement),
             endpoint: config.endpoint,
             liquidity: match (config.include_liquidity, config.exclude_liquidity) {
                 (Some(include_liquidity), None) => oneinch::Liquidity::Only(include_liquidity),

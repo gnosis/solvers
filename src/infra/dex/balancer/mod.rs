@@ -18,11 +18,7 @@ use {
             SwapPathStep,
         },
     },
-    ethrpc::{
-        AlloyProvider,
-        alloy::conversions::{IntoAlloy, IntoLegacy},
-        block_stream::CurrentBlockWatcher,
-    },
+    ethrpc::{AlloyProvider, block_stream::CurrentBlockWatcher},
     itertools::Itertools,
     std::sync::{atomic, atomic::AtomicU64},
     tracing::Instrument,
@@ -134,10 +130,7 @@ impl Sor {
                         return = ?on_chain_amounts.return_amount,
                         "Using on-chain amounts"
                     );
-                    (
-                        on_chain_amounts.swap_amount.into_legacy(),
-                        on_chain_amounts.return_amount.into_legacy(),
-                    )
+                    (on_chain_amounts.swap_amount, on_chain_amounts.return_amount)
                 }
                 Err(e) => {
                     tracing::warn!(
@@ -167,13 +160,7 @@ impl Sor {
                 };
                 (
                     v2_vault.address(),
-                    self.encode_v2_swap(
-                        order,
-                        &quote,
-                        max_input.into_alloy(),
-                        min_output.into_alloy(),
-                        v2_vault,
-                    )?,
+                    self.encode_v2_swap(order, &quote, max_input, min_output, v2_vault)?,
                 )
             }
             dto::ProtocolVersion::V3 => {
@@ -181,7 +168,7 @@ impl Sor {
                 // doing the transfer of funds from the settlement
                 (
                     self.permit2.address(),
-                    self.encode_v3_swap(order, &quote, max_input.into_alloy(), slippage)?,
+                    self.encode_v3_swap(order, &quote, max_input, slippage)?,
                 )
             }
         };
@@ -200,7 +187,7 @@ impl Sor {
                 spender,
                 amount: dex::Amount::new(max_input),
             },
-            gas: eth::Gas(gas.into_legacy()),
+            gas: eth::Gas(gas),
         })
     }
 
@@ -213,12 +200,7 @@ impl Sor {
         v2_vault: &v2::Vault,
     ) -> Result<Vec<dex::Call>, Error> {
         let (kind, swaps, funds) = self.build_v2_swap_data(order, quote)?;
-        let assets: Vec<Address> = quote
-            .token_addresses
-            .iter()
-            .cloned()
-            .map(IntoAlloy::into_alloy)
-            .collect();
+        let assets: Vec<Address> = quote.token_addresses.clone();
         let limits = quote
             .token_addresses
             .iter()
@@ -267,13 +249,13 @@ impl Sor {
             Side::Buy => v3_batch_router.swap_exact_amount_out(
                 paths_out,
                 &self.permit2,
-                quote.token_in.into_alloy(),
+                quote.token_in,
                 max_input,
             ),
             Side::Sell => v3_batch_router.swap_exact_amount_in(
                 paths_in,
                 &self.permit2,
-                quote.token_in.into_alloy(),
+                quote.token_in,
                 max_input,
             ),
         })
@@ -300,7 +282,7 @@ impl Sor {
                     poolId: FixedBytes(swap.pool_id.as_v2()?.0),
                     assetInIndex: U256::from(swap.asset_in_index),
                     assetOutIndex: U256::from(swap.asset_out_index),
-                    amount: swap.amount.into_alloy(),
+                    amount: swap.amount,
                     userData: Bytes::copy_from_slice(&swap.user_data),
                 })
             })
@@ -340,15 +322,15 @@ fn path_to_exact_amount_in(
         tokenIn: path
             .tokens
             .first()
-            .map(|t| t.address.into_alloy())
+            .map(|t| t.address)
             .ok_or(Error::InvalidPath)?,
         exactAmountIn: match side {
-            Side::Buy => slippage.add(path.input_amount_raw).into_alloy(),
-            Side::Sell => path.input_amount_raw.into_alloy(),
+            Side::Buy => slippage.add(path.input_amount_raw),
+            Side::Sell => path.input_amount_raw,
         },
         minAmountOut: match side {
-            Side::Buy => path.output_amount_raw.into_alloy(),
-            Side::Sell => slippage.sub(path.output_amount_raw).into_alloy(),
+            Side::Buy => path.output_amount_raw,
+            Side::Sell => slippage.sub(path.output_amount_raw),
         },
         steps: convert_path_steps(path)?,
     })
@@ -365,15 +347,15 @@ fn path_to_exact_amount_out(
         tokenIn: path
             .tokens
             .first()
-            .map(|t| t.address.into_alloy())
+            .map(|t| t.address)
             .ok_or(Error::InvalidPath)?,
         maxAmountIn: match side {
-            Side::Buy => slippage.add(path.input_amount_raw).into_alloy(),
-            Side::Sell => path.input_amount_raw.into_alloy(),
+            Side::Buy => slippage.add(path.input_amount_raw),
+            Side::Sell => path.input_amount_raw,
         },
         exactAmountOut: match side {
-            Side::Buy => path.output_amount_raw.into_alloy(),
-            Side::Sell => slippage.sub(path.output_amount_raw).into_alloy(),
+            Side::Buy => path.output_amount_raw,
+            Side::Sell => slippage.sub(path.output_amount_raw),
         },
         steps: convert_path_steps(path)?,
     })
@@ -391,8 +373,8 @@ fn convert_path_steps(path: &dto::Path) -> Result<Vec<SwapPathStep>, Error> {
         .zip(path.pools.iter())
         .map(|((token_out, is_buffer), pool)| {
             Ok(SwapPathStep {
-                pool: pool.as_v3()?.into_alloy(),
-                tokenOut: token_out.address.into_alloy(),
+                pool: pool.as_v3()?,
+                tokenOut: token_out.address,
                 isBuffer: *is_buffer,
             })
         })

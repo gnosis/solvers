@@ -3,6 +3,7 @@ use {
         domain::{auction, dex, eth, order},
         util::conv,
     },
+    alloy::primitives::{U256, U512, ruint::UintTryFrom},
     bigdecimal::BigDecimal,
     std::{
         collections::HashMap,
@@ -25,7 +26,7 @@ pub struct Fills {
     smallest_fill: BigDecimal,
 }
 
-const ETH: eth::TokenAddress = eth::TokenAddress(eth::H160([0xee; 20]));
+const ETH: eth::TokenAddress = eth::TokenAddress(eth::Address::repeat_byte(0xee));
 
 impl Fills {
     pub fn new(smallest_fill: eth::Ether) -> Self {
@@ -96,23 +97,25 @@ impl Fills {
         // Scale amounts according to the limit price and the chosen fill.
         let (sell_amount, buy_amount) = match order.side {
             order::Side::Buy => {
-                let sell_amount = order
-                    .sell
-                    .amount
-                    .full_mul(amount)
-                    .checked_div(order.buy.amount.into())?
-                    .try_into()
-                    .unwrap();
+                let sell_amount = U256::uint_try_from(
+                    order
+                        .sell
+                        .amount
+                        .widening_mul(amount)
+                        .checked_div(U512::from(order.buy.amount))?,
+                )
+                .unwrap();
                 (sell_amount, amount)
             }
             order::Side::Sell => {
-                let buy_amount = order
-                    .buy
-                    .amount
-                    .full_mul(amount)
-                    .checked_div(order.sell.amount.into())?
-                    .try_into()
-                    .unwrap();
+                let buy_amount = U256::uint_try_from(
+                    order
+                        .buy
+                        .amount
+                        .widening_mul(amount)
+                        .checked_div(U512::from(order.sell.amount))?,
+                )
+                .unwrap();
                 (amount, buy_amount)
             }
         };
@@ -137,7 +140,7 @@ impl Fills {
     // next try.
     pub fn reduce_next_try(&self, uid: order::Uid) {
         self.amounts.lock().unwrap().entry(uid).and_modify(|entry| {
-            entry.next_amount /= 2;
+            entry.next_amount /= U256::from(2);
             tracing::trace!(next_try =? entry.next_amount, "reduced next fill amount");
         });
     }
@@ -149,7 +152,7 @@ impl Fills {
         self.amounts.lock().unwrap().entry(uid).and_modify(|entry| {
             entry.next_amount = entry
                 .next_amount
-                .checked_mul(2.into())
+                .checked_mul(U256::from(2))
                 .unwrap_or(entry.total_amount)
                 .min(entry.total_amount);
             tracing::trace!(next_try =? entry.next_amount, "increased next fill amount");

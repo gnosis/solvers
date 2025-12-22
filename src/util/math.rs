@@ -1,4 +1,4 @@
-use ethereum_types::U256;
+use alloy::primitives::U256;
 
 /// Perform a ceiled U256 integer division.
 ///
@@ -8,12 +8,12 @@ pub fn div_ceil(q: U256, d: U256) -> Option<U256> {
         return None;
     }
 
-    let (r, rem) = q.div_mod(d);
+    let (r, rem) = q.div_rem(d);
     if rem.is_zero() {
         Some(r)
     } else {
         Some(
-            r.checked_add(U256::one())
+            r.checked_add(U256::ONE)
                 .expect("unexpected ceiled division overflow"),
         )
     }

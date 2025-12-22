@@ -5,8 +5,8 @@ use {
         domain::{auction, eth},
         util::conv,
     },
+    alloy::primitives::U256,
     bigdecimal::{BigDecimal, Zero},
-    ethereum_types::U256,
     num::{BigUint, Integer},
 };
 

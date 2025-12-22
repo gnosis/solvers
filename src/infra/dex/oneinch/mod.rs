@@ -3,8 +3,8 @@ use {
         domain::{dex, eth},
         util,
     },
-    ethereum_types::H160,
-    ethrpc::{alloy::conversions::IntoAlloy, block_stream::CurrentBlockWatcher},
+    alloy::primitives::U256,
+    ethrpc::block_stream::CurrentBlockWatcher,
     std::{
         sync::atomic::{self, AtomicU64},
         time::{Duration, Instant},
@@ -35,7 +35,7 @@ pub struct Config {
 
     /// The referrer address to use. Referrers are entitled to a portion of
     /// the positive slippage that 1Inch collects.
-    pub referrer: Option<H160>,
+    pub referrer: Option<eth::Address>,
 
     // The following configuration options tweak the complexity of the 1Inch
     // route that the API returns. Unfortunately, the exact definition (and
@@ -155,7 +155,7 @@ impl OneInch {
 
         Ok(dex::Swap {
             calls: vec![dex::Call {
-                to: swap.tx.to.into_alloy(),
+                to: swap.tx.to,
                 calldata: swap.tx.data,
             }],
             input: eth::Asset {
@@ -167,10 +167,10 @@ impl OneInch {
                 amount: swap.to_token_amount,
             },
             allowance: dex::Allowance {
-                spender: self.spender.0.into_alloy(),
+                spender: self.spender.0,
                 amount: dex::Amount::new(swap.from_token_amount),
             },
-            gas: eth::Gas(swap.tx.gas.into()),
+            gas: eth::Gas(U256::from(swap.tx.gas)),
         })
     }
 

@@ -2,7 +2,6 @@ use {
     crate::{
         domain::eth,
         infra::{self, config::dex::file, dex},
-        util::serialize,
     },
     alloy::primitives::Address,
     contracts::alloy::{BalancerQueries, BalancerV2Vault, BalancerV3BatchRouter},
@@ -37,7 +36,6 @@ struct Config {
 
     /// Chain ID used to automatically determine contract addresses and send to
     /// the SOR API.
-    #[serde_as(as = "serialize::ChainId")]
     chain_id: eth::ChainId,
 
     /// Controls which API versions are enabled.
@@ -69,11 +67,11 @@ pub async fn load(path: &Path) -> super::Config {
     let enabled_api_versions = config.enabled_api_versions.unwrap_or_else(ApiVersion::all);
     let vault_contract = enabled_api_versions
         .contains(&ApiVersion::V2)
-        .then(|| BalancerV2Vault::deployment_address(&config.chain_id.value().as_u64()))
+        .then(|| BalancerV2Vault::deployment_address(&config.chain_id.value()))
         .flatten();
     let batch_router = enabled_api_versions
         .contains(&ApiVersion::V3)
-        .then(|| BalancerV3BatchRouter::deployment_address(&config.chain_id.value().as_u64()))
+        .then(|| BalancerV3BatchRouter::deployment_address(&config.chain_id.value()))
         .flatten();
     let queries_contract = enabled_api_versions.contains(&ApiVersion::V2).then(|| {
         BalancerQueries::deployment_address(&(config.chain_id as u64))

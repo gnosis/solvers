@@ -3,11 +3,11 @@
 
 use {
     crate::{
-        domain::{dex, order},
+        domain::{dex, eth, order},
         util::serialize,
     },
+    alloy::primitives::U256,
     bigdecimal::BigDecimal,
-    ethereum_types::{H160, U256},
     num::BigInt,
     serde::{Deserialize, Serialize},
     serde_with::serde_as,
@@ -16,7 +16,7 @@ use {
 /// The allowance spender data for 1Inch swaps.
 #[derive(Deserialize)]
 pub struct Spender {
-    pub address: H160,
+    pub address: eth::Address,
 }
 
 /// A protocol that is supported by the 1Inch API.
@@ -40,20 +40,20 @@ pub struct Liquidity {
 #[serde(rename_all = "camelCase")]
 pub struct Query {
     /// Contract address of a token to sell.
-    pub from_token_address: H160,
+    pub from_token_address: eth::Address,
 
     /// Contract address of a token to buy.
-    pub to_token_address: H160,
+    pub to_token_address: eth::Address,
 
     /// Amount of a token to sell, set in atoms.
     #[serde_as(as = "serialize::U256")]
     pub amount: U256,
 
     /// The address that calls the 1Inch contract to execute the returned swap.
-    pub from_address: H160,
+    pub from_address: eth::Address,
 
     /// The end user address(owner).
-    pub origin: H160,
+    pub origin: eth::Address,
 
     /// The maximum negative slippage allowed for swapping.
     pub slippage: Slippage,
@@ -65,7 +65,7 @@ pub struct Query {
 
     /// The referrer address.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub referrer_address: Option<H160>,
+    pub referrer_address: Option<eth::Address>,
 
     /// Disable 1Inch swap estimates. Normally, the 1Inch API will simulate and
     /// verify the swap. However, this requires upfront balances and approvals
@@ -161,7 +161,7 @@ pub struct Swap {
 #[serde(rename_all = "camelCase")]
 pub struct Tx {
     /// Amount of source token.
-    pub to: H160,
+    pub to: eth::Address,
 
     /// Expected amount of destination token.
     #[serde_as(as = "serialize::Hex")]
