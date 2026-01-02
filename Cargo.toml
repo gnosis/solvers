@@ -15,7 +15,7 @@ path = "src/main.rs"
 
 [dependencies]
 anyhow = "1"
-alloy = { version = "1.0.38", default-features = false }
+alloy = { version = "1.1.0", default-features = false, features = ["rand"] }
 async-trait = "0.1.80"
 axum = "0.6"
 base64 = "0.22.1"
