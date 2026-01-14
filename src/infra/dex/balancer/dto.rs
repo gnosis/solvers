@@ -6,7 +6,7 @@ use {
     },
     alloy::primitives::{B256, U256},
     bigdecimal::{BigDecimal, num_bigint::BigInt},
-    number::conversions::alloy::u256_to_big_decimal,
+    number::conversions::u256_to_big_decimal,
     serde::{Deserialize, Serialize, Serializer},
     serde_with::serde_as,
 };
@@ -393,7 +393,7 @@ mod tests {
         super::*,
         alloy::primitives::address,
         maplit::hashmap,
-        number::conversions::alloy::big_decimal_to_u256,
+        number::conversions::big_decimal_to_u256,
         serde_json::json,
         std::str::FromStr,
     };
