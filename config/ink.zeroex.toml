@@ -1,0 +1,20 @@
+# Ink chain RPC endpoint
+# node-url = "https://ink-mainnet.g.alchemy.com/v2/h1mWg3UoKPWKTUlpOBIQiG6nOxlocSOe"
+node-url = "localhost:8545"
+
+# Slippage configuration
+absolute-slippage = "40000000000000000"  # 0.04 ETH in wei
+relative-slippage = "0.001"              # 0.1%
+
+[dex]
+# 0x API key from dashboard.0x.org
+api-key = "cmk6yoova61wt01vl7ipa6aav"
+
+# Ink chain ID
+chain-id = "57073"
+
+# Optional: Specify custom 0x API endpoint (default: https://api.0x.org/swap/allowance-holder/)
+# endpoint = "https://api.0x.org/swap/allowance-holder/"
+
+# Optional: Exclude specific liquidity sources
+# excluded-sources = []

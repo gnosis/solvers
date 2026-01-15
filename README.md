@@ -29,6 +29,7 @@ To build and run this project, you will need:
     - `zeroex`
     - `balancer`
     - `oneinch`
+    - `okx`
     - `paraswap`
 
    `<config_path>` is the path to the corresponding solver's config. Examples for each solver can be found in the `./config` directory.

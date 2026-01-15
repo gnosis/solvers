@@ -173,7 +173,7 @@ impl Chain {
             eth::ChainId::Polygon => Ok(Self::Polygon),
             eth::ChainId::Optimism => Ok(Self::Optimism),
             eth::ChainId::Plasma => Ok(Self::Plasma),
-            eth::ChainId::Bnb | eth::ChainId::Goerli | eth::ChainId::Linea => {
+            eth::ChainId::Bnb | eth::ChainId::Goerli | eth::ChainId::Ink | eth::ChainId::Linea => {
                 Err(Error::UnsupportedChainId(chain_id))
             }
         }
