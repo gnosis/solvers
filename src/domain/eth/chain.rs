@@ -14,6 +14,7 @@ pub enum ChainId {
     Polygon = 137,
     Linea = 59144,
     Plasma = 9745,
+    Ink = 57073,
 }
 
 impl ChainId {
@@ -30,6 +31,7 @@ impl ChainId {
             137 => Ok(Self::Polygon),
             59144 => Ok(Self::Linea),
             9745 => Ok(Self::Plasma),
+            57073 => Ok(Self::Ink),
             _ => Err(UnsupportedChain),
         }
     }
@@ -48,6 +50,7 @@ impl ChainId {
             ChainId::Polygon => "137",
             ChainId::Linea => "59144",
             ChainId::Plasma => "9745",
+            ChainId::Ink => "57073",
         }
     }
 
