@@ -23,6 +23,10 @@ struct Config {
     /// Bitget API credentials.
     #[serde(flatten)]
     credentials: BitgetCredentialsConfig,
+
+    /// Partner code sent in the `Partner-Code` header.
+    #[serde(default = "default_partner_code")]
+    partner_code: String,
 }
 
 #[derive(Deserialize)]
@@ -45,6 +49,10 @@ impl Into<bitget::BitgetCredentialsConfig> for BitgetCredentialsConfig {
     }
 }
 
+fn default_partner_code() -> String {
+    "Cowswap".to_string()
+}
+
 fn default_endpoint() -> reqwest::Url {
     bitget::DEFAULT_ENDPOINT.parse().unwrap()
 }
@@ -62,6 +70,7 @@ pub async fn load(path: &Path) -> super::Config {
             endpoint: config.endpoint,
             chain_id: config.chain_id,
             credentials: config.credentials.into(),
+            partner_code: config.partner_code,
             block_stream: base.block_stream.clone(),
             settlement_contract: base.contracts.settlement,
         },

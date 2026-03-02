@@ -19,6 +19,7 @@ async fn swap_sell_regular() {
             api_key: env::var("BITGET_API_KEY").unwrap(),
             api_secret: env::var("BITGET_API_SECRET").unwrap(),
         },
+        partner_code: "Cowswap".to_string(),
         settlement_contract: address!("0x9008d19f58aabd9ed0d60971565aa8510560ab41"),
         block_stream: None,
     };
@@ -51,6 +52,7 @@ async fn swap_buy_not_supported() {
             api_key: String::new(),
             api_secret: String::new(),
         },
+        partner_code: "Cowswap".to_string(),
         settlement_contract: address!("0x9008d19f58aabd9ed0d60971565aa8510560ab41"),
         block_stream: None,
     };

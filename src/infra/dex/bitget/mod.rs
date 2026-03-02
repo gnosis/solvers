@@ -27,6 +27,7 @@ pub struct Bitget {
     endpoint: reqwest::Url,
     api_key: String,
     api_secret: String,
+    partner_code: String,
     chain_name: dto::ChainName,
     settlement_contract: Address,
 }
@@ -41,6 +42,9 @@ pub struct Config {
 
     /// Credentials used to access Bitget API.
     pub credentials: BitgetCredentialsConfig,
+
+    /// Partner code sent in the `Partner-Code` header.
+    pub partner_code: String,
 
     /// The stream that yields every new block.
     pub block_stream: Option<CurrentBlockWatcher>,
@@ -68,6 +72,7 @@ impl Bitget {
             endpoint: config.endpoint,
             api_key: config.credentials.api_key,
             api_secret: config.credentials.api_secret,
+            partner_code: config.partner_code,
             chain_name,
             settlement_contract: config.settlement_contract,
         })
@@ -138,8 +143,8 @@ impl Bitget {
     /// - Compute `toMinAmount` = quote's output minus slippage
     /// - Pass it explicitly to the swap endpoint so the calldata reverts
     ///   on-chain if output drops below this floor
-    /// - Report `toMinAmount` as our output, guaranteeing consistency
-    ///   between what we promise and what the calldata delivers
+    /// - Report `toMinAmount` as our output, guaranteeing consistency between
+    ///   what we promise and what the calldata delivers
     async fn handle_sell_order(
         &self,
         order: &dex::Order,
@@ -234,6 +239,7 @@ impl Bitget {
             .client
             .request(reqwest::Method::POST, url)
             .header("Content-Type", "application/json")
+            .header("Partner-Code", &self.partner_code)
             .header("x-api-key", &self.api_key)
             .header("x-api-timestamp", &timestamp)
             .header("x-api-signature", &signature)
