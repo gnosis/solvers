@@ -83,6 +83,9 @@ impl Bitget {
             return Err(Error::OrderNotSupported);
         }
 
+        // Set up a tracing span to make debugging of API requests easier.
+        // Historically, debugging API requests to external DEXs was a bit
+        // of a headache.
         static ID: AtomicU64 = AtomicU64::new(0);
         let id = ID.fetch_add(1, atomic::Ordering::Relaxed);
 
