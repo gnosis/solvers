@@ -21,6 +21,12 @@ mod dto;
 /// Default Bitget swap API base endpoint.
 pub const DEFAULT_ENDPOINT: &str = "https://web3.bitget.com/";
 
+/// Bitget API path for getting a swap quote.
+const QUOTE_PATH: &str = "bgw-pro/swapx/pro/quote";
+
+/// Bitget API path for getting swap calldata.
+const SWAP_PATH: &str = "bgw-pro/swapx/pro/swap";
+
 /// Bindings to the Bitget swap API.
 pub struct Bitget {
     client: super::Client,
@@ -154,9 +160,8 @@ impl Bitget {
         let quote_request =
             dto::QuoteRequest::from_order(order, self.chain_name, self.settlement_contract);
 
-        let quote_response: dto::QuoteResponse = self
-            .send_post_request("bgw-pro/swapx/pro/quote", &quote_request)
-            .await?;
+        let quote_response: dto::QuoteResponse =
+            self.send_post_request(QUOTE_PATH, &quote_request).await?;
 
         // Apply slippage to the quoted output to get the minimum we'll accept.
         // This becomes both the `toMinAmount` in the calldata and our reported
@@ -173,9 +178,8 @@ impl Bitget {
             to_min_amount,
         );
 
-        let swap_response: dto::SwapResponse = self
-            .send_post_request("bgw-pro/swapx/pro/swap", &swap_request)
-            .await?;
+        let swap_response: dto::SwapResponse =
+            self.send_post_request(SWAP_PATH, &swap_request).await?;
 
         Ok((swap_response, quote_response, to_min_amount))
     }
