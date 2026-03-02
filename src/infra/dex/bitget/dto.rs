@@ -2,19 +2,39 @@
 //! Full documentation: https://web3.bitget.com/en/docs/swap/
 
 use {
-    crate::domain::{dex, eth},
+    crate::{
+        domain::{dex, eth},
+        util::serialize,
+    },
     alloy::primitives::U256,
+    bigdecimal::BigDecimal,
     serde::{Deserialize, Serialize},
     serde_with::serde_as,
 };
 
+/// A Bitget slippage amount.
+#[derive(Clone, Debug, Default, Serialize)]
+pub struct Slippage(BigDecimal);
+
 /// Bitget chain name used in API requests.
-pub fn chain_name(chain_id: eth::ChainId) -> &'static str {
-    match chain_id {
-        eth::ChainId::Mainnet => "eth",
-        eth::ChainId::Bnb => "bsc",
-        eth::ChainId::Base => "base",
-        _ => panic!("unsupported Bitget chain: {chain_id:?}"),
+#[derive(Clone, Copy, Serialize)]
+pub enum ChainName {
+    #[serde(rename = "eth")]
+    Mainnet,
+    #[serde(rename = "bsc")]
+    Bnb,
+    #[serde(rename = "base")]
+    Base,
+}
+
+impl ChainName {
+    pub fn new(chain_id: eth::ChainId) -> Self {
+        match chain_id {
+            eth::ChainId::Mainnet => Self::Mainnet,
+            eth::ChainId::Bnb => Self::Bnb,
+            eth::ChainId::Base => Self::Base,
+            _ => panic!("unsupported Bitget chain: {chain_id:?}"),
+        }
     }
 }
 
@@ -22,27 +42,29 @@ pub fn chain_name(chain_id: eth::ChainId) -> &'static str {
 ///
 /// See [API](https://web3.bitget.com/en/docs/swap/)
 /// documentation for more detailed information on each parameter.
-#[derive(Clone, Default, Serialize)]
+#[serde_as]
+#[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct QuoteRequest {
     /// Source token contract address (empty string for native token).
-    pub from_contract: String,
+    pub from_contract: eth::Address,
 
     /// Input amount in minimal divisible units.
-    pub from_amount: String,
+    #[serde_as(as = "serialize::U256")]
+    pub from_amount: U256,
 
     /// Source chain name (e.g., "eth", "bsc", "base").
-    pub from_chain: String,
+    pub from_chain: ChainName,
 
     /// Target token contract address (empty string for native token).
-    pub to_contract: String,
+    pub to_contract: eth::Address,
 
     /// Target chain name (same as from_chain for same-chain swaps).
-    pub to_chain: String,
+    pub to_chain: ChainName,
 
     /// Debit address for gas estimation.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub from_address: Option<String>,
+    pub from_address: Option<eth::Address>,
 
     /// Whether to estimate gas.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -52,45 +74,47 @@ pub struct QuoteRequest {
 impl QuoteRequest {
     pub fn from_order(
         order: &dex::Order,
-        chain_name: &str,
+        chain_name: ChainName,
         settlement_contract: eth::Address,
     ) -> Self {
         Self {
-            from_contract: format!("{:?}", order.sell.0),
-            from_amount: order.amount.get().to_string(),
-            from_chain: chain_name.to_string(),
-            to_contract: format!("{:?}", order.buy.0),
-            to_chain: chain_name.to_string(),
-            from_address: Some(format!("{:?}", settlement_contract)),
+            from_contract: order.sell.0,
+            from_amount: order.amount.get(),
+            from_chain: chain_name,
+            to_contract: order.buy.0,
+            to_chain: chain_name,
+            from_address: Some(settlement_contract),
             estimate_gas: Some(true),
         }
     }
 }
 
 /// A Bitget API swap (calldata) request.
-#[derive(Clone, Default, Serialize)]
+#[serde_as]
+#[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SwapRequest {
     /// Source token contract address.
-    pub from_contract: String,
+    pub from_contract: eth::Address,
 
     /// Input amount in minimal divisible units.
-    pub from_amount: String,
+    #[serde_as(as = "serialize::U256")]
+    pub from_amount: U256,
 
     /// Source chain name.
-    pub from_chain: String,
+    pub from_chain: ChainName,
 
     /// Target token contract address.
-    pub to_contract: String,
+    pub to_contract: eth::Address,
 
     /// Target chain name.
-    pub to_chain: String,
+    pub to_chain: ChainName,
 
     /// Debit address.
-    pub from_address: String,
+    pub from_address: eth::Address,
 
     /// Recipient address.
-    pub to_address: String,
+    pub to_address: eth::Address,
 
     /// Optimal channel from quote API.
     pub market: String,
@@ -98,10 +122,12 @@ pub struct SwapRequest {
     /// Minimum amount to receive. By setting this explicitly we ensure
     /// the generated calldata will revert on-chain if the output drops
     /// below this value — avoiding a race between quote and swap calls.
-    pub to_min_amount: String,
+    #[serde_as(as = "serialize::U256")]
+    pub to_min_amount: U256,
 
-    /// Slippage percentage (e.g., 1 = 1%).
-    pub slippage: f64,
+    /// Slippage as a factor (e.g., 0.01 = 1%). The real slippage protection
+    /// is enforced by `to_min_amount`; this field is only informational.
+    pub slippage: Slippage,
 
     /// Fee rate in per mille. 0 for no fee.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -112,29 +138,22 @@ impl SwapRequest {
     pub fn from_order(
         order: &dex::Order,
         slippage: &dex::Slippage,
-        chain_name: &str,
+        chain_name: ChainName,
         settlement_contract: eth::Address,
         market: String,
         to_min_amount: U256,
     ) -> Self {
-        // Convert slippage factor to percentage (0.01 -> 1.0)
-        let slippage_percent: f64 = (slippage.as_factor() * bigdecimal::BigDecimal::from(100))
-            .to_string()
-            .parse()
-            .unwrap_or(1.0);
-
-        let settlement = format!("{:?}", settlement_contract);
         Self {
-            from_contract: format!("{:?}", order.sell.0),
-            from_amount: order.amount.get().to_string(),
-            from_chain: chain_name.to_string(),
-            to_contract: format!("{:?}", order.buy.0),
-            to_chain: chain_name.to_string(),
-            from_address: settlement.clone(),
-            to_address: settlement,
+            from_contract: order.sell.0,
+            from_amount: order.amount.get(),
+            from_chain: chain_name,
+            to_contract: order.buy.0,
+            to_chain: chain_name,
+            from_address: settlement_contract,
+            to_address: settlement_contract,
             market,
-            to_min_amount: to_min_amount.to_string(),
-            slippage: slippage_percent,
+            to_min_amount,
+            slippage: Slippage(slippage.as_factor().clone()),
             fee_rate: Some(0.0),
         }
     }
@@ -146,7 +165,8 @@ impl SwapRequest {
 #[serde(rename_all = "camelCase")]
 pub struct QuoteResponse {
     /// Output amount in minimal divisible units.
-    pub to_amount: String,
+    #[serde_as(as = "serialize::U256")]
+    pub to_amount: U256,
 
     /// Channel name (e.g., "uniswap.v3").
     pub market: String,
@@ -157,14 +177,12 @@ pub struct QuoteResponse {
 }
 
 /// A Bitget API swap response.
-#[serde_as]
 #[derive(Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct SwapResponse {
     /// Contract address to interact with (EVM chains only).
     /// This is the router/spender address.
-    #[serde(default)]
-    pub contract: String,
+    pub contract: eth::Address,
 
     /// Base64-encoded calldata for the transaction.
     pub calldata: String,
@@ -175,13 +193,6 @@ impl SwapResponse {
     pub fn decode_calldata(&self) -> Result<Vec<u8>, base64::DecodeError> {
         use base64::prelude::*;
         BASE64_STANDARD.decode(&self.calldata)
-    }
-
-    /// Parse the contract address.
-    pub fn parse_contract(&self) -> Result<eth::Address, String> {
-        self.contract
-            .parse()
-            .map_err(|e| format!("invalid contract address '{}': {e}", self.contract))
     }
 }
 
@@ -199,29 +210,4 @@ pub struct Response<T> {
 #[derive(Deserialize, Debug)]
 pub struct Error {
     pub status: i64,
-}
-
-/// Parsed output amounts from the quote response, converted to U256.
-pub struct QuoteAmounts {
-    pub to_amount: U256,
-    pub gas_limit: U256,
-    pub market: String,
-}
-
-impl QuoteResponse {
-    /// Parse the quote response amounts into U256 values.
-    pub fn parse_amounts(&self) -> Result<QuoteAmounts, ParseError> {
-        let to_amount =
-            U256::from_str_radix(&self.to_amount, 10).map_err(|_| ParseError::InvalidAmount)?;
-        Ok(QuoteAmounts {
-            to_amount,
-            gas_limit: U256::from(self.gas_limit),
-            market: self.market.clone(),
-        })
-    }
-}
-
-#[derive(Debug)]
-pub enum ParseError {
-    InvalidAmount,
 }

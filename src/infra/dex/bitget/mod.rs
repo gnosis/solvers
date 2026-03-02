@@ -27,7 +27,7 @@ pub struct Bitget {
     endpoint: reqwest::Url,
     api_key: String,
     api_secret: String,
-    chain_name: String,
+    chain_name: dto::ChainName,
     settlement_contract: Address,
 }
 
@@ -61,7 +61,7 @@ impl Bitget {
             super::Client::new(client, config.block_stream)
         };
 
-        let chain_name = dto::chain_name(config.chain_id).to_string();
+        let chain_name = dto::ChainName::new(config.chain_id);
 
         Ok(Self {
             client,
@@ -86,7 +86,7 @@ impl Bitget {
         static ID: AtomicU64 = AtomicU64::new(0);
         let id = ID.fetch_add(1, atomic::Ordering::Relaxed);
 
-        let (swap_response, quote_amounts) = self
+        let (swap_response, quote_response, to_min_amount) = self
             .handle_sell_order(order, slippage)
             .instrument(tracing::trace_span!("swap", id = %id))
             .await?;
@@ -95,14 +95,12 @@ impl Bitget {
             .decode_calldata()
             .map_err(|_| Error::InvalidCalldata)?;
 
-        let contract = swap_response
-            .parse_contract()
-            .map_err(|_| Error::InvalidContract)?;
+        let contract = swap_response.contract;
 
         // Increase gas estimate by 50% for safety margin, similar to OKX.
-        let gas = quote_amounts
-            .gas_limit
-            .checked_add(quote_amounts.gas_limit / U256::from(2))
+        let gas_limit = U256::from(quote_response.gas_limit);
+        let gas = gas_limit
+            .checked_add(gas_limit / U256::from(2))
             .ok_or(Error::GasCalculationFailed)?;
 
         Ok(dex::Swap {
@@ -116,7 +114,7 @@ impl Bitget {
             },
             output: eth::Asset {
                 token: order.buy,
-                amount: quote_amounts.to_amount,
+                amount: to_min_amount,
             },
             allowance: dex::Allowance {
                 spender: contract,
@@ -143,32 +141,27 @@ impl Bitget {
         &self,
         order: &dex::Order,
         slippage: &dex::Slippage,
-    ) -> Result<(dto::SwapResponse, dto::QuoteAmounts), Error> {
+    ) -> Result<(dto::SwapResponse, dto::QuoteResponse, U256), Error> {
         // Step 1: Get quote
         let quote_request =
-            dto::QuoteRequest::from_order(order, &self.chain_name, self.settlement_contract);
+            dto::QuoteRequest::from_order(order, self.chain_name, self.settlement_contract);
 
         let quote_response: dto::QuoteResponse = self
             .send_post_request("bgw-pro/swapx/pro/quote", &quote_request)
             .await?;
 
-        let mut quote_amounts = quote_response
-            .parse_amounts()
-            .map_err(|_| Error::InvalidQuoteResponse)?;
-
         // Apply slippage to the quoted output to get the minimum we'll accept.
         // This becomes both the `toMinAmount` in the calldata and our reported
         // output, ensuring they're always consistent.
-        let to_min_amount = slippage.sub(quote_amounts.to_amount);
-        quote_amounts.to_amount = to_min_amount;
+        let to_min_amount = slippage.sub(quote_response.to_amount);
 
         // Step 2: Get swap calldata
         let swap_request = dto::SwapRequest::from_order(
             order,
             slippage,
-            &self.chain_name,
+            self.chain_name,
             self.settlement_contract,
-            quote_amounts.market.clone(),
+            quote_response.market.clone(),
             to_min_amount,
         );
 
@@ -176,7 +169,7 @@ impl Bitget {
             .send_post_request("bgw-pro/swapx/pro/swap", &swap_request)
             .await?;
 
-        Ok((swap_response, quote_amounts))
+        Ok((swap_response, quote_response, to_min_amount))
     }
 
     /// Generate HMAC-SHA256 signature for the Bitget API.
@@ -276,10 +269,6 @@ pub enum Error {
     RateLimited,
     #[error("invalid calldata in response")]
     InvalidCalldata,
-    #[error("invalid contract address in response")]
-    InvalidContract,
-    #[error("invalid quote response")]
-    InvalidQuoteResponse,
     #[error("api error code {code}")]
     Api { code: i64 },
     #[error(transparent)]
