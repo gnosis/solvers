@@ -19,13 +19,13 @@ use {
 mod dto;
 
 /// Default Bitget swap API base endpoint.
-pub const DEFAULT_ENDPOINT: &str = "https://web3.bitget.com/";
+pub const DEFAULT_ENDPOINT: &str = "https://web3.bitget.com/bgw-pro/swapx/pro/";
 
 /// Bitget API path for getting a swap quote.
-const QUOTE_PATH: &str = "bgw-pro/swapx/pro/quote";
+const QUOTE_PATH: &str = "quote";
 
 /// Bitget API path for getting swap calldata.
-const SWAP_PATH: &str = "bgw-pro/swapx/pro/swap";
+const SWAP_PATH: &str = "swap";
 
 /// Bindings to the Bitget swap API.
 pub struct Bitget {
@@ -236,8 +236,8 @@ impl Bitget {
 
         let timestamp = chrono::Utc::now().timestamp_millis().to_string();
 
-        let api_path = format!("/{endpoint}");
-        let signature = self.generate_signature(&api_path, &body_str, &timestamp)?;
+        let api_path = url.path();
+        let signature = self.generate_signature(api_path, &body_str, &timestamp)?;
 
         let request_builder = self
             .client

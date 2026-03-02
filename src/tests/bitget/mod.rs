@@ -12,7 +12,7 @@ pub fn config(solver_addr: &SocketAddr) -> tests::Config {
 node-url = 'http://localhost:8545'
 [dex]
 chain-id = '1'
-endpoint = 'http://{solver_addr}/'
+endpoint = 'http://{solver_addr}/bgw-pro/swapx/pro/'
 api-key = 'test-api-key'
 api-secret = 'test-api-secret-1234'
 ",
