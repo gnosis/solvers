@@ -12,6 +12,7 @@ use {
 };
 
 mod balancer;
+mod bitget;
 mod dex;
 mod mock;
 mod okx;

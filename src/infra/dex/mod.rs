@@ -5,6 +5,7 @@ use {
 };
 
 pub mod balancer;
+pub mod bitget;
 pub mod okx;
 pub mod oneinch;
 pub mod paraswap;
@@ -16,6 +17,7 @@ pub use self::simulator::Simulator;
 /// A supported external DEX/DEX aggregator API.
 pub enum Dex {
     Balancer(Box<balancer::Sor>),
+    Bitget(bitget::Bitget),
     OneInch(oneinch::OneInch),
     ZeroEx(zeroex::ZeroEx),
     ParaSwap(paraswap::ParaSwap),
@@ -35,6 +37,7 @@ impl Dex {
     ) -> Result<dex::Swap, Error> {
         let swap = match self {
             Dex::Balancer(balancer) => balancer.swap(order, slippage, tokens).await?,
+            Dex::Bitget(bitget) => bitget.swap(order, slippage).await?,
             Dex::OneInch(oneinch) => oneinch.swap(order, slippage).await?,
             Dex::ZeroEx(zeroex) => zeroex.swap(order, slippage).await?,
             Dex::ParaSwap(paraswap) => paraswap.swap(order, slippage, tokens).await?,
@@ -156,6 +159,17 @@ impl From<okx::Error> for Error {
             okx::Error::OrderNotSupported => Self::OrderNotSupported,
             okx::Error::NotFound => Self::NotFound,
             okx::Error::RateLimited => Self::RateLimited,
+            _ => Self::Other(Box::new(err)),
+        }
+    }
+}
+
+impl From<bitget::Error> for Error {
+    fn from(err: bitget::Error) -> Self {
+        match err {
+            bitget::Error::OrderNotSupported => Self::OrderNotSupported,
+            bitget::Error::NotFound => Self::NotFound,
+            bitget::Error::RateLimited => Self::RateLimited,
             _ => Self::Other(Box::new(err)),
         }
     }

@@ -1,4 +1,5 @@
 pub mod balancer;
+pub mod bitget;
 mod file;
 pub mod okx;
 pub mod oneinch;
