@@ -130,6 +130,15 @@ impl Bitget {
     ///
     /// Step 1: Get a quote to obtain the `market` channel and output amount.
     /// Step 2: Get the swap calldata using the market from the quote.
+    ///
+    /// To avoid a race condition between the quote and swap calls (where the
+    /// quote returns one output amount but the swap calldata encodes a
+    /// different one due to price movement), we:
+    /// - Compute `toMinAmount` = quote's output minus slippage
+    /// - Pass it explicitly to the swap endpoint so the calldata reverts
+    ///   on-chain if output drops below this floor
+    /// - Report `toMinAmount` as our output, guaranteeing consistency
+    ///   between what we promise and what the calldata delivers
     async fn handle_sell_order(
         &self,
         order: &dex::Order,
@@ -143,9 +152,15 @@ impl Bitget {
             .send_post_request("bgw-pro/swapx/pro/quote", &quote_request)
             .await?;
 
-        let quote_amounts = quote_response
+        let mut quote_amounts = quote_response
             .parse_amounts()
             .map_err(|_| Error::InvalidQuoteResponse)?;
+
+        // Apply slippage to the quoted output to get the minimum we'll accept.
+        // This becomes both the `toMinAmount` in the calldata and our reported
+        // output, ensuring they're always consistent.
+        let to_min_amount = slippage.sub(quote_amounts.to_amount);
+        quote_amounts.to_amount = to_min_amount;
 
         // Step 2: Get swap calldata
         let swap_request = dto::SwapRequest::from_order(
@@ -154,6 +169,7 @@ impl Bitget {
             &self.chain_name,
             self.settlement_contract,
             quote_amounts.market.clone(),
+            to_min_amount,
         );
 
         let swap_response: dto::SwapResponse = self

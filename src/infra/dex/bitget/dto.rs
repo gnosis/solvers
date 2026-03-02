@@ -95,6 +95,11 @@ pub struct SwapRequest {
     /// Optimal channel from quote API.
     pub market: String,
 
+    /// Minimum amount to receive. By setting this explicitly we ensure
+    /// the generated calldata will revert on-chain if the output drops
+    /// below this value — avoiding a race between quote and swap calls.
+    pub to_min_amount: String,
+
     /// Slippage percentage (e.g., 1 = 1%).
     pub slippage: f64,
 
@@ -110,6 +115,7 @@ impl SwapRequest {
         chain_name: &str,
         settlement_contract: eth::Address,
         market: String,
+        to_min_amount: U256,
     ) -> Self {
         // Convert slippage factor to percentage (0.01 -> 1.0)
         let slippage_percent: f64 = (slippage.as_factor() * bigdecimal::BigDecimal::from(100))
@@ -127,6 +133,7 @@ impl SwapRequest {
             from_address: settlement.clone(),
             to_address: settlement,
             market,
+            to_min_amount: to_min_amount.to_string(),
             slippage: slippage_percent,
             fee_rate: Some(0.0),
         }
