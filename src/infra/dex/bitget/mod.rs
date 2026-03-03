@@ -196,14 +196,9 @@ impl Bitget {
         // Apply slippage to the quoted output to get the minimum we'll accept.
         // This becomes both the `toMinAmount` in the calldata and our reported
         // output, ensuring they're always consistent.
-        // Bitget amounts are decimal strings (e.g. "1964.365496"), so we use
-        // BigDecimal arithmetic instead of U256.
-        let to_amount: BigDecimal = quote_response
-            .to_amount
-            .parse()
-            .map_err(|_| Error::AmountConversionFailed)?;
-        let tolerance = &to_amount * slippage.as_factor();
-        let to_min_amount = (&to_amount - &tolerance).with_scale(buy_decimals as i64);
+        let tolerance = &quote_response.to_amount * slippage.as_factor();
+        let to_min_amount =
+            (&quote_response.to_amount - &tolerance).with_scale(buy_decimals as i64);
 
         // Step 2: Get swap calldata
         let swap_request = dto::SwapRequest::from_order(
@@ -211,7 +206,7 @@ impl Bitget {
             self.chain_name,
             self.settlement_contract,
             quote_response.market.clone(),
-            to_min_amount.to_string(),
+            to_min_amount.clone(),
             sell_decimals,
         );
 

@@ -3,7 +3,9 @@
 
 use {
     crate::domain::{dex, eth},
+    bigdecimal::BigDecimal,
     serde::{Deserialize, Serialize},
+    serde_with::serde_as,
 };
 
 /// Bitget chain name used in API requests.
@@ -32,6 +34,7 @@ impl ChainName {
 ///
 /// See [API](https://web3.bitget.com/en/docs/swap/)
 /// documentation for more detailed information on each parameter.
+#[serde_as]
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct QuoteRequest {
@@ -39,7 +42,8 @@ pub struct QuoteRequest {
     pub from_contract: eth::Address,
 
     /// Input amount in human-readable decimal units (e.g. "1" for 1 WETH).
-    pub from_amount: String,
+    #[serde_as(as = "serde_with::DisplayFromStr")]
+    pub from_amount: BigDecimal,
 
     /// Source chain name (e.g., "eth", "bsc", "base").
     pub from_chain: ChainName,
@@ -68,7 +72,7 @@ impl QuoteRequest {
     ) -> Self {
         Self {
             from_contract: order.sell.0,
-            from_amount: super::wei_to_decimal(order.amount.get(), sell_decimals).to_string(),
+            from_amount: super::wei_to_decimal(order.amount.get(), sell_decimals),
             from_chain: chain_name,
             to_contract: order.buy.0,
             to_chain: chain_name,
@@ -79,6 +83,7 @@ impl QuoteRequest {
 }
 
 /// A Bitget API swap (calldata) request.
+#[serde_as]
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SwapRequest {
@@ -86,7 +91,8 @@ pub struct SwapRequest {
     pub from_contract: eth::Address,
 
     /// Input amount in human-readable decimal units (e.g. "1" for 1 WETH).
-    pub from_amount: String,
+    #[serde_as(as = "serde_with::DisplayFromStr")]
+    pub from_amount: BigDecimal,
 
     /// Source chain name.
     pub from_chain: ChainName,
@@ -110,7 +116,8 @@ pub struct SwapRequest {
     /// `slippage` field is ignored by the API. By setting this explicitly we
     /// ensure the generated calldata will revert on-chain if the output drops
     /// below this value — avoiding a race between quote and swap calls.
-    pub to_min_amount: String,
+    #[serde_as(as = "serde_with::DisplayFromStr")]
+    pub to_min_amount: BigDecimal,
 
     /// Fee rate in per mille. 0 for no fee.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -123,12 +130,12 @@ impl SwapRequest {
         chain_name: ChainName,
         settlement_contract: eth::Address,
         market: String,
-        to_min_amount: String,
+        to_min_amount: BigDecimal,
         sell_decimals: u8,
     ) -> Self {
         Self {
             from_contract: order.sell.0,
-            from_amount: super::wei_to_decimal(order.amount.get(), sell_decimals).to_string(),
+            from_amount: super::wei_to_decimal(order.amount.get(), sell_decimals),
             from_chain: chain_name,
             to_contract: order.buy.0,
             to_chain: chain_name,
@@ -142,11 +149,13 @@ impl SwapRequest {
 }
 
 /// A Bitget API quote response.
+#[serde_as]
 #[derive(Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct QuoteResponse {
     /// Output amount in decimal units (e.g. "1964.365496").
-    pub to_amount: String,
+    #[serde_as(as = "serde_with::DisplayFromStr")]
+    pub to_amount: BigDecimal,
 
     /// Channel name (e.g., "uniswap.v3").
     pub market: String,
@@ -164,7 +173,7 @@ pub struct SwapResponse {
     /// This is the router/spender address.
     pub contract: eth::Address,
 
-    /// Base64-encoded calldata for the transaction.
+    /// Hex-encoded calldata for the transaction (with "0x" prefix).
     pub calldata: String,
 }
 
