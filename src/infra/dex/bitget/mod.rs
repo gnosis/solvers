@@ -33,7 +33,7 @@ fn decimal_to_wei(amount: &BigDecimal, decimals: u8) -> Result<U256, Error> {
     util::conv::bigdecimal_to_u256(&scaled).ok_or(Error::AmountConversionFailed)
 }
 
-pub(crate) mod dto;
+mod dto;
 
 /// Default Bitget swap API base endpoint.
 pub const DEFAULT_ENDPOINT: &str = "https://bopenapi.bgwapi.io/bgw-pro/swapx/pro/";
