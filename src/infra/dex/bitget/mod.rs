@@ -159,22 +159,6 @@ impl Bitget {
         let quote_request =
             dto::QuoteRequest::from_order(order, self.chain_name, self.settlement_contract);
 
-        // let swap_request = dto::SwapRequest {
-        //     from_contract: order.sell.0,
-        //     from_amount: order.amount.get(),
-        //     from_chain: self.chain_name,
-        //     to_contract: order.buy.0,
-        //     to_chain: self.chain_name,
-        //     from_address: self.settlement_contract,
-        //     to_address: self.settlement_contract,
-        //     market: "".to_string(),
-        //     to_min_amount: U256::ZERO,
-        //     slippage: Slippage(slippage.as_factor().clone()),
-        //     fee_rate: Some(0.0),
-        // };
-        // let _swap_response: dto::SwapResponse =
-        //     self.send_post_request(SWAP_PATH, &swap_request).await?;
-
         let quote_response: dto::QuoteResponse =
             self.send_post_request(QUOTE_PATH, &quote_request).await?;
 

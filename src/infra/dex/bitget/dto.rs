@@ -14,7 +14,7 @@ use {
 
 /// A Bitget slippage amount.
 #[derive(Clone, Debug, Default, Serialize)]
-pub struct Slippage(pub BigDecimal);
+pub struct Slippage(BigDecimal);
 
 /// Bitget chain name used in API requests.
 #[derive(Clone, Copy, Serialize)]
