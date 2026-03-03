@@ -7,7 +7,6 @@ use {
     base64::prelude::*,
     ethrpc::block_stream::CurrentBlockWatcher,
     hmac::{Hmac, Mac},
-    hyper::StatusCode,
     sha2::Sha256,
     std::{
         collections::BTreeMap,
@@ -160,6 +159,22 @@ impl Bitget {
         let quote_request =
             dto::QuoteRequest::from_order(order, self.chain_name, self.settlement_contract);
 
+        // let swap_request = dto::SwapRequest {
+        //     from_contract: order.sell.0,
+        //     from_amount: order.amount.get(),
+        //     from_chain: self.chain_name,
+        //     to_contract: order.buy.0,
+        //     to_chain: self.chain_name,
+        //     from_address: self.settlement_contract,
+        //     to_address: self.settlement_contract,
+        //     market: "".to_string(),
+        //     to_min_amount: U256::ZERO,
+        //     slippage: Slippage(slippage.as_factor().clone()),
+        //     fee_rate: Some(0.0),
+        // };
+        // let _swap_response: dto::SwapResponse =
+        //     self.send_post_request(SWAP_PATH, &swap_request).await?;
+
         let quote_response: dto::QuoteResponse =
             self.send_post_request(QUOTE_PATH, &quote_request).await?;
 
@@ -191,14 +206,17 @@ impl Bitget {
     fn generate_signature(
         &self,
         api_path: &str,
-        body: &str,
+        body: &serde_json::Value,
         timestamp: &str,
     ) -> Result<String, Error> {
-        let mut content = BTreeMap::new();
-        content.insert("apiPath", api_path);
-        content.insert("body", body);
-        content.insert("x-api-key", &self.api_key);
-        content.insert("x-api-timestamp", timestamp);
+        // BTreeMap ensures keys are sorted alphabetically, as required by the
+        // Bitget signing algorithm.
+        let content = BTreeMap::from([
+            ("apiPath", serde_json::json!(api_path)),
+            ("body", body.clone()),
+            ("x-api-key", serde_json::json!(&self.api_key)),
+            ("x-api-timestamp", serde_json::json!(timestamp)),
+        ]);
 
         let content_str = serde_json::to_string(&content).map_err(|_| Error::SignRequestFailed)?;
 
@@ -215,10 +233,8 @@ impl Bitget {
         Err(match status {
             0 => return Ok(()),
             429 => Error::RateLimited,
-            // Treat unknown error codes as "not found" since the API doesn't
-            // document specific error codes for insufficient liquidity.
             40004 => Error::NotFound,
-            _ => Error::Api { code: status },
+            _ => Error::Api(status),
         })
     }
 
@@ -232,16 +248,17 @@ impl Bitget {
             .join(endpoint)
             .map_err(|_| Error::RequestBuildFailed)?;
 
-        let body_str = serde_json::to_string(body).map_err(|_| Error::RequestBuildFailed)?;
+        let body_value = serde_json::to_value(body).map_err(|_| Error::RequestBuildFailed)?;
+        let body_str = serde_json::to_string(&body_value).map_err(|_| Error::RequestBuildFailed)?;
 
         let timestamp = chrono::Utc::now().timestamp_millis().to_string();
 
         let api_path = url.path();
-        let signature = self.generate_signature(api_path, &body_str, &timestamp)?;
+        let signature = self.generate_signature(api_path, &body_value, &timestamp)?;
 
         let request_builder = self
             .client
-            .request(reqwest::Method::POST, url)
+            .request(reqwest::Method::POST, url.clone())
             .header("Content-Type", "application/json")
             .header("Partner-Code", &self.partner_code)
             .header("x-api-key", &self.api_key)
@@ -249,14 +266,12 @@ impl Bitget {
             .header("x-api-signature", &signature)
             .body(body_str);
 
-        let response = util::http::roundtrip!(
-            <dto::Response<U>, dto::Error>;
-            request_builder
-        )
-        .await?;
+        let response: dto::Response<U> = util::http::roundtrip!(request_builder)
+            .await
+            .map_err(util::http::Error::from)?;
 
         Self::handle_api_error(response.status)?;
-        Ok(response.data)
+        response.data.ok_or(Error::NotFound)
     }
 }
 
@@ -282,29 +297,8 @@ pub enum Error {
     RateLimited,
     #[error("invalid calldata in response")]
     InvalidCalldata,
-    #[error("api error code {code}")]
-    Api { code: i64 },
+    #[error("api error status {0}")]
+    Api(i64),
     #[error(transparent)]
-    Http(util::http::Error),
-}
-
-impl From<util::http::RoundtripError<dto::Error>> for Error {
-    fn from(err: util::http::RoundtripError<dto::Error>) -> Self {
-        match err {
-            util::http::RoundtripError::Http(err) => {
-                if let util::http::Error::Status(code, _) = err {
-                    match code {
-                        StatusCode::TOO_MANY_REQUESTS => Self::RateLimited,
-                        _ => Self::Http(err),
-                    }
-                } else {
-                    Self::Http(err)
-                }
-            }
-            util::http::RoundtripError::Api(err) => match err.status {
-                429 => Self::RateLimited,
-                _ => Self::Api { code: err.status },
-            },
-        }
-    }
+    Http(#[from] util::http::Error),
 }

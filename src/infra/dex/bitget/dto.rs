@@ -14,7 +14,7 @@ use {
 
 /// A Bitget slippage amount.
 #[derive(Clone, Debug, Default, Serialize)]
-pub struct Slippage(BigDecimal);
+pub struct Slippage(pub BigDecimal);
 
 /// Bitget chain name used in API requests.
 #[derive(Clone, Copy, Serialize)]
@@ -197,17 +197,14 @@ impl SwapResponse {
 }
 
 /// A Bitget API response wrapper.
+///
+/// On success `status` is 0 and `data` contains the result.
+/// On error `status` is non-zero and `data` is null.
 #[derive(Deserialize, Clone, Debug)]
 pub struct Response<T> {
     /// Response status code (0 = success).
     pub status: i64,
 
-    /// Response data.
-    pub data: T,
-}
-
-/// Bitget API error response used for roundtrip error parsing.
-#[derive(Deserialize, Debug)]
-pub struct Error {
-    pub status: i64,
+    /// Response data — `None` when the API returns an error.
+    pub data: Option<T>,
 }
