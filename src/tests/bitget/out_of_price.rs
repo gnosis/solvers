@@ -19,7 +19,7 @@ async fn sell() {
             res: json!({
                 "status": 0,
                 "data": {
-                    "toAmount": "6556259156432631386442",
+                    "toAmount": "6556.259156432631386442",
                     "market": "uniswap.v3",
                     "slippage": "1",
                     "estimateRevert": false,
@@ -37,17 +37,12 @@ async fn sell() {
                     "id": "test-order-id-456",
                     "market": "uniswap.v3",
                     "contract": "0x7D0CcAa3Fac1e5A943c5168b6CEd828691b46B36",
-                    "calldata": base64::Engine::encode(
-                        &base64::engine::general_purpose::STANDARD,
-                        hex::decode(
-                            "0d5f0e3b00000000000000000001a0cf2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a\
+                    "calldata": "0x0d5f0e3b00000000000000000001a0cf2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a\
                              0000000000000000000000000000000000000000000000000de0b6b3a7640000\
                              00000000000000000000000000000000000000000000015fdc8278903f7f31c1\
                              0000000000000000000000000000000000000000000000000000000000000080\
                              0000000000000000000000000000000000000000000000000000000000000001\
-                             00000000000000000000000014424eeecbff345b38187d0b8b749e56faa68539"
-                        ).unwrap()
-                    ),
+                             00000000000000000000000014424eeecbff345b38187d0b8b749e56faa68539",
                     "deadline": 600
                 }
             }),

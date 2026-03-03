@@ -1,10 +1,11 @@
 use {
     crate::{
-        domain::{dex, eth, order},
+        domain::{auction, dex, eth, order},
         util,
     },
     alloy::primitives::{Address, U256},
     base64::prelude::*,
+    bigdecimal::BigDecimal,
     ethrpc::block_stream::CurrentBlockWatcher,
     hmac::{Hmac, Mac},
     sha2::Sha256,
@@ -15,7 +16,20 @@ use {
     tracing::Instrument,
 };
 
-mod dto;
+/// Convert a U256 wei amount to a decimal string using the token's decimals.
+/// e.g., 1000000000000000000 with 18 decimals → "1"
+fn wei_to_decimal(amount: U256, decimals: u8) -> BigDecimal {
+    BigDecimal::new(util::conv::u256_to_biguint(&amount).into(), decimals as i64).normalized()
+}
+
+/// Convert a decimal amount (from API response) to U256 wei.
+/// e.g., "1964.365496" with 6 decimals → 1964365496
+fn decimal_to_wei(amount: &BigDecimal, decimals: u8) -> Result<U256, Error> {
+    let scaled = amount * BigDecimal::new(1.into(), -(decimals as i64));
+    util::conv::bigdecimal_to_u256(&scaled).ok_or(Error::AmountConversionFailed)
+}
+
+pub(crate) mod dto;
 
 /// Default Bitget swap API base endpoint.
 pub const DEFAULT_ENDPOINT: &str = "https://bopenapi.bgwapi.io/bgw-pro/swapx/pro/";
@@ -87,11 +101,15 @@ impl Bitget {
         &self,
         order: &dex::Order,
         slippage: &dex::Slippage,
+        tokens: &auction::Tokens,
     ) -> Result<dex::Swap, Error> {
         // Bitget only supports sell orders (exactIn).
         if order.side == order::Side::Buy {
             return Err(Error::OrderNotSupported);
         }
+
+        let sell_decimals = tokens.decimals(&order.sell).ok_or(Error::MissingDecimals)?;
+        let buy_decimals = tokens.decimals(&order.buy).ok_or(Error::MissingDecimals)?;
 
         // Set up a tracing span to make debugging of API requests easier.
         // Historically, debugging API requests to external DEXs was a bit
@@ -100,7 +118,7 @@ impl Bitget {
         let id = ID.fetch_add(1, atomic::Ordering::Relaxed);
 
         let (swap_response, quote_response, to_min_amount) = self
-            .handle_sell_order(order, slippage)
+            .handle_sell_order(order, slippage, sell_decimals, buy_decimals)
             .instrument(tracing::trace_span!("swap", id = %id))
             .await?;
 
@@ -116,6 +134,8 @@ impl Bitget {
             .checked_add(gas_limit / U256::from(2))
             .ok_or(Error::GasCalculationFailed)?;
 
+        let output_amount = decimal_to_wei(&to_min_amount, buy_decimals)?;
+
         Ok(dex::Swap {
             calls: vec![dex::Call {
                 to: contract,
@@ -127,7 +147,7 @@ impl Bitget {
             },
             output: eth::Asset {
                 token: order.buy,
-                amount: to_min_amount,
+                amount: output_amount,
             },
             allowance: dex::Allowance {
                 spender: contract,
@@ -154,18 +174,36 @@ impl Bitget {
         &self,
         order: &dex::Order,
         slippage: &dex::Slippage,
-    ) -> Result<(dto::SwapResponse, dto::QuoteResponse, U256), Error> {
+        sell_decimals: u8,
+        buy_decimals: u8,
+    ) -> Result<(dto::SwapResponse, dto::QuoteResponse, BigDecimal), Error> {
         // Step 1: Get quote
-        let quote_request =
-            dto::QuoteRequest::from_order(order, self.chain_name, self.settlement_contract);
+        let quote_request = dto::QuoteRequest::from_order(
+            order,
+            self.chain_name,
+            self.settlement_contract,
+            sell_decimals,
+        );
 
-        let quote_response: dto::QuoteResponse =
-            self.send_post_request(QUOTE_PATH, &quote_request).await?;
+        let quote_response: dto::QuoteResponse = self
+            .send_post_request(QUOTE_PATH, &quote_request)
+            .await
+            .map_err(|e| Error::Endpoint {
+                endpoint: QUOTE_PATH,
+                source: Box::new(e),
+            })?;
 
         // Apply slippage to the quoted output to get the minimum we'll accept.
         // This becomes both the `toMinAmount` in the calldata and our reported
         // output, ensuring they're always consistent.
-        let to_min_amount = slippage.sub(quote_response.to_amount);
+        // Bitget amounts are decimal strings (e.g. "1964.365496"), so we use
+        // BigDecimal arithmetic instead of U256.
+        let to_amount: BigDecimal = quote_response
+            .to_amount
+            .parse()
+            .map_err(|_| Error::AmountConversionFailed)?;
+        let tolerance = &to_amount * slippage.as_factor();
+        let to_min_amount = (&to_amount - &tolerance).with_scale(buy_decimals as i64);
 
         // Step 2: Get swap calldata
         let swap_request = dto::SwapRequest::from_order(
@@ -174,11 +212,17 @@ impl Bitget {
             self.chain_name,
             self.settlement_contract,
             quote_response.market.clone(),
-            to_min_amount,
+            to_min_amount.to_string(),
+            sell_decimals,
         );
 
-        let swap_response: dto::SwapResponse =
-            self.send_post_request(SWAP_PATH, &swap_request).await?;
+        let swap_response: dto::SwapResponse = self
+            .send_post_request(SWAP_PATH, &swap_request)
+            .await
+            .map_err(|e| Error::Endpoint {
+                endpoint: SWAP_PATH,
+                source: Box::new(e),
+            })?;
 
         Ok((swap_response, quote_response, to_min_amount))
     }
@@ -187,20 +231,18 @@ impl Bitget {
     ///
     /// The signature is computed over a JSON object with alphabetically sorted
     /// keys containing: the API path, body, API key, and timestamp.
-    fn generate_signature(
+    pub(crate) fn generate_signature(
         &self,
         api_path: &str,
-        body: &serde_json::Value,
+        body: &str,
         timestamp: &str,
     ) -> Result<String, Error> {
-        // BTreeMap ensures keys are sorted alphabetically, as required by the
-        // Bitget signing algorithm.
-        let content = BTreeMap::from([
-            ("apiPath", serde_json::json!(api_path)),
-            ("body", body.clone()),
-            ("x-api-key", serde_json::json!(&self.api_key)),
-            ("x-api-timestamp", serde_json::json!(timestamp)),
-        ]);
+        // Consistent ordering would help to debug issues.
+        let mut content = BTreeMap::new();
+        content.insert("apiPath", api_path);
+        content.insert("body", body);
+        content.insert("x-api-key", &self.api_key);
+        content.insert("x-api-timestamp", timestamp);
 
         let content_str = serde_json::to_string(&content).map_err(|_| Error::SignRequestFailed)?;
 
@@ -213,12 +255,12 @@ impl Bitget {
     }
 
     /// Bitget error handling based on status codes.
-    fn handle_api_error(status: i64) -> Result<(), Error> {
+    fn handle_api_error(status: i64, body: String) -> Result<(), Error> {
         Err(match status {
             0 => return Ok(()),
             429 => Error::RateLimited,
             40004 => Error::NotFound,
-            _ => Error::Api(status),
+            _ => Error::Api { status, body },
         })
     }
 
@@ -232,13 +274,12 @@ impl Bitget {
             .join(endpoint)
             .map_err(|_| Error::RequestBuildFailed)?;
 
-        let body_value = serde_json::to_value(body).map_err(|_| Error::RequestBuildFailed)?;
-        let body_str = serde_json::to_string(&body_value).map_err(|_| Error::RequestBuildFailed)?;
+        let body_str = serde_json::to_string(body).map_err(|_| Error::RequestBuildFailed)?;
 
         let timestamp = chrono::Utc::now().timestamp_millis().to_string();
 
         let api_path = url.path();
-        let signature = self.generate_signature(api_path, &body_value, &timestamp)?;
+        let signature = self.generate_signature(api_path, &body_str, &timestamp)?;
 
         let request_builder = self
             .client
@@ -250,11 +291,24 @@ impl Bitget {
             .header("x-api-signature", &signature)
             .body(body_str);
 
-        let response: dto::Response<U> = util::http::roundtrip!(request_builder)
+        let start = std::time::Instant::now();
+        let response = request_builder
+            .send()
             .await
             .map_err(util::http::Error::from)?;
 
-        Self::handle_api_error(response.status)?;
+        let status = response.status();
+        let body = response.text().await.map_err(util::http::Error::from)?;
+        tracing::warn!(?endpoint, elapsed_ms = %start.elapsed().as_millis(), %status, "bitget API request");
+
+        if !status.is_success() {
+            return Err(util::http::Error::Status(status, body).into());
+        }
+
+        let response: dto::Response<U> =
+            serde_json::from_str(&body).map_err(util::http::Error::from)?;
+
+        Self::handle_api_error(response.status, body)?;
         response.data.ok_or(Error::NotFound)
     }
 }
@@ -281,8 +335,17 @@ pub enum Error {
     RateLimited,
     #[error("invalid calldata in response")]
     InvalidCalldata,
-    #[error("api error status {0}")]
-    Api(i64),
+    #[error("failed to convert amount between decimal and U256")]
+    AmountConversionFailed,
+    #[error("decimals are missing for the swapped tokens")]
+    MissingDecimals,
+    #[error("api error status {status}: {body}")]
+    Api { status: i64, body: String },
+    #[error("{endpoint}: {source}")]
+    Endpoint {
+        endpoint: &'static str,
+        source: Box<Error>,
+    },
     #[error(transparent)]
     Http(#[from] util::http::Error),
 }
