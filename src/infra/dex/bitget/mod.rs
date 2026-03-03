@@ -208,7 +208,6 @@ impl Bitget {
         // Step 2: Get swap calldata
         let swap_request = dto::SwapRequest::from_order(
             order,
-            slippage,
             self.chain_name,
             self.settlement_contract,
             quote_response.market.clone(),

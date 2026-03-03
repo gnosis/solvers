@@ -3,14 +3,8 @@
 
 use {
     crate::domain::{dex, eth},
-    bigdecimal::{BigDecimal, ToPrimitive},
     serde::{Deserialize, Serialize},
 };
-
-/// A Bitget slippage percentage (e.g. 1.0 = 1%).
-/// Must serialize as a JSON number, not a string.
-#[derive(Clone, Debug, Default, Serialize)]
-pub struct Slippage(f64);
 
 /// Bitget chain name used in API requests.
 #[derive(Clone, Copy, Serialize)]
@@ -112,14 +106,11 @@ pub struct SwapRequest {
     /// Optimal channel from quote API.
     pub market: String,
 
-    /// Minimum amount to receive in decimal units. By setting this explicitly
-    /// we ensure the generated calldata will revert on-chain if the output
-    /// drops below this value — avoiding a race between quote and swap calls.
+    /// Minimum amount to receive in decimal units. When provided, the
+    /// `slippage` field is ignored by the API. By setting this explicitly we
+    /// ensure the generated calldata will revert on-chain if the output drops
+    /// below this value — avoiding a race between quote and swap calls.
     pub to_min_amount: String,
-
-    /// Slippage as a factor (e.g., 0.01 = 1%). The real slippage protection
-    /// is enforced by `to_min_amount`; this field is only informational.
-    pub slippage: Slippage,
 
     /// Fee rate in per mille. 0 for no fee.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -129,7 +120,6 @@ pub struct SwapRequest {
 impl SwapRequest {
     pub fn from_order(
         order: &dex::Order,
-        slippage: &dex::Slippage,
         chain_name: ChainName,
         settlement_contract: eth::Address,
         market: String,
@@ -146,11 +136,6 @@ impl SwapRequest {
             to_address: settlement_contract,
             market,
             to_min_amount,
-            slippage: Slippage(
-                (slippage.as_factor() * BigDecimal::from(100))
-                    .to_f64()
-                    .unwrap_or_default(),
-            ),
             fee_rate: Some(0.0),
         }
     }

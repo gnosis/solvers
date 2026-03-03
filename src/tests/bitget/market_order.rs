@@ -48,7 +48,7 @@ async fn sell() {
                     "toMinAmount": "6490.696564868305072577",
                     "feeRate": 0.0
                 }),
-                vec!["fromAddress", "toAddress", "slippage"],
+                vec!["fromAddress", "toAddress"],
             ),
             res: json!({
                 "status": 0,
