@@ -19,13 +19,17 @@ use {
 /// Convert a U256 wei amount to a decimal string using the token's decimals.
 /// e.g., 1000000000000000000 with 18 decimals → "1"
 fn wei_to_decimal(amount: U256, decimals: u8) -> BigDecimal {
-    BigDecimal::new(util::conv::u256_to_biguint(&amount).into(), decimals as i64).normalized()
+    BigDecimal::new(
+        util::conv::u256_to_biguint(&amount).into(),
+        i64::from(decimals),
+    )
+    .normalized()
 }
 
 /// Convert a decimal amount (from API response) to U256 wei.
 /// e.g., "1964.365496" with 6 decimals → 1964365496
 fn decimal_to_wei(amount: &BigDecimal, decimals: u8) -> Result<U256, Error> {
-    let scaled = amount * BigDecimal::new(1.into(), -(decimals as i64));
+    let scaled = amount * BigDecimal::new(1.into(), -i64::from(decimals));
     util::conv::bigdecimal_to_u256(&scaled).ok_or(Error::AmountConversionFailed)
 }
 
@@ -198,7 +202,7 @@ impl Bitget {
         // output, ensuring they're always consistent.
         let tolerance = &quote_response.to_amount * slippage.as_factor();
         let to_min_amount =
-            (&quote_response.to_amount - &tolerance).with_scale(buy_decimals as i64);
+            (&quote_response.to_amount - &tolerance).with_scale(i64::from(buy_decimals));
 
         // Step 2: Get swap calldata
         let swap_request = dto::SwapRequest::from_order(
