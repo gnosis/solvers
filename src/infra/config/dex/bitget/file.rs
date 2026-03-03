@@ -50,7 +50,7 @@ impl Into<bitget::BitgetCredentialsConfig> for BitgetCredentialsConfig {
 }
 
 fn default_partner_code() -> String {
-    "Cowswap".to_string()
+    "cowswap".to_string()
 }
 
 fn default_endpoint() -> reqwest::Url {
