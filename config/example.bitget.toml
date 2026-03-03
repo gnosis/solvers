@@ -6,7 +6,7 @@ node-url = "http://localhost:8545"
 chain-id = "1"
 
 # Optionally specify a custom Bitget swap API endpoint
-# endpoint = "https://web3.bitget.com/"
+# endpoint = "https://bopenapi.bgwapi.io/bgw-pro/swapx/pro/"
 
 # Bitget API key (obtain from Bitget integration team)
 api-key = "$BITGET_API_KEY"

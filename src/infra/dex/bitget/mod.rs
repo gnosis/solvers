@@ -19,7 +19,7 @@ use {
 mod dto;
 
 /// Default Bitget swap API base endpoint.
-pub const DEFAULT_ENDPOINT: &str = "https://web3.bitget.com/bgw-pro/swapx/pro/";
+pub const DEFAULT_ENDPOINT: &str = "https://bopenapi.bgwapi.io/bgw-pro/swapx/pro/";
 
 /// Bitget API path for getting a swap quote.
 const QUOTE_PATH: &str = "quote";
