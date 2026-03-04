@@ -9,9 +9,9 @@ use {
 #[tokio::test]
 async fn sell_no_liquidity() {
     let api = mock::http::setup(vec![
-        // Quote request returns an error status.
+        // Swap request returns an error status.
         mock::http::Expectation::Post {
-            path: mock::http::Path::exact("bgw-pro/swapx/pro/quote"),
+            path: mock::http::Path::exact("bgw-pro/swapx/pro/swap"),
             req: mock::http::RequestBody::Any,
             res: json!({
                 "status": 40004,

@@ -38,9 +38,6 @@ mod dto;
 /// Default Bitget swap API base endpoint.
 pub const DEFAULT_ENDPOINT: &str = "https://bopenapi.bgwapi.io/bgw-pro/swapx/pro/";
 
-/// Bitget API path for getting a swap quote.
-const QUOTE_PATH: &str = "quote";
-
 /// Bitget API path for getting swap calldata.
 const SWAP_PATH: &str = "swap";
 
@@ -116,29 +113,28 @@ impl Bitget {
         let buy_decimals = tokens.decimals(&order.buy).ok_or(Error::MissingDecimals)?;
 
         // Set up a tracing span to make debugging of API requests easier.
-        // Historically, debugging API requests to external DEXs was a bit
-        // of a headache.
         static ID: AtomicU64 = AtomicU64::new(0);
         let id = ID.fetch_add(1, atomic::Ordering::Relaxed);
 
-        let (swap_response, quote_response, to_min_amount) = self
-            .handle_sell_order(order, slippage, sell_decimals, buy_decimals)
+        let response = self
+            .handle_sell_order(order, slippage, sell_decimals)
             .instrument(tracing::trace_span!("swap", id = %id))
             .await?;
 
-        let calldata = swap_response
+        let calldata = response
+            .swap_transaction
             .decode_calldata()
             .map_err(|_| Error::InvalidCalldata)?;
 
-        let contract = swap_response.contract;
+        let contract = response.swap_transaction.to;
 
         // Increase gas estimate by 50% for safety margin, similar to OKX.
-        let gas_limit = U256::from(quote_response.gas_limit);
+        let gas_limit = U256::from(response.gas_fee.gas_limit);
         let gas = gas_limit
             .checked_add(gas_limit / U256::from(2))
             .ok_or(Error::GasCalculationFailed)?;
 
-        let output_amount = decimal_to_wei(&to_min_amount, buy_decimals)?;
+        let output_amount = decimal_to_wei(&response.min_amount, buy_decimals)?;
 
         Ok(dex::Swap {
             calls: vec![dex::Call {
@@ -161,68 +157,26 @@ impl Bitget {
         })
     }
 
-    /// Handle sell orders with sequential API requests.
+    /// Handle sell orders with a single enriched swap API call.
     ///
-    /// Step 1: Get a quote to obtain the `market` channel and output amount.
-    /// Step 2: Get the swap calldata using the market from the quote.
-    ///
-    /// To avoid a race condition between the quote and swap calls (where the
-    /// quote returns one output amount but the swap calldata encodes a
-    /// different one due to price movement), we:
-    /// - Compute `toMinAmount` = quote's output minus slippage
-    /// - Pass it explicitly to the swap endpoint so the calldata reverts
-    ///   on-chain if output drops below this floor
-    /// - Report `toMinAmount` as our output, guaranteeing consistency between
-    ///   what we promise and what the calldata delivers
+    /// Uses `requestMod = "rich"` so the swap endpoint returns both quote
+    /// data (output amount, gas) and calldata in a single response,
+    /// eliminating the race condition window of the previous two-call flow.
     async fn handle_sell_order(
         &self,
         order: &dex::Order,
         slippage: &dex::Slippage,
         sell_decimals: u8,
-        buy_decimals: u8,
-    ) -> Result<(dto::SwapResponse, dto::QuoteResponse, BigDecimal), Error> {
-        // Step 1: Get quote
-        let quote_request = dto::QuoteRequest::from_order(
-            order,
-            self.chain_name,
-            self.settlement_contract,
-            sell_decimals,
-        );
-
-        let quote_response: dto::QuoteResponse = self
-            .send_post_request(QUOTE_PATH, &quote_request)
-            .await
-            .map_err(|e| Error::Endpoint {
-                endpoint: QUOTE_PATH,
-                source: Box::new(e),
-            })?;
-
-        // Apply slippage to the quoted output to get the minimum we'll accept.
-        // This becomes both the `toMinAmount` in the calldata and our reported
-        // output, ensuring they're always consistent.
-        let tolerance = &quote_response.to_amount * slippage.as_factor();
-        let to_min_amount =
-            (&quote_response.to_amount - &tolerance).with_scale(i64::from(buy_decimals));
-
-        // Step 2: Get swap calldata
+    ) -> Result<dto::SwapResponse, Error> {
         let swap_request = dto::SwapRequest::from_order(
             order,
             self.chain_name,
             self.settlement_contract,
-            quote_response.market.clone(),
-            to_min_amount.clone(),
+            slippage,
             sell_decimals,
         );
 
-        let swap_response: dto::SwapResponse = self
-            .send_post_request(SWAP_PATH, &swap_request)
-            .await
-            .map_err(|e| Error::Endpoint {
-                endpoint: SWAP_PATH,
-                source: Box::new(e),
-            })?;
-
-        Ok((swap_response, quote_response, to_min_amount))
+        self.send_post_request(SWAP_PATH, &swap_request).await
     }
 
     /// Generate HMAC-SHA256 signature for the Bitget API.
@@ -334,11 +288,6 @@ pub enum Error {
     MissingDecimals,
     #[error("api error status {status}: {body}")]
     Api { status: i64, body: String },
-    #[error("{endpoint}: {source}")]
-    Endpoint {
-        endpoint: &'static str,
-        source: Box<Error>,
-    },
     #[error(transparent)]
     Http(#[from] util::http::Error),
 }

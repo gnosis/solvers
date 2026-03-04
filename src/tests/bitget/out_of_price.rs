@@ -12,38 +12,26 @@ use {
 #[tokio::test]
 async fn sell() {
     let api = mock::http::setup(vec![
-        // Step 1: Quote request
-        mock::http::Expectation::Post {
-            path: mock::http::Path::exact("bgw-pro/swapx/pro/quote"),
-            req: mock::http::RequestBody::Any,
-            res: json!({
-                "status": 0,
-                "data": {
-                    "toAmount": "6556.259156432631386442",
-                    "market": "uniswap.v3",
-                    "slippage": "1",
-                    "estimateRevert": false,
-                    "gasLimit": 202500
-                }
-            }),
-        },
-        // Step 2: Swap request
         mock::http::Expectation::Post {
             path: mock::http::Path::exact("bgw-pro/swapx/pro/swap"),
             req: mock::http::RequestBody::Any,
             res: json!({
                 "status": 0,
                 "data": {
-                    "id": "test-order-id-456",
-                    "market": "uniswap.v3",
-                    "contract": "0x7D0CcAa3Fac1e5A943c5168b6CEd828691b46B36",
-                    "calldata": "0x0d5f0e3b00000000000000000001a0cf2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a\
+                    "outAmount": "6556.259156432631386442",
+                    "minAmount": "6490.696564868305072577",
+                    "gasFee": {
+                        "gasLimit": "202500"
+                    },
+                    "swapTransaction": {
+                        "to": "0x7D0CcAa3Fac1e5A943c5168b6CEd828691b46B36",
+                        "data": "0x0d5f0e3b00000000000000000001a0cf2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a\
                              0000000000000000000000000000000000000000000000000de0b6b3a7640000\
                              00000000000000000000000000000000000000000000015fdc8278903f7f31c1\
                              0000000000000000000000000000000000000000000000000000000000000080\
                              0000000000000000000000000000000000000000000000000000000000000001\
-                             00000000000000000000000014424eeecbff345b38187d0b8b749e56faa68539",
-                    "deadline": 600
+                             00000000000000000000000014424eeecbff345b38187d0b8b749e56faa68539"
+                    }
                 }
             }),
         },
