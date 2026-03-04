@@ -235,7 +235,7 @@ impl Bitget {
         body: &str,
         timestamp: &str,
     ) -> Result<String, Error> {
-        // Consistent ordering would help to debug issues.
+        // Use `BTreeMap` for alphabetical ordering required by API (see <https://web3.bitget.com/en/docs/authentication/#signature-algorithm>).
         let mut content = BTreeMap::new();
         content.insert("apiPath", api_path);
         content.insert("body", body);
@@ -257,7 +257,7 @@ impl Bitget {
         Err(match status {
             0 => return Ok(()),
             429 => Error::RateLimited,
-            40004 => Error::NotFound,
+            404 => Error::NotFound,
             _ => Error::Api { status, body },
         })
     }
@@ -273,9 +273,7 @@ impl Bitget {
             .map_err(|_| Error::RequestBuildFailed)?;
 
         let body_str = serde_json::to_string(body).map_err(|_| Error::RequestBuildFailed)?;
-
         let timestamp = chrono::Utc::now().timestamp_millis().to_string();
-
         let api_path = url.path();
         let signature = self.generate_signature(api_path, &body_str, &timestamp)?;
 
@@ -289,15 +287,12 @@ impl Bitget {
             .header("x-api-signature", &signature)
             .body(body_str);
 
-        let start = std::time::Instant::now();
         let response = request_builder
             .send()
             .await
             .map_err(util::http::Error::from)?;
-
         let status = response.status();
         let body = response.text().await.map_err(util::http::Error::from)?;
-        tracing::warn!(?endpoint, elapsed_ms = %start.elapsed().as_millis(), %status, "bitget API request");
 
         if !status.is_success() {
             return Err(util::http::Error::Status(status, body).into());
