@@ -55,6 +55,8 @@ pub enum Error {
     OrderNotSupported,
     #[error("no valid swap interaction could be found")]
     NotFound,
+    #[error("invalid request")]
+    BadRequest,
     #[error("rate limited")]
     RateLimited,
     #[error("unavailable for legal reasons, banned tokens or similar")]
@@ -99,6 +101,7 @@ impl Error {
         match self {
             Self::OrderNotSupported => "OrderNotSupported",
             Self::NotFound => "NotFound",
+            Self::BadRequest => "BadRequest",
             Self::RateLimited => "RateLimited",
             Self::UnavailableForLegalReasons => "UnavailableForLegalReasons",
             Self::Other(_) => "Other",
@@ -146,7 +149,8 @@ impl From<zeroex::Error> for Error {
 impl From<paraswap::Error> for Error {
     fn from(err: paraswap::Error) -> Self {
         match err {
-            paraswap::Error::NotFound | paraswap::Error::MissingDecimals => Self::NotFound,
+            paraswap::Error::NotFound => Self::NotFound,
+            paraswap::Error::MissingDecimals => Self::BadRequest,
             paraswap::Error::RateLimited => Self::RateLimited,
             _ => Self::Other(Box::new(err)),
         }
@@ -168,7 +172,8 @@ impl From<bitget::Error> for Error {
     fn from(err: bitget::Error) -> Self {
         match err {
             bitget::Error::OrderNotSupported => Self::OrderNotSupported,
-            bitget::Error::NotFound | bitget::Error::MissingDecimals => Self::NotFound,
+            bitget::Error::NotFound => Self::NotFound,
+            bitget::Error::MissingDecimals => Self::BadRequest,
             bitget::Error::RateLimited => Self::RateLimited,
             _ => Self::Other(Box::new(err)),
         }

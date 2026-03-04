@@ -142,6 +142,9 @@ impl Dex {
                 err @ infra::dex::Error::OrderNotSupported => {
                     tracing::debug!(?err, "skipping order")
                 }
+                err @ infra::dex::Error::BadRequest => {
+                    tracing::warn!(?err, "bad request")
+                }
                 err @ infra::dex::Error::RateLimited => {
                     tracing::debug!(?err, "encountered rate limit")
                 }
