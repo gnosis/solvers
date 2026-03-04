@@ -15,5 +15,5 @@ api-key = "$BITGET_API_KEY"
 # Bitget API secret for signing requests
 api-secret = "$BITGET_API_SECRET"
 
-# Partner code sent in the Partner-Code header (defaults to "Cowswap")
+# Partner code sent in the Partner-Code header (defaults to "cowswap")
 # partner-code = "Cowswap"
