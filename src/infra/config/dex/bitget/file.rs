@@ -21,7 +21,6 @@ struct Config {
     chain_id: eth::ChainId,
 
     /// Bitget API credentials.
-    #[serde(flatten)]
     credentials: BitgetCredentialsConfig,
 
     /// Partner code sent in the `Partner-Code` header.
