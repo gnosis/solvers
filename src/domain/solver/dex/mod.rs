@@ -177,7 +177,7 @@ impl Dex {
             .ok()
             .filter(|swap| {
                 if !swap.satisfies(order) {
-                    tracing::debug!("swap does not satisfy order");
+                    tracing::debug!(?swap, ?order, "swap does not satisfy order");
                     if order.partially_fillable {
                         self.fills.reduce_next_try(order.uid);
                     }
