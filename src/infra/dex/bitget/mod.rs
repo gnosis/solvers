@@ -135,6 +135,7 @@ impl Bitget {
             .ok_or(Error::GasCalculationFailed)?;
 
         let output_amount = decimal_to_wei(&response.min_amount, buy_decimals)?;
+        tracing::info!(?output_amount, ?buy_decimals, ?response, "newlog received data");
 
         Ok(dex::Swap {
             calls: vec![dex::Call {
