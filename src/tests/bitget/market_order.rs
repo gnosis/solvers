@@ -129,7 +129,7 @@ async fn sell() {
                        "kind": "custom",
                        "outputs":[
                           {
-                             "amount": "6490696564868305072577",
+                             "amount": "6556259156432631386442",
                              "token": "0xe41d2489571d322189246dafa5ebde1f4699f498"
                           }
                        ],
@@ -140,7 +140,7 @@ async fn sell() {
                  "postInteractions": [],
                  "preInteractions": [],
                  "prices":{
-                    "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2": "6490696564868305072577",
+                    "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2": "6556259156432631386442",
                     "0xe41d2489571d322189246dafa5ebde1f4699f498": "1000000000000000000"
                  },
                  "trades":[
