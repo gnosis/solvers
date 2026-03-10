@@ -47,12 +47,6 @@ impl Slippage {
         Self(value)
     }
 
-    /// Returns 1% slippage.
-    #[cfg(test)]
-    pub fn one_percent() -> Self {
-        Self::new("0.01".parse().unwrap())
-    }
-
     /// Returns a zero slippage.
     pub fn zero() -> Self {
         Self::new(BigDecimal::zero())
