@@ -134,7 +134,7 @@ impl Bitget {
             .checked_add(gas_limit / U256::from(2))
             .ok_or(Error::GasCalculationFailed)?;
 
-        let output_amount = decimal_to_wei(&response.min_amount, buy_decimals)?;
+        let output_amount = decimal_to_wei(&response.out_amount, buy_decimals)?;
 
         Ok(dex::Swap {
             calls: vec![dex::Call {

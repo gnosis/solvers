@@ -108,15 +108,10 @@ impl SwapRequest {
 #[serde_as]
 #[derive(Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct SwapResponse {
     /// Output amount in decimal units.
     #[serde_as(as = "serde_with::DisplayFromStr")]
     pub out_amount: BigDecimal,
-
-    /// Minimum output amount after slippage (computed by API).
-    #[serde_as(as = "serde_with::DisplayFromStr")]
-    pub min_amount: BigDecimal,
 
     /// Gas fee information.
     pub gas_fee: GasFee,
