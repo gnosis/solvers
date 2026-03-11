@@ -14,7 +14,6 @@ use {
 mod balancer;
 mod dex;
 mod mock;
-mod okx;
 mod oneinch;
 mod paraswap;
 mod zeroex;
