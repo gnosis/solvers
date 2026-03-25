@@ -171,9 +171,7 @@ pub async fn setup(mut expectations: Vec<Expectation>) -> ServerHandle {
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:0").await.unwrap();
     let address = listener.local_addr().unwrap();
-    let handle = tokio::spawn(async move {
-        axum::serve(listener, app).await.unwrap()
-    });
+    let handle = tokio::spawn(async move { axum::serve(listener, app).await.unwrap() });
 
     ServerHandle {
         handle,

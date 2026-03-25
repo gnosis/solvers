@@ -97,7 +97,8 @@ impl OnChainQuerySwapProvider {
             queries: queries.map(|addr| {
                 contracts::alloy::BalancerQueries::Instance::new(addr, web3.provider.clone())
             }),
-            v3_batch_router: v3_batch_router.map(|addr| v3::Router::new(addr, web3.provider.clone())),
+            v3_batch_router: v3_batch_router
+                .map(|addr| v3::Router::new(addr, web3.provider.clone())),
             settlement,
         }
     }

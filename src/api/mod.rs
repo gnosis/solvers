@@ -26,9 +26,11 @@ impl Api {
             .route("/healthz", axum::routing::get(routes::healthz))
             .route("/solve", axum::routing::post(routes::solve))
             .layer(tower_http::trace::TraceLayer::new_for_http().make_span_with(make_span))
-            .layer(axum::middleware::from_fn(|request: axum::extract::Request, next: axum::middleware::Next| async {
-                next.run(record_trace_id(request)).await
-            }))
+            .layer(axum::middleware::from_fn(
+                |request: axum::extract::Request, next: axum::middleware::Next| async {
+                    next.run(record_trace_id(request)).await
+                },
+            ))
             .layer(DefaultBodyLimit::disable())
             .with_state(Arc::new(self.solver));
 
