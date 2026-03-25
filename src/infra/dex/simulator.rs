@@ -29,7 +29,7 @@ impl Simulator {
     /// Create a new simulator for computing DEX swap gas usage.
     pub fn new(url: &reqwest::Url, settlement: Address, authenticator: Address) -> Self {
         Self {
-            web3: blockchain::rpc(url).alloy,
+            web3: blockchain::rpc(url).provider,
             settlement,
             authenticator,
         }

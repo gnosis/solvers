@@ -95,9 +95,9 @@ impl OnChainQuerySwapProvider {
         let web3 = blockchain::rpc(&node_url);
         Self {
             queries: queries.map(|addr| {
-                contracts::alloy::BalancerQueries::Instance::new(addr, web3.alloy.clone())
+                contracts::alloy::BalancerQueries::Instance::new(addr, web3.provider.clone())
             }),
-            v3_batch_router: v3_batch_router.map(|addr| v3::Router::new(addr, web3.alloy.clone())),
+            v3_batch_router: v3_batch_router.map(|addr| v3::Router::new(addr, web3.provider.clone())),
             settlement,
         }
     }

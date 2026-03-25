@@ -31,7 +31,7 @@ async fn run_with(args: cli::Args, bind: Option<oneshot::Sender<SocketAddr>>) {
         args.use_json_logs,
         None,
     );
-    observe::tracing::initialize_reentrant(&obs_config);
+    observe::tracing::init::initialize_reentrant(&obs_config);
     #[cfg(unix)]
     observe::heap_dump_handler::spawn_heap_dump_handler();
     tracing::info!("running solver engine with {args:#?}");
@@ -57,7 +57,7 @@ async fn run_with(args: cli::Args, bind: Option<oneshot::Sender<SocketAddr>>) {
             ));
             Solver::Dex(solver::Dex::new(
                 dex::Dex::Balancer(Box::new(
-                    dex::balancer::Sor::new(config.sor, web3.alloy, query_swap_provider)
+                    dex::balancer::Sor::new(config.sor, web3.provider, query_swap_provider)
                         .expect("invalid Balancer configuration"),
                 )),
                 config.base.clone(),

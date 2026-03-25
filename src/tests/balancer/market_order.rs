@@ -388,7 +388,7 @@ async fn sell_v3() {
 #[tokio::test]
 async fn buy_v2() {
     let obs_config = observe::Config::new("", tracing::Level::DEBUG.into(), false, None);
-    observe::tracing::initialize_reentrant(&obs_config);
+    observe::tracing::init::initialize_reentrant(&obs_config);
 
     let api = mock::http::setup(vec![mock::http::Expectation::Post {
         path: mock::http::Path::exact("sor"),

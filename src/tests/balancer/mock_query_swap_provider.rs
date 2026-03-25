@@ -148,7 +148,7 @@ async fn test_mock_provider_affects_swap_result() {
     };
     let web3 = ethrpc::mock::web3();
 
-    let sor = balancer::Sor::new(config, web3.alloy.clone(), Box::new(mock_provider))
+    let sor = balancer::Sor::new(config, web3.provider.clone(), Box::new(mock_provider))
         .expect("Failed to create Sor with mock provider");
 
     // Create a test order (sell order)
