@@ -130,7 +130,7 @@ pub async fn setup(mut expectations: Vec<Expectation>) -> ServerHandle {
 
     let app = axum::Router::new()
         .route(
-            "/*path",
+            "/{*path}",
             axum::routing::get(
                 |axum::extract::State(state),
                  axum::extract::Path(path),
