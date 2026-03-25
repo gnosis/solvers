@@ -9,7 +9,7 @@ pub async fn solve(
     auction: axum::extract::Json<dto::Auction>,
 ) -> (
     axum::http::StatusCode,
-    axum::response::Json<Response<dto::Solutions>>,
+    axum::response::Json<Response<dto::SolverResponse>>,
 ) {
     let handle_request = async {
         let auction = match dto::auction::to_domain(&auction) {
