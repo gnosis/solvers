@@ -118,7 +118,7 @@ impl Serialize for HumanReadableAmount {
     where
         S: Serializer,
     {
-        self.value().serialize(serializer)
+        serializer.serialize_str(&self.value().to_plain_string())
     }
 }
 

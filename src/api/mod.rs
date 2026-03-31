@@ -3,9 +3,9 @@
 use {
     crate::domain::solver::Solver,
     axum::extract::DefaultBodyLimit,
-    observe::distributed_tracing::tracing_axum::{make_span, record_trace_id},
-    std::{future::Future, net::SocketAddr, sync::Arc},
-    tokio::sync::oneshot,
+    observe::tracing::distributed::axum::{make_span, record_trace_id},
+    std::{future::Future, io, net::SocketAddr, sync::Arc},
+    tokio::{net::TcpListener, sync::oneshot},
 };
 
 mod routes;
@@ -20,24 +20,27 @@ impl Api {
         self,
         bind: Option<oneshot::Sender<SocketAddr>>,
         shutdown: impl Future<Output = ()> + Send + 'static,
-    ) -> Result<(), hyper::Error> {
+    ) -> Result<(), io::Error> {
         let app = axum::Router::new()
             .route("/metrics", axum::routing::get(routes::metrics))
             .route("/healthz", axum::routing::get(routes::healthz))
             .route("/solve", axum::routing::post(routes::solve))
-            .layer(
-                tower::ServiceBuilder::new()
-                    .layer(tower_http::trace::TraceLayer::new_for_http().make_span_with(make_span))
-                    .map_request(record_trace_id),
-            )
+            .layer(tower_http::trace::TraceLayer::new_for_http().make_span_with(make_span))
+            .layer(axum::middleware::from_fn(
+                |request: axum::extract::Request, next: axum::middleware::Next| async {
+                    next.run(record_trace_id(request)).await
+                },
+            ))
             .layer(DefaultBodyLimit::disable())
             .with_state(Arc::new(self.solver));
 
-        let server = axum::Server::bind(&self.addr).serve(app.into_make_service());
+        let listener = TcpListener::bind(self.addr).await?;
         if let Some(bind) = bind {
-            let _ = bind.send(server.local_addr());
+            let _ = bind.send(listener.local_addr()?);
         }
 
-        server.with_graceful_shutdown(shutdown).await
+        axum::serve(listener, app)
+            .with_graceful_shutdown(shutdown)
+            .await
     }
 }

@@ -17,44 +17,45 @@ path = "src/main.rs"
 anyhow = "1"
 alloy = { version = "1.1.0", default-features = false, features = ["rand"] }
 async-trait = "0.1.80"
-axum = "0.6"
-bigdecimal = { version = "0.3", features = ["serde"] }
+axum = "0.8"
+bigdecimal = { version = "0.4", features = ["serde"] }
 chrono = { version = "0.4.38", features = ["serde"], default-features = false }
 clap = { version = "4", features = ["derive", "env"] }
 futures = "0.3.30"
 hex = "0.4"
 humantime-serde = "1.1.1"
-hyper = "0.14"
-itertools = "0.11"
+hyper = "1"
+itertools = "0.14"
 num = "0.4"
-prometheus = "0.13"
-prometheus-metric-storage = "0.5.0"
-reqwest = "0.11"
+prometheus = "0.14"
+prometheus-metric-storage = "0.6.0"
+reqwest = { version = "0.13", features = ["json"] }
 serde = "1"
 serde_json = "1"
 serde_with = "3"
 serde_repr = "0.1"
 thiserror = "1"
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "signal", "time"] }
-toml = "0.7"
-tower = "0.4"
-tower-http = { version = "0.4", features = ["trace"] }
+toml = "0.8"
+tower = "0.5"
+tower-http = { version = "0.6", features = ["trace"] }
 tracing = "0.1"
-contracts = { git = "https://github.com/cowprotocol/services.git", tag = "v2.345.4", package = "contracts" }
-ethrpc = { git = "https://github.com/cowprotocol/services.git", tag = "v2.345.4", package = "ethrpc" }
-observe = { git = "https://github.com/cowprotocol/services.git", tag = "v2.345.4", package = "observe" , features = ["axum-tracing"]}
-shared = { git = "https://github.com/cowprotocol/services.git", tag = "v2.345.4", package = "shared" }
-dto =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.345.4", package = "solvers-dto" }
-rate-limit =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.345.4", package = "rate-limit" }
-number =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.345.4", package = "number" }
+contracts = { git = "https://github.com/cowprotocol/services.git", tag = "v2.354.3", package = "contracts" }
+ethrpc = { git = "https://github.com/cowprotocol/services.git", tag = "v2.354.3", package = "ethrpc" }
+observe = { git = "https://github.com/cowprotocol/services.git", tag = "v2.354.3", package = "observe" }
+shared = { git = "https://github.com/cowprotocol/services.git", tag = "v2.354.3", package = "shared" }
+dto =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.354.3", package = "solvers-dto" }
+rate-limit =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.354.3", package = "rate-limit" }
+configs =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.354.3", package = "configs" }
+number =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.354.3", package = "number" }
 
 # Memory allocator
 tikv-jemallocator = { version = "0.6", features = ["unprefixed_malloc_on_supported_platforms", "profiling"] }
 jemalloc_pprof = { version = "0.8", features = ["symbolize"] }
 
 [dev-dependencies]
-ethrpc = { git = "https://github.com/cowprotocol/services.git", tag = "v2.345.4", package = "ethrpc", features = ["test-util"] }
-testlib =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.345.4", package = "testlib" }
+ethrpc = { git = "https://github.com/cowprotocol/services.git", tag = "v2.354.3", package = "ethrpc", features = ["test-util"] }
+testlib =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.354.3", package = "testlib" }
 glob = "0.3"
 maplit = "1"
 tempfile = "3"
