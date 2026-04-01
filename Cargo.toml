@@ -40,22 +40,22 @@ toml = "0.8"
 tower = "0.5"
 tower-http = { version = "0.6", features = ["trace"] }
 tracing = "0.1"
-contracts = { git = "https://github.com/cowprotocol/services.git", tag = "v2.354.3", package = "contracts" }
-ethrpc = { git = "https://github.com/cowprotocol/services.git", tag = "v2.354.3", package = "ethrpc" }
-observe = { git = "https://github.com/cowprotocol/services.git", tag = "v2.354.3", package = "observe" }
-shared = { git = "https://github.com/cowprotocol/services.git", tag = "v2.354.3", package = "shared" }
-dto =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.354.3", package = "solvers-dto" }
-rate-limit =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.354.3", package = "rate-limit" }
-configs =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.354.3", package = "configs" }
-number =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.354.3", package = "number" }
+contracts = { git = "https://github.com/cowprotocol/services.git", tag = "v2.355.2", package = "contracts" }
+ethrpc = { git = "https://github.com/cowprotocol/services.git", tag = "v2.355.2", package = "ethrpc" }
+observe = { git = "https://github.com/cowprotocol/services.git", tag = "v2.355.2", package = "observe" }
+shared = { git = "https://github.com/cowprotocol/services.git", tag = "v2.355.2", package = "shared" }
+dto =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.355.2", package = "solvers-dto" }
+rate-limit =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.355.2", package = "rate-limit" }
+configs =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.355.2", package = "configs" }
+number =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.355.2", package = "number" }
 
 # Memory allocator
 tikv-jemallocator = { version = "0.6", features = ["unprefixed_malloc_on_supported_platforms", "profiling"] }
 jemalloc_pprof = { version = "0.8", features = ["symbolize"] }
 
 [dev-dependencies]
-ethrpc = { git = "https://github.com/cowprotocol/services.git", tag = "v2.354.3", package = "ethrpc", features = ["test-util"] }
-testlib =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.354.3", package = "testlib" }
+ethrpc = { git = "https://github.com/cowprotocol/services.git", tag = "v2.355.2", package = "ethrpc", features = ["test-util"] }
+testlib =  { git = "https://github.com/cowprotocol/services.git", tag = "v2.355.2", package = "testlib" }
 glob = "0.3"
 maplit = "1"
 tempfile = "3"
