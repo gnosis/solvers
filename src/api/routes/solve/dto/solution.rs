@@ -71,6 +71,7 @@ pub fn from_domain(solutions: &[solution::Solution]) -> dto::solution::SolverRes
                 gas: solution
                     .gas
                     .map(|gas| u64::try_from(gas.0).expect("value overflows u64::MAX")),
+                gas_fee_override: None,
                 flashloans: None,
                 wrappers: Default::default(),
             })
