@@ -5,7 +5,7 @@ version = 4
 [[package]]
 name = "account-balances"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.356.0#76446ea426182484cf4e07abf0fc4f9743a73952"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
 dependencies = [
  "alloy-contract",
  "alloy-dyn-abi",
@@ -829,7 +829,7 @@ checksum = "a23eb6b1614318a8071c9b2521f36b424b2c83db5eb3a0fead4a6c0809af6e61"
 [[package]]
 name = "app-data"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.356.0#76446ea426182484cf4e07abf0fc4f9743a73952"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
 dependencies = [
  "alloy-primitives",
  "anyhow",
@@ -1652,7 +1652,7 @@ dependencies = [
 [[package]]
 name = "bad-tokens"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.356.0#76446ea426182484cf4e07abf0fc4f9743a73952"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
 dependencies = [
  "alloy-json-rpc",
  "alloy-primitives",
@@ -1671,7 +1671,7 @@ dependencies = [
 [[package]]
 name = "balance-overrides"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.356.0#76446ea426182484cf4e07abf0fc4f9743a73952"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
 dependencies = [
  "alloy-eips",
  "alloy-primitives",
@@ -1688,6 +1688,7 @@ dependencies = [
  "ethrpc",
  "serde",
  "thiserror 1.0.69",
+ "tokio",
  "tracing",
 ]
 
@@ -1871,7 +1872,7 @@ dependencies = [
 [[package]]
 name = "bytes-hex"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.356.0#76446ea426182484cf4e07abf0fc4f9743a73952"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
 dependencies = [
  "const-hex",
  "serde",
@@ -1969,7 +1970,7 @@ checksum = "613afe47fcd5fac7ccf1db93babcb082c5994d996f20b8b159f2ad1658eb5724"
 [[package]]
 name = "chain"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.356.0#76446ea426182484cf4e07abf0fc4f9743a73952"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
 dependencies = [
  "alloy-primitives",
  "serde",
@@ -2081,7 +2082,7 @@ dependencies = [
 [[package]]
 name = "configs"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.356.0#76446ea426182484cf4e07abf0fc4f9743a73952"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
 dependencies = [
  "alloy",
  "anyhow",
@@ -2138,22 +2139,82 @@ dependencies = [
 [[package]]
 name = "contracts"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.356.0#76446ea426182484cf4e07abf0fc4f9743a73952"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
 dependencies = [
- "alloy-contract",
- "alloy-primitives",
- "alloy-provider",
- "alloy-sol-macro-expander",
- "alloy-sol-macro-input",
- "alloy-sol-types",
- "anyhow",
- "paste",
- "prettyplease",
- "proc-macro2",
- "quote",
- "serde",
- "serde_json",
- "syn 2.0.114",
+ "cow-contract-anyoneauthenticator",
+ "cow-contract-balancerqueries",
+ "cow-contract-balancerv2authorizer",
+ "cow-contract-balancerv2basepool",
+ "cow-contract-balancerv2basepoolfactory",
+ "cow-contract-balancerv2composablestablepool",
+ "cow-contract-balancerv2composablestablepoolfactory",
+ "cow-contract-balancerv2composablestablepoolfactoryv3",
+ "cow-contract-balancerv2composablestablepoolfactoryv4",
+ "cow-contract-balancerv2composablestablepoolfactoryv5",
+ "cow-contract-balancerv2composablestablepoolfactoryv6",
+ "cow-contract-balancerv2liquiditybootstrappingpool",
+ "cow-contract-balancerv2liquiditybootstrappingpoolfactory",
+ "cow-contract-balancerv2noprotocolfeeliquiditybootstrappingpoolfactory",
+ "cow-contract-balancerv2stablepool",
+ "cow-contract-balancerv2stablepoolfactoryv2",
+ "cow-contract-balancerv2vault",
+ "cow-contract-balancerv2weightedpool",
+ "cow-contract-balancerv2weightedpool2tokensfactory",
+ "cow-contract-balancerv2weightedpoolfactory",
+ "cow-contract-balancerv2weightedpoolfactoryv3",
+ "cow-contract-balancerv2weightedpoolfactoryv4",
+ "cow-contract-balancerv3batchrouter",
+ "cow-contract-balances",
+ "cow-contract-baoswaprouter",
+ "cow-contract-chainalysisoracle",
+ "cow-contract-counter",
+ "cow-contract-cowamm",
+ "cow-contract-cowammconstantproductfactory",
+ "cow-contract-cowammfactorygetter",
+ "cow-contract-cowammlegacyhelper",
+ "cow-contract-cowammuniswapv2priceoracle",
+ "cow-contract-cowprotocoltoken",
+ "cow-contract-cowsettlementforwarder",
+ "cow-contract-cowswapethflow",
+ "cow-contract-cowswaponchainorders",
+ "cow-contract-erc1271signaturevalidator",
+ "cow-contract-erc20",
+ "cow-contract-erc20mintable",
+ "cow-contract-flashloanrouter",
+ "cow-contract-gashog",
+ "cow-contract-gnosissafe",
+ "cow-contract-gnosissafecompatibilityfallbackhandler",
+ "cow-contract-gnosissafeproxy",
+ "cow-contract-gnosissafeproxyfactory",
+ "cow-contract-gpv2allowlistauthentication",
+ "cow-contract-gpv2settlement",
+ "cow-contract-honeyswaprouter",
+ "cow-contract-hookstrampoline",
+ "cow-contract-icowwrapper",
+ "cow-contract-iswaprpair",
+ "cow-contract-iuniswaplikepair",
+ "cow-contract-iuniswaplikerouter",
+ "cow-contract-iuniswapv3factory",
+ "cow-contract-izeroex",
+ "cow-contract-liquoricesettlement",
+ "cow-contract-nonstandarderc20balances",
+ "cow-contract-pancakerouter",
+ "cow-contract-permit2",
+ "cow-contract-remoteerc20balances",
+ "cow-contract-signatures",
+ "cow-contract-solver",
+ "cow-contract-spardose",
+ "cow-contract-sushiswaprouter",
+ "cow-contract-swapper",
+ "cow-contract-swaprrouter",
+ "cow-contract-testnetuniswapv2router02",
+ "cow-contract-trader",
+ "cow-contract-uniswapv2factory",
+ "cow-contract-uniswapv2router02",
+ "cow-contract-uniswapv3pool",
+ "cow-contract-uniswapv3quoterv2",
+ "cow-contract-uniswapv3swaprouterv2",
+ "cow-contract-weth9",
 ]
 
 [[package]]
@@ -2228,6 +2289,894 @@ name = "core-foundation-sys"
 version = "0.8.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b"
+
+[[package]]
+name = "cow-contract-anyoneauthenticator"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-balancerqueries"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-balancerv2authorizer"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-balancerv2basepool"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-balancerv2basepoolfactory"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-balancerv2composablestablepool"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-balancerv2composablestablepoolfactory"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-balancerv2composablestablepoolfactoryv3"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-balancerv2composablestablepoolfactoryv4"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-balancerv2composablestablepoolfactoryv5"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-balancerv2composablestablepoolfactoryv6"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-balancerv2liquiditybootstrappingpool"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-balancerv2liquiditybootstrappingpoolfactory"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-balancerv2noprotocolfeeliquiditybootstrappingpoolfactory"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-balancerv2stablepool"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-balancerv2stablepoolfactoryv2"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-balancerv2vault"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-balancerv2weightedpool"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-balancerv2weightedpool2tokensfactory"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-balancerv2weightedpoolfactory"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-balancerv2weightedpoolfactoryv3"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-balancerv2weightedpoolfactoryv4"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-balancerv3batchrouter"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-balances"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-baoswaprouter"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-chainalysisoracle"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-counter"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-cowamm"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-cowammconstantproductfactory"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-cowammfactorygetter"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-cowammlegacyhelper"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-cowammuniswapv2priceoracle"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-cowprotocoltoken"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-cowsettlementforwarder"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-cowswapethflow"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-cowswaponchainorders"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-erc1271signaturevalidator"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-erc20"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-erc20mintable"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-flashloanrouter"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-gashog"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-gnosissafe"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-gnosissafecompatibilityfallbackhandler"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-gnosissafeproxy"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-gnosissafeproxyfactory"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-gpv2allowlistauthentication"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-gpv2settlement"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-honeyswaprouter"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-hookstrampoline"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-icowwrapper"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-iswaprpair"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-iuniswaplikepair"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-iuniswaplikerouter"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-iuniswapv3factory"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-izeroex"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-liquoricesettlement"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-nonstandarderc20balances"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-pancakerouter"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-permit2"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-remoteerc20balances"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-signatures"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-solver"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-spardose"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-sushiswaprouter"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-swapper"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-swaprrouter"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-testnetuniswapv2router02"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-trader"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-uniswapv2factory"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-uniswapv2router02"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-uniswapv3pool"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-uniswapv3quoterv2"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-uniswapv3swaprouterv2"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-weth9"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
 
 [[package]]
 name = "cpufeatures"
@@ -2430,7 +3379,7 @@ checksum = "d7a1e2f27636f116493b8b860f5546edb47c8d8f8ea73e1d2a20be88e28d1fea"
 [[package]]
 name = "database"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.356.0#76446ea426182484cf4e07abf0fc4f9743a73952"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
 dependencies = [
  "bigdecimal",
  "chrono",
@@ -2700,7 +3649,7 @@ dependencies = [
 [[package]]
 name = "eth-domain-types"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.356.0#76446ea426182484cf4e07abf0fc4f9743a73952"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
 dependencies = [
  "alloy-eips",
  "alloy-primitives",
@@ -2713,7 +3662,7 @@ dependencies = [
 [[package]]
 name = "ethrpc"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.356.0#76446ea426182484cf4e07abf0fc4f9743a73952"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
 dependencies = [
  "alloy-consensus",
  "alloy-contract",
@@ -2750,7 +3699,7 @@ dependencies = [
 [[package]]
 name = "event-indexing"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.356.0#76446ea426182484cf4e07abf0fc4f9743a73952"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
 dependencies = [
  "alloy-eips",
  "alloy-primitives",
@@ -3027,7 +3976,7 @@ checksum = "42012b0f064e01aa58b545fe3727f90f7dd4020f4a3ea735b50344965f5a57e9"
 [[package]]
 name = "gas-price-estimation"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.356.0#76446ea426182484cf4e07abf0fc4f9743a73952"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
 dependencies = [
  "alloy-eips",
  "alloy-provider",
@@ -3305,7 +4254,7 @@ dependencies = [
 [[package]]
 name = "http-client"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.356.0#76446ea426182484cf4e07abf0fc4f9743a73952"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
 dependencies = [
  "clap",
  "configs",
@@ -3852,7 +4801,7 @@ checksum = "df1d3c3b53da64cf5760482273a98e575c651a67eec7f77df96b5b642de8f039"
 [[package]]
 name = "liquidity-sources"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.356.0#76446ea426182484cf4e07abf0fc4f9743a73952"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
 dependencies = [
  "alloy",
  "anyhow",
@@ -4055,7 +5004,7 @@ dependencies = [
 [[package]]
 name = "model"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.356.0#76446ea426182484cf4e07abf0fc4f9743a73952"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
 dependencies = [
  "alloy-primitives",
  "alloy-signer",
@@ -4251,7 +5200,7 @@ dependencies = [
 [[package]]
 name = "number"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.356.0#76446ea426182484cf4e07abf0fc4f9743a73952"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
 dependencies = [
  "alloy-primitives",
  "anyhow",
@@ -4288,7 +5237,7 @@ dependencies = [
 [[package]]
 name = "observe"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.356.0#76446ea426182484cf4e07abf0fc4f9743a73952"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
 dependencies = [
  "async-trait",
  "axum",
@@ -4452,7 +5401,7 @@ dependencies = [
 [[package]]
 name = "order-validation"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.356.0#76446ea426182484cf4e07abf0fc4f9743a73952"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -4709,7 +5658,7 @@ dependencies = [
 [[package]]
 name = "price-estimation"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.356.0#76446ea426182484cf4e07abf0fc4f9743a73952"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
 dependencies = [
  "alloy",
  "anyhow",
@@ -5119,7 +6068,7 @@ dependencies = [
 [[package]]
 name = "rate-limit"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.356.0#76446ea426182484cf4e07abf0fc4f9743a73952"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
 dependencies = [
  "anyhow",
  "configs",
@@ -5211,7 +6160,7 @@ checksum = "7a2d987857b319362043e95f5353c0535c1f58eec5336fdfcf626430af7def58"
 [[package]]
 name = "request-sharing"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.356.0#76446ea426182484cf4e07abf0fc4f9743a73952"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
 dependencies = [
  "futures",
  "observe",
@@ -5553,7 +6502,7 @@ checksum = "a50f4cf475b65d88e057964e0e9bb1f0aa9bbb2036dc65c64596b42932536984"
 [[package]]
 name = "s3"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.356.0#76446ea426182484cf4e07abf0fc4f9743a73952"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
 dependencies = [
  "anyhow",
  "aws-config",
@@ -5727,7 +6676,7 @@ dependencies = [
 [[package]]
 name = "serde-ext"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.356.0#76446ea426182484cf4e07abf0fc4f9743a73952"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
 dependencies = [
  "alloy-primitives",
  "const-hex",
@@ -5906,7 +6855,7 @@ dependencies = [
 [[package]]
 name = "shared"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.356.0#76446ea426182484cf4e07abf0fc4f9743a73952"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
 dependencies = [
  "account-balances",
  "alloy",
@@ -5992,7 +6941,7 @@ dependencies = [
 [[package]]
 name = "signature-validator"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.356.0#76446ea426182484cf4e07abf0fc4f9743a73952"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
 dependencies = [
  "alloy-contract",
  "alloy-dyn-abi",
@@ -6021,7 +6970,7 @@ checksum = "e320a6c5ad31d271ad523dcf3ad13e2767ad8b1cb8f047f75a8aeaf8da139da2"
 [[package]]
 name = "simulator"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.356.0#76446ea426182484cf4e07abf0fc4f9743a73952"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
 dependencies = [
  "alloy-contract",
  "alloy-eips",
@@ -6135,7 +7084,7 @@ dependencies = [
 [[package]]
 name = "solvers-dto"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.356.0#76446ea426182484cf4e07abf0fc4f9743a73952"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
 dependencies = [
  "alloy-primitives",
  "alloy-rpc-types",
@@ -6539,7 +7488,7 @@ checksum = "8f50febec83f5ee1df3015341d8bd429f2d1cc62bcba7ea2076759d315084683"
 [[package]]
 name = "testlib"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.356.0#76446ea426182484cf4e07abf0fc4f9743a73952"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
 dependencies = [
  "alloy-primitives",
  "anyhow",
@@ -6694,7 +7643,7 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 [[package]]
 name = "token-info"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.356.0#76446ea426182484cf4e07abf0fc4f9743a73952"
+source = "git+https://github.com/cowprotocol/services.git?tag=v2.357.0#9281fe1c1413fbb9f4ed9f9127c34fd036cba7f9"
 dependencies = [
  "alloy-primitives",
  "anyhow",
