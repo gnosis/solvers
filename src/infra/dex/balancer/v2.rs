@@ -9,7 +9,7 @@ use {
         sol_types::SolCall,
     },
     anyhow::{Result, anyhow},
-    contracts::alloy::{
+    contracts::{
         BalancerQueries::IVault::{
             BatchSwapStep as QueriesBatchSwapStep,
             FundManagement as QueriesFundManagement,
@@ -83,7 +83,7 @@ pub trait BalancerQueriesExt {
     ) -> Result<Vec<I256>>;
 }
 
-impl BalancerQueriesExt for contracts::alloy::BalancerQueries::Instance {
+impl BalancerQueriesExt for contracts::BalancerQueries::Instance {
     async fn execute_query_batch_swap(
         &self,
         kind: SwapKind,

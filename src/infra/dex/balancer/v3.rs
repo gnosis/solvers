@@ -9,7 +9,7 @@ use {
         sol_types::SolCall,
     },
     anyhow::{Result, anyhow, ensure},
-    contracts::alloy::{
+    contracts::{
         BalancerV3BatchRouter,
         BalancerV3BatchRouter::IBatchRouter::{SwapPathExactAmountIn, SwapPathExactAmountOut},
         Permit2 as Permit2Contract,

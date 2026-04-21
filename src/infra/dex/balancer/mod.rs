@@ -10,7 +10,7 @@ use {
         util,
     },
     alloy::primitives::{Address, Bytes, FixedBytes, I256, U256},
-    contracts::alloy::{
+    contracts::{
         BalancerV2Vault::IVault::{BatchSwapStep, FundManagement},
         BalancerV3BatchRouter::IBatchRouter::{
             SwapPathExactAmountIn,

@@ -10,13 +10,13 @@ pub struct Contracts {
 impl Contracts {
     pub fn for_chain(chain: eth::ChainId) -> Self {
         Self {
-            settlement: contracts::alloy::GPv2Settlement::deployment_address(&(chain as u64))
+            settlement: contracts::GPv2Settlement::deployment_address(&(chain as u64))
                 .expect("contract address for all supported chains"),
-            authenticator: contracts::alloy::GPv2AllowListAuthentication::deployment_address(
+            authenticator: contracts::GPv2AllowListAuthentication::deployment_address(
                 &(chain as u64),
             )
             .expect("contract address for all supported chains"),
-            permit2: contracts::alloy::Permit2::deployment_address(&(chain as u64))
+            permit2: contracts::Permit2::deployment_address(&(chain as u64))
                 .expect("contract address for all supported chains"),
         }
     }
