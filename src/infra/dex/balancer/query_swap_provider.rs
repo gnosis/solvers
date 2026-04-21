@@ -30,7 +30,7 @@ use {
     },
     alloy::primitives::{Address, Bytes, FixedBytes, U256},
     anyhow::{Context, Result, anyhow, ensure},
-    contracts::alloy::{
+    contracts::{
         BalancerQueries::IVault::{BatchSwapStep, FundManagement},
         BalancerV3BatchRouter::IBatchRouter::{SwapPathExactAmountIn, SwapPathExactAmountOut},
     },
@@ -80,7 +80,7 @@ pub trait QuerySwapProvider: Send + Sync {
 /// - Handles both sell orders (exact input) and buy orders (exact output)
 /// - Returns updated amounts that reflect current on-chain state
 pub struct OnChainQuerySwapProvider {
-    queries: Option<contracts::alloy::BalancerQueries::Instance>,
+    queries: Option<contracts::BalancerQueries::Instance>,
     v3_batch_router: Option<v3::Router>,
     settlement: Address,
 }
@@ -94,9 +94,8 @@ impl OnChainQuerySwapProvider {
     ) -> Self {
         let web3 = blockchain::rpc(&node_url);
         Self {
-            queries: queries.map(|addr| {
-                contracts::alloy::BalancerQueries::Instance::new(addr, web3.provider.clone())
-            }),
+            queries: queries
+                .map(|addr| contracts::BalancerQueries::Instance::new(addr, web3.provider.clone())),
             v3_batch_router: v3_batch_router
                 .map(|addr| v3::Router::new(addr, web3.provider.clone())),
             settlement,

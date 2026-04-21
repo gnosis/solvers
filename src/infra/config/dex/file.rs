@@ -149,7 +149,7 @@ pub async fn load<T: DeserializeOwned>(path: &Path) -> (super::Config, T) {
     let (settlement, authenticator) = if let Some(settlement) = config.settlement {
         let authenticator = {
             let web3 = blockchain::rpc(&config.node_url);
-            ::contracts::alloy::GPv2Settlement::Instance::new(settlement, web3.provider.clone())
+            ::contracts::GPv2Settlement::Instance::new(settlement, web3.provider.clone())
                 .authenticator()
                 .call()
                 .await

@@ -4,7 +4,7 @@ use {
         infra::{self, config::dex::file, dex},
     },
     alloy::primitives::Address,
-    contracts::alloy::{BalancerQueries, BalancerV2Vault, BalancerV3BatchRouter},
+    contracts::{BalancerQueries, BalancerV2Vault, BalancerV3BatchRouter},
     serde::Deserialize,
     serde_with::serde_as,
     std::path::Path,
