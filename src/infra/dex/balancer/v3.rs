@@ -3,17 +3,20 @@
 //! bindings, defining structs with named fields instead of using tuples.
 
 use {
-    crate::domain::dex,
+    crate::{
+        domain::dex,
+        infra::dex::balancer::bindings::{
+            self,
+            BalancerV3BatchRouter,
+            IBatchRouter::{SwapPathExactAmountIn, SwapPathExactAmountOut},
+        },
+    },
     alloy::{
         primitives::{Address, Bytes, U160, U256, aliases::U48},
         sol_types::SolCall,
     },
     anyhow::{Result, anyhow, ensure},
-    contracts::{
-        BalancerV3BatchRouter,
-        BalancerV3BatchRouter::IBatchRouter::{SwapPathExactAmountIn, SwapPathExactAmountOut},
-        Permit2 as Permit2Contract,
-    },
+    contracts::Permit2 as Permit2Contract,
     ethrpc::AlloyProvider,
 };
 
@@ -57,11 +60,11 @@ impl Permit2 {
     }
 }
 
-pub struct Router(BalancerV3BatchRouter::Instance);
+pub struct Router(bindings::BalancerV3BatchRouterInstance);
 
 impl Router {
     pub fn new(address: Address, alloy_provider: AlloyProvider) -> Self {
-        Self(BalancerV3BatchRouter::Instance::new(
+        Self(bindings::BalancerV3BatchRouterInstance::new(
             address,
             alloy_provider,
         ))
@@ -81,7 +84,7 @@ impl Router {
         let permit2_approval_call =
             permit2.create_approval_call(self.address(), token_in, max_input);
 
-        let calldata = BalancerV3BatchRouter::BalancerV3BatchRouter::swapExactInCall {
+        let calldata = BalancerV3BatchRouter::swapExactInCall {
             paths,
             deadline: Self::deadline(),
             wethIsEth: Self::weth_is_eth(),
@@ -154,7 +157,7 @@ impl Router {
         let permit2_approval_call =
             permit2.create_approval_call(self.address(), token_in, max_input);
 
-        let calldata = BalancerV3BatchRouter::BalancerV3BatchRouter::swapExactOutCall {
+        let calldata = BalancerV3BatchRouter::swapExactOutCall {
             paths,
             deadline: Self::deadline(),
             wethIsEth: Self::weth_is_eth(),

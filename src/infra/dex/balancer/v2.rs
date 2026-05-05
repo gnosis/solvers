@@ -3,21 +3,24 @@
 //! bindings, defining structs with named fields instead of using tuples.
 
 use {
-    crate::domain::dex,
+    crate::{
+        domain::dex,
+        infra::dex::balancer::bindings::{
+            self,
+            IVault::{
+                BatchSwapStep as QueriesBatchSwapStep,
+                FundManagement as QueriesFundManagement,
+            },
+        },
+    },
     alloy::{
         primitives::{Address, I256, U256},
         sol_types::SolCall,
     },
     anyhow::{Result, anyhow},
-    contracts::{
-        BalancerQueries::IVault::{
-            BatchSwapStep as QueriesBatchSwapStep,
-            FundManagement as QueriesFundManagement,
-        },
-        BalancerV2Vault::{
-            self,
-            IVault::{BatchSwapStep, FundManagement},
-        },
+    contracts::BalancerV2Vault::{
+        self,
+        IVault::{BatchSwapStep, FundManagement},
     },
 };
 
@@ -83,7 +86,7 @@ pub trait BalancerQueriesExt {
     ) -> Result<Vec<I256>>;
 }
 
-impl BalancerQueriesExt for contracts::BalancerQueries::Instance {
+impl BalancerQueriesExt for bindings::BalancerQueriesInstance {
     async fn execute_query_batch_swap(
         &self,
         kind: SwapKind,
@@ -91,7 +94,6 @@ impl BalancerQueriesExt for contracts::BalancerQueries::Instance {
         assets: Vec<Address>,
         funds: QueriesFundManagement,
     ) -> Result<Vec<I256>> {
-        // Execute the query call directly
         let asset_deltas = self
             .queryBatchSwap(kind as _, swaps, assets, funds)
             .call()

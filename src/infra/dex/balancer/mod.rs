@@ -10,20 +10,15 @@ use {
         util,
     },
     alloy::primitives::{Address, Bytes, FixedBytes, I256, U256},
-    contracts::{
-        BalancerV2Vault::IVault::{BatchSwapStep, FundManagement},
-        BalancerV3BatchRouter::IBatchRouter::{
-            SwapPathExactAmountIn,
-            SwapPathExactAmountOut,
-            SwapPathStep,
-        },
-    },
+    bindings::IBatchRouter::{SwapPathExactAmountIn, SwapPathExactAmountOut, SwapPathStep},
+    contracts::BalancerV2Vault::IVault::{BatchSwapStep, FundManagement},
     ethrpc::{AlloyProvider, block_stream::CurrentBlockWatcher},
     itertools::Itertools,
     std::sync::{atomic, atomic::AtomicU64},
     tracing::Instrument,
 };
 
+mod bindings;
 pub mod dto;
 pub mod query_swap_provider;
 mod v2;

@@ -21,6 +21,11 @@ use {
             blockchain,
             dex::balancer::{
                 Error,
+                bindings::{
+                    self,
+                    IBatchRouter::{SwapPathExactAmountIn, SwapPathExactAmountOut},
+                    IVault::{BatchSwapStep, FundManagement},
+                },
                 convert_path_steps,
                 dto,
                 v2::{self, BalancerQueriesExt},
@@ -30,10 +35,6 @@ use {
     },
     alloy::primitives::{Address, Bytes, FixedBytes, U256},
     anyhow::{Context, Result, anyhow, ensure},
-    contracts::{
-        BalancerQueries::IVault::{BatchSwapStep, FundManagement},
-        BalancerV3BatchRouter::IBatchRouter::{SwapPathExactAmountIn, SwapPathExactAmountOut},
-    },
     itertools::Itertools,
 };
 
@@ -80,7 +81,7 @@ pub trait QuerySwapProvider: Send + Sync {
 /// - Handles both sell orders (exact input) and buy orders (exact output)
 /// - Returns updated amounts that reflect current on-chain state
 pub struct OnChainQuerySwapProvider {
-    queries: Option<contracts::BalancerQueries::Instance>,
+    queries: Option<bindings::BalancerQueriesInstance>,
     v3_batch_router: Option<v3::Router>,
     settlement: Address,
 }
@@ -95,7 +96,7 @@ impl OnChainQuerySwapProvider {
         let web3 = blockchain::rpc(&node_url);
         Self {
             queries: queries
-                .map(|addr| contracts::BalancerQueries::Instance::new(addr, web3.provider.clone())),
+                .map(|addr| bindings::BalancerQueriesInstance::new(addr, web3.provider.clone())),
             v3_batch_router: v3_batch_router
                 .map(|addr| v3::Router::new(addr, web3.provider.clone())),
             settlement,
