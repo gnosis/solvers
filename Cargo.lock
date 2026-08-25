@@ -5,11 +5,12 @@ version = 4
 [[package]]
 name = "account-balances"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-dyn-abi",
  "alloy-primitives",
+ "alloy-provider",
  "alloy-rpc-types",
  "alloy-sol-types",
  "anyhow",
@@ -56,14 +57,15 @@ checksum = "683d7910e743518b0e34f1186f92494becacb047c7b6bf616c96772180fef923"
 
 [[package]]
 name = "alloy"
-version = "1.8.3"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "50ab0cd8afe573d1f7dc2353698a51b1f93aec362c8211e28cfd3948c6adba39"
+checksum = "9867f85f660948ddbef071ae484027654c04b62c7decd5b61464a7ed1f8931a0"
 dependencies = [
  "alloy-consensus",
  "alloy-contract",
  "alloy-core",
  "alloy-eips",
+ "alloy-ens",
  "alloy-network",
  "alloy-provider",
  "alloy-rpc-client",
@@ -90,9 +92,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-consensus"
-version = "1.8.3"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f16daaf7e1f95f62c6c3bf8a3fc3d78b08ae9777810c0bb5e94966c7cd57ef0"
+checksum = "12a542fe1e6a48cfd010a9e8eba1235436de58ee0f1415e588c27d5d556e98df"
 dependencies = [
  "alloy-eips",
  "alloy-primitives",
@@ -108,7 +110,7 @@ dependencies = [
  "k256",
  "once_cell",
  "rand 0.8.5",
- "secp256k1",
+ "secp256k1 0.30.0",
  "serde",
  "serde_json",
  "serde_with",
@@ -117,9 +119,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-consensus-any"
-version = "1.8.3"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "118998d9015332ab1b4720ae1f1e3009491966a0349938a1f43ff45a8a4c6299"
+checksum = "05ac1559726a5e71d6dbab59cbd8ad0988c762105d2ae41ae4f3241a3166262d"
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
@@ -131,9 +133,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-contract"
-version = "1.8.3"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ac9e0c34dc6bce643b182049cdfcca1b8ce7d9c260cbdd561f511873b7e26cd"
+checksum = "b86722084d6d07822a6c67e39ae794d437fb9de12fa4127d4f9fd93f89651121"
 dependencies = [
  "alloy-consensus",
  "alloy-dyn-abi",
@@ -149,14 +151,16 @@ dependencies = [
  "futures-util",
  "serde_json",
  "thiserror 2.0.18",
+ "tokio",
  "tracing",
+ "wasmtimer",
 ]
 
 [[package]]
 name = "alloy-core"
-version = "1.5.2"
+version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9d4087016b0896051dd3d03e0bedda2f4d4d1689af8addc8450288c63a9e5f68"
+checksum = "e8421a5ee9019b6d89f92935d0f8facd9f6ca088b41d7cc47244a02ccde4545f"
 dependencies = [
  "alloy-dyn-abi",
  "alloy-json-abi",
@@ -167,9 +171,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-dyn-abi"
-version = "1.5.7"
+version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc2db5c583aaef0255aa63a4fe827f826090142528bba48d1bf4119b62780cad"
+checksum = "9a04eb4abc2b5074a18e687ee63918f407cc7990083cba9b999445f839796060"
 dependencies = [
  "alloy-json-abi",
  "alloy-primitives",
@@ -178,7 +182,7 @@ dependencies = [
  "itoa",
  "serde",
  "serde_json",
- "winnow",
+ "winnow 1.0.4",
 ]
 
 [[package]]
@@ -221,21 +225,23 @@ dependencies = [
 
 [[package]]
 name = "alloy-eip7928"
-version = "0.3.3"
+version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f8222b1d88f9a6d03be84b0f5e76bb60cd83991b43ad8ab6477f0e4a7809b98d"
+checksum = "3fb59cca9e58f5c624becc3cffb32772dc278f31eeae4606844a88592e8d2672"
 dependencies = [
  "alloy-primitives",
  "alloy-rlp",
  "borsh",
+ "once_cell",
  "serde",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
 name = "alloy-eips"
-version = "1.8.3"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e6ef28c9fdad22d4eec52d894f5f2673a0895f1e5ef196734568e68c0f6caca8"
+checksum = "d40246adf7468b430fce87945ece8a54ef27fa760dd9f670f5162a412007bdb2"
 dependencies = [
  "alloy-eip2124",
  "alloy-eip2930",
@@ -251,14 +257,28 @@ dependencies = [
  "either",
  "serde",
  "serde_with",
- "sha2",
+ "sha2 0.10.9",
+]
+
+[[package]]
+name = "alloy-ens"
+version = "2.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "be9aa797694e7c55b007aa8f172daef76a83272cbedb8800bdc7038eed3bdb1a"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "async-trait",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
 name = "alloy-json-abi"
-version = "1.5.7"
+version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e9dbe713da0c737d9e5e387b0ba790eb98b14dd207fe53eef50e19a5a8ec3dac"
+checksum = "6cee30dd4c2f4b23f434fdf675e7bf9681b86768141277266c6f548ef25cba0a"
 dependencies = [
  "alloy-primitives",
  "alloy-sol-type-parser",
@@ -268,9 +288,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-json-rpc"
-version = "1.8.3"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "422d110f1c40f1f8d0e5562b0b649c35f345fccb7093d9f02729943dcd1eef71"
+checksum = "7e5722ea29a9a85ecdba2516c58f50d71e77cd25f8ce7e9f4ee8570ddeee6df1"
 dependencies = [
  "alloy-primitives",
  "alloy-sol-types",
@@ -283,9 +303,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-network"
-version = "1.8.3"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7197a66d94c4de1591cdc16a9bcea5f8cccd0da81b865b49aef97b1b4016e0fa"
+checksum = "e2e4d278913f00ab611f5367448a3a800fed173ab791c3cc67b7a1b0d7afd305"
 dependencies = [
  "alloy-consensus",
  "alloy-consensus-any",
@@ -309,9 +329,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-network-primitives"
-version = "1.8.3"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eb82711d59a43fdfd79727c99f270b974c784ec4eb5728a0d0d22f26716c87ef"
+checksum = "e4e52ae56d1acaa6b46e9d7015b8ae6c10f3d1c213a32ae70b17426a03ae6729"
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
@@ -322,18 +342,19 @@ dependencies = [
 
 [[package]]
 name = "alloy-primitives"
-version = "1.5.7"
+version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "de3b431b4e72cd8bd0ec7a50b4be18e73dab74de0dba180eef171055e5d5926e"
+checksum = "f007e257069855bdf21d27762fd3f3705a613f805c9a08309bf353503f081d71"
 dependencies = [
  "alloy-rlp",
  "bytes",
  "cfg-if",
  "const-hex",
  "derive_more 2.1.1",
+ "fixed-cache",
  "foldhash 0.2.0",
  "getrandom 0.4.2",
- "hashbrown 0.16.1",
+ "hashbrown 0.17.1",
  "indexmap 2.13.0",
  "itoa",
  "k256",
@@ -344,15 +365,16 @@ dependencies = [
  "rapidhash",
  "ruint",
  "rustc-hash",
+ "secp256k1 0.31.1",
  "serde",
- "sha3",
+ "sha3 0.11.0",
 ]
 
 [[package]]
 name = "alloy-provider"
-version = "1.8.3"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bf6b18b929ef1d078b834c3631e9c925177f3b23ddc6fa08a722d13047205876"
+checksum = "386124639a5c386329b9f2ef2b42969badbf7bba40422b513e3e5739c516dc34"
 dependencies = [
  "alloy-chains",
  "alloy-consensus",
@@ -363,6 +385,7 @@ dependencies = [
  "alloy-primitives",
  "alloy-pubsub",
  "alloy-rpc-client",
+ "alloy-rpc-types-anvil",
  "alloy-rpc-types-debug",
  "alloy-rpc-types-eth",
  "alloy-rpc-types-trace",
@@ -378,7 +401,7 @@ dependencies = [
  "either",
  "futures",
  "futures-utils-wasm",
- "lru 0.16.3",
+ "lru 0.18.2",
  "parking_lot",
  "pin-project",
  "reqwest",
@@ -393,9 +416,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-pubsub"
-version = "1.8.3"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ad54073131e7292d4e03e1aa2287730f737280eb160d8b579fb31939f558c11"
+checksum = "ca2c32b323d8001b6e883444b7433804be0e6d55e4dbfd64e3bd2ba025282b77"
 dependencies = [
  "alloy-json-rpc",
  "alloy-primitives",
@@ -415,9 +438,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-rlp"
-version = "0.3.12"
+version = "0.3.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5f70d83b765fdc080dbcd4f4db70d8d23fe4761f2f02ebfa9146b833900634b4"
+checksum = "24671b1f62edcf0f9b62994c7bf72cd621a04a4b99f5020ece1a647b40e2f103"
 dependencies = [
  "alloy-rlp-derive",
  "arrayvec",
@@ -426,20 +449,20 @@ dependencies = [
 
 [[package]]
 name = "alloy-rlp-derive"
-version = "0.3.12"
+version = "0.3.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "64b728d511962dda67c1bc7ea7c03736ec275ed2cf4c35d9585298ac9ccf3b73"
+checksum = "9d4311c03125e8a18296504560b9de3d75ecbd0dcda7f71e6cf2a196d57e6fba"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
 name = "alloy-rpc-client"
-version = "1.8.3"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "94fcc9604042ca80bd37aa5e232ea1cd851f337e31e2babbbb345bc0b1c30de3"
+checksum = "3dfd3ebc1756426a6a9e17979d4467632aff01f359136c50e5320ac6e32d6b8d"
 dependencies = [
  "alloy-json-rpc",
  "alloy-primitives",
@@ -462,9 +485,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-rpc-types"
-version = "1.8.3"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4faad925d3a669ffc15f43b3deec7fbdf2adeb28a4d6f9cf4bc661698c0f8f4b"
+checksum = "417dc664965e36fc43a4f9c8eb8b2d14067a29c430e23470d2c923c1c977bac7"
 dependencies = [
  "alloy-primitives",
  "alloy-rpc-types-eth",
@@ -474,23 +497,40 @@ dependencies = [
 ]
 
 [[package]]
-name = "alloy-rpc-types-any"
-version = "1.8.3"
+name = "alloy-rpc-types-anvil"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3823026d1ed239a40f12364fac50726c8daf1b6ab8077a97212c5123910429ed"
+checksum = "5a07bb602ee07767e393b5862f719a1d061deca15e617fbb1f7af49cd49576e4"
 dependencies = [
- "alloy-consensus-any",
+ "alloy-primitives",
  "alloy-rpc-types-eth",
  "alloy-serde",
+ "serde",
+]
+
+[[package]]
+name = "alloy-rpc-types-any"
+version = "2.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cd0a6cce3f97e5d9c0048081b5d173e0e406c2056c52c012e578a1d451ff0cdc"
+dependencies = [
+ "alloy-consensus-any",
+ "alloy-network-primitives",
+ "alloy-primitives",
+ "alloy-rpc-types-eth",
+ "alloy-serde",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
 name = "alloy-rpc-types-debug"
-version = "1.8.3"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2145138f3214928f08cd13da3cb51ef7482b5920d8ac5a02ecd4e38d1a8f6d1e"
+checksum = "32f6d7c9462a3cf3bb046d0b870b86f1ce8c6892157491abebba62913e6f53cb"
 dependencies = [
  "alloy-primitives",
+ "alloy-rlp",
  "derive_more 2.1.1",
  "serde",
  "serde_with",
@@ -498,9 +538,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-rpc-types-eth"
-version = "1.8.3"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "59c095f92c4e1ff4981d89e9aa02d5f98c762a1980ab66bec49c44be11349da2"
+checksum = "1eb4c87dfdde83cd97e03a8c0c5e986b52e14075e02266e322ac6c7eb02e7399"
 dependencies = [
  "alloy-consensus",
  "alloy-consensus-any",
@@ -519,9 +559,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-rpc-types-trace"
-version = "1.8.3"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2e5a4d010f86cd4e01e5205ec273911e538e1738e76d8bafe9ecd245910ea5a3"
+checksum = "7d45ae3eadb97bf7933086205b4be0fef82c208bfc3007759e9afdcb6efa74c5"
 dependencies = [
  "alloy-primitives",
  "alloy-rpc-types-eth",
@@ -533,9 +573,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-serde"
-version = "1.8.3"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "11ece63b89294b8614ab3f483560c08d016930f842bf36da56bf0b764a15c11e"
+checksum = "2ff89f75b8a9d00f659750e9220c31b42d67c69ffc43b2ac8911dfd0506eb4a6"
 dependencies = [
  "alloy-primitives",
  "serde",
@@ -544,9 +584,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-signer"
-version = "1.8.3"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "43f447aefab0f1c0649f71edc33f590992d4e122bc35fb9cdbbf67d4421ace85"
+checksum = "69e1f6fae3ade809daa4c32bee35a30a439bb307209d7b42f3995988b5cc74b8"
 dependencies = [
  "alloy-primitives",
  "async-trait",
@@ -559,9 +599,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-signer-aws"
-version = "1.8.3"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8194c416115dc27f03796c0075dee0731239e2d7fbce735a74894aa8f6a47d7d"
+checksum = "495d56d8b67d1d656d50053cf6263e4191bd626952f0401197eeb755b390924e"
 dependencies = [
  "alloy-consensus",
  "alloy-network",
@@ -578,9 +618,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-signer-local"
-version = "1.8.3"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f721f4bf2e4812e5505aaf5de16ef3065a8e26b9139ac885862d00b5a55a659a"
+checksum = "621cc39c34b85875858ef149598f3d5f9797dff9a3247f3606fcc06f9b20acc8"
 dependencies = [
  "alloy-consensus",
  "alloy-network",
@@ -594,42 +634,42 @@ dependencies = [
 
 [[package]]
 name = "alloy-sol-macro"
-version = "1.5.7"
+version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ab81bab693da9bb79f7a95b64b394718259fdd7e41dceeced4cad57cb71c4f6a"
+checksum = "b5655c38d5f84955bf727b2eeb62fddd91ebb98fd1d7ae6eb77f73ea88f9b9cf"
 dependencies = [
  "alloy-sol-macro-expander",
  "alloy-sol-macro-input",
- "proc-macro-error2",
+ "proc-macro-error3",
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
 name = "alloy-sol-macro-expander"
-version = "1.5.7"
+version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "489f1620bb7e2483fb5819ed01ab6edc1d2f93939dce35a5695085a1afd1d699"
+checksum = "6277c780e07b76951e09a59788dde230d1582612324177d11a43a61e21a6bb83"
 dependencies = [
  "alloy-json-abi",
  "alloy-sol-macro-input",
  "const-hex",
  "heck",
  "indexmap 2.13.0",
- "proc-macro-error2",
+ "proc-macro-error3",
  "proc-macro2",
  "quote",
- "sha3",
- "syn 2.0.114",
+ "sha3 0.11.0",
+ "syn 2.0.119",
  "syn-solidity",
 ]
 
 [[package]]
 name = "alloy-sol-macro-input"
-version = "1.5.7"
+version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "56cef806ad22d4392c5fc83cf8f2089f988eb99c7067b4e0c6f1971fc1cca318"
+checksum = "9762b2ad3e5a0c09886de54fe549ab0056681df843cb082e2df7e1c0eb270d30"
 dependencies = [
  "alloy-json-abi",
  "const-hex",
@@ -639,25 +679,25 @@ dependencies = [
  "proc-macro2",
  "quote",
  "serde_json",
- "syn 2.0.114",
+ "syn 2.0.119",
  "syn-solidity",
 ]
 
 [[package]]
 name = "alloy-sol-type-parser"
-version = "1.5.7"
+version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a6df77fea9d6a2a75c0ef8d2acbdfd92286cc599983d3175ccdc170d3433d249"
+checksum = "da4c7130f0f01f4719678bda3db3bc7267fc2f7f9d0565e3bd964cd2bb45050d"
 dependencies = [
  "serde",
- "winnow",
+ "winnow 1.0.4",
 ]
 
 [[package]]
 name = "alloy-sol-types"
-version = "1.5.7"
+version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "64612d29379782a5dde6f4b6570d9c756d734d760c0c94c254d361e678a6591f"
+checksum = "d96e74d6213180f78dbdccddce8af02a639c160c94b0a543fa35c77c58b8a7fc"
 dependencies = [
  "alloy-json-abi",
  "alloy-primitives",
@@ -667,9 +707,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-transport"
-version = "1.8.3"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8098f965442a9feb620965ba4b4be5e2b320f4ec5a3fff6bfa9e1ff7ef42bed1"
+checksum = "06f4ca8484d6295d5165f67de8fdb00ae630ba585efb606f003171286b56441c"
 dependencies = [
  "alloy-json-rpc",
  "auto_impl",
@@ -690,9 +730,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-transport-http"
-version = "1.8.3"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e8597d36d546e1dab822345ad563243ec3920e199322cb554ce56c8ef1a1e2e7"
+checksum = "8342aa5a7f8dee6d606307eebbc847d9799a823c7e4f37b9c1e32b08715f73c8"
 dependencies = [
  "alloy-json-rpc",
  "alloy-transport",
@@ -706,9 +746,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-transport-ws"
-version = "1.8.3"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec3ab7a72b180992881acc112628b7668337a19ce15293ee974600ea7b693691"
+checksum = "ee146fb5859e612e95570642a29def87c060c7ce47d14a0caa5ab7ee8570ec2c"
 dependencies = [
  "alloy-pubsub",
  "alloy-transport",
@@ -717,7 +757,7 @@ dependencies = [
  "rustls",
  "serde_json",
  "tokio",
- "tokio-tungstenite",
+ "tokio-tungstenite 0.29.0",
  "tracing",
  "url",
  "ws_stream_wasm",
@@ -741,14 +781,14 @@ dependencies = [
 
 [[package]]
 name = "alloy-tx-macros"
-version = "1.8.3"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d69722eddcdf1ce096c3ab66cf8116999363f734eb36fe94a148f4f71c85da84"
+checksum = "1d0626c4f3b2028f7e8db32f53c22d9ecd5939f772317b7c4b6fe5219cb0589a"
 dependencies = [
  "darling 0.23.0",
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -819,7 +859,7 @@ checksum = "a23eb6b1614318a8071c9b2521f36b424b2c83db5eb3a0fead4a6c0809af6e61"
 [[package]]
 name = "app-data"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-primitives",
  "anyhow",
@@ -926,7 +966,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "62945a2f7e6de02a31fe400aa489f0e0f5b2502e69f95f853adb82a96c7a6b60"
 dependencies = [
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -964,7 +1004,7 @@ dependencies = [
  "num-traits",
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -1065,7 +1105,7 @@ dependencies = [
  "nuid",
  "pin-project",
  "portable-atomic",
- "rand 0.10.1",
+ "rand 0.10.2",
  "regex",
  "ring",
  "rustls-native-certs",
@@ -1106,7 +1146,7 @@ checksum = "c7c24de15d275a1ecfd47a380fb4d5ec9bfe0933f309ed5e705b775596a3574d"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -1117,7 +1157,7 @@ checksum = "9035ad2d096bed7955a320ee7e2230574d28fd3c3a0f186cbea1ff3c7eed5dbb"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -1154,7 +1194,7 @@ checksum = "ffdcb70bdbc4d478427380519163274ac86e52916e10f0a8889adf0f96d3fee7"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -1304,7 +1344,7 @@ dependencies = [
  "lru 0.12.5",
  "percent-encoding",
  "regex-lite",
- "sha2",
+ "sha2 0.10.9",
  "tracing",
  "url",
 ]
@@ -1397,7 +1437,7 @@ dependencies = [
  "http 0.2.12",
  "http 1.4.0",
  "percent-encoding",
- "sha2",
+ "sha2 0.10.9",
  "time",
  "tracing",
 ]
@@ -1429,7 +1469,7 @@ dependencies = [
  "md-5",
  "pin-project-lite",
  "sha1",
- "sha2",
+ "sha2 0.10.9",
  "tracing",
 ]
 
@@ -1678,7 +1718,7 @@ dependencies = [
 [[package]]
 name = "bad-tokens"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-json-rpc",
  "alloy-primitives",
@@ -1697,7 +1737,7 @@ dependencies = [
 [[package]]
 name = "balance-overrides"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-eips",
@@ -1712,6 +1752,7 @@ dependencies = [
  "configs",
  "contracts",
  "ethrpc",
+ "hex-literal",
  "moka",
  "serde",
  "thiserror 1.0.69",
@@ -1768,19 +1809,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "230c5f1ca6a325a32553f8640d31ac9b49f2411e901e427570154868b46da4f7"
 
 [[package]]
-name = "bit-set"
-version = "0.8.0"
+name = "bincode"
+version = "1.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "08807e080ed7f9d5433fa9b275196cfc35414f66a0c79d864dc51a0d825231a3"
+checksum = "b1f45e9417d87227c7a56d22e471c6206462cba514c7590c09aff4cf6d1ddcad"
 dependencies = [
- "bit-vec",
+ "serde",
 ]
-
-[[package]]
-name = "bit-vec"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5e764a1d40d510daf35e07be9eb06e75770908c27d411ee6c92109c9840eaaf7"
 
 [[package]]
 name = "bitcoin-io"
@@ -1826,12 +1861,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "blake3"
+version = "1.8.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6d9e454fc11f76977dc803893aff6304ed33d6a26efae8696573bea74baa27ae"
+dependencies = [
+ "arrayvec",
+ "cc",
+ "cfg-if",
+ "constant_time_eq",
+ "cpufeatures 0.3.0",
+ "digest 0.11.3",
+]
+
+[[package]]
 name = "block-buffer"
 version = "0.10.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3078c7629b62d3f0439517fa394996acacc5cbc91c5a20d8c658e77abd503a71"
 dependencies = [
  "generic-array",
+]
+
+[[package]]
+name = "block-buffer"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d2f6c7dbe95a6ed67ad9f18e57daf93a2f034c524b99fd2b76d18fdfeb6660aa"
+dependencies = [
+ "hybrid-array",
 ]
 
 [[package]]
@@ -1866,7 +1924,16 @@ dependencies = [
  "proc-macro-crate",
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
+]
+
+[[package]]
+name = "bs58"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bf88ba1141d185c399bee5288d850d63b8369520c1eafc32a0430b5b6c287bf4"
+dependencies = [
+ "tinyvec",
 ]
 
 [[package]]
@@ -1876,10 +1943,37 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5dd9dc738b7a8311c7ade152424974d8115f2cdad61e8dab8dac9f2362298510"
 
 [[package]]
+name = "bv"
+version = "0.11.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8834bb1d8ee5dc048ee3124f2c7c1afcc6bc9aed03f11e9dfd8c69470a5db340"
+dependencies = [
+ "feature-probe",
+ "serde",
+]
+
+[[package]]
 name = "byte-slice-cast"
 version = "1.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7575182f7272186991736b70173b0ea045398f984bf5ebbb3804736ce1330c9d"
+
+[[package]]
+name = "bytemuck"
+version = "1.25.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "95832e849adfb21180ccb6826a99da14e5d266ae5c2e668e1602cf234f153797"
+
+[[package]]
+name = "bytemuck_derive"
+version = "1.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fc0e56a716f1e132ff6bf4bdac1c944a3fcdc1cae65f70a4a2a1ac3b401d2d1f"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 3.0.4",
+]
 
 [[package]]
 name = "byteorder"
@@ -1899,7 +1993,7 @@ dependencies = [
 [[package]]
 name = "bytes-hex"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "const-hex",
  "serde",
@@ -1987,7 +2081,7 @@ dependencies = [
 [[package]]
 name = "chain"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-primitives",
  "serde",
@@ -2036,7 +2130,7 @@ dependencies = [
  "heck",
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -2053,6 +2147,12 @@ checksum = "75443c44cd6b379beb8c5b45d85d0773baf31cce901fe7bb252f4eff3008ef7d"
 dependencies = [
  "cc",
 ]
+
+[[package]]
+name = "cmov"
+version = "0.5.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0c9ea0ac24bc397ab3c98583a3c9ba74fa56b09a4449bbe172b9b1ddb016027a"
 
 [[package]]
 name = "colorchoice"
@@ -2099,7 +2199,7 @@ dependencies = [
 [[package]]
 name = "configs"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy",
  "anyhow",
@@ -2154,9 +2254,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "constant_time_eq"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3d52eff69cd5e647efe296129160853a42795992097e8af39800e1060caeea9b"
+
+[[package]]
 name = "contracts"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "cow-contract-anyoneauthenticator",
  "cow-contract-balancerqueries",
@@ -2185,11 +2291,6 @@ dependencies = [
  "cow-contract-baoswaprouter",
  "cow-contract-chainalysisoracle",
  "cow-contract-counter",
- "cow-contract-cowamm",
- "cow-contract-cowammconstantproductfactory",
- "cow-contract-cowammfactorygetter",
- "cow-contract-cowammlegacyhelper",
- "cow-contract-cowammuniswapv2priceoracle",
  "cow-contract-cowprotocoltoken",
  "cow-contract-cowswapethflow",
  "cow-contract-cowswaponchainorders",
@@ -2215,6 +2316,7 @@ dependencies = [
  "cow-contract-izeroex",
  "cow-contract-liquoricesettlement",
  "cow-contract-mockerc4626wrapper",
+ "cow-contract-multicall3",
  "cow-contract-nonstandarderc20balances",
  "cow-contract-pancakerouter",
  "cow-contract-permit2",
@@ -2311,7 +2413,7 @@ checksum = "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b"
 [[package]]
 name = "cow-contract-anyoneauthenticator"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2323,7 +2425,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-balancerqueries"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2335,7 +2437,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-balancerv2authorizer"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2347,7 +2449,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-balancerv2basepool"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2359,7 +2461,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-balancerv2basepoolfactory"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2371,7 +2473,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-balancerv2composablestablepool"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2383,7 +2485,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-balancerv2composablestablepoolfactory"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2395,7 +2497,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-balancerv2composablestablepoolfactoryv3"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2407,7 +2509,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-balancerv2composablestablepoolfactoryv4"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2419,7 +2521,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-balancerv2composablestablepoolfactoryv5"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2431,7 +2533,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-balancerv2composablestablepoolfactoryv6"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2443,7 +2545,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-balancerv2liquiditybootstrappingpool"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2455,7 +2557,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-balancerv2liquiditybootstrappingpoolfactory"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2467,7 +2569,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-balancerv2noprotocolfeeliquiditybootstrappingpoolfactory"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2479,7 +2581,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-balancerv2stablepool"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2491,7 +2593,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-balancerv2stablepoolfactoryv2"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2503,7 +2605,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-balancerv2vault"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2515,7 +2617,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-balancerv2weightedpool"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2527,7 +2629,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-balancerv2weightedpool2tokensfactory"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2539,7 +2641,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-balancerv2weightedpoolfactory"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2551,7 +2653,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-balancerv2weightedpoolfactoryv3"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2563,7 +2665,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-balancerv2weightedpoolfactoryv4"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2575,7 +2677,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-balancerv3batchrouter"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2587,7 +2689,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-balances"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2599,7 +2701,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-baoswaprouter"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2611,7 +2713,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-chainalysisoracle"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2623,67 +2725,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-counter"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
-dependencies = [
- "alloy-contract",
- "alloy-primitives",
- "alloy-provider",
- "alloy-sol-types",
- "anyhow",
-]
-
-[[package]]
-name = "cow-contract-cowamm"
-version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
-dependencies = [
- "alloy-contract",
- "alloy-primitives",
- "alloy-provider",
- "alloy-sol-types",
- "anyhow",
-]
-
-[[package]]
-name = "cow-contract-cowammconstantproductfactory"
-version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
-dependencies = [
- "alloy-contract",
- "alloy-primitives",
- "alloy-provider",
- "alloy-sol-types",
- "anyhow",
-]
-
-[[package]]
-name = "cow-contract-cowammfactorygetter"
-version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
-dependencies = [
- "alloy-contract",
- "alloy-primitives",
- "alloy-provider",
- "alloy-sol-types",
- "anyhow",
-]
-
-[[package]]
-name = "cow-contract-cowammlegacyhelper"
-version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
-dependencies = [
- "alloy-contract",
- "alloy-primitives",
- "alloy-provider",
- "alloy-sol-types",
- "anyhow",
-]
-
-[[package]]
-name = "cow-contract-cowammuniswapv2priceoracle"
-version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2695,7 +2737,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-cowprotocoltoken"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2707,7 +2749,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-cowswapethflow"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2719,7 +2761,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-cowswaponchainorders"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2731,7 +2773,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-erc1271signaturevalidator"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2743,7 +2785,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-erc20"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2755,7 +2797,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-erc20mintable"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2767,7 +2809,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-flashloanrouter"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2779,7 +2821,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-gashog"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2791,7 +2833,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-gnosissafe"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2803,7 +2845,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-gnosissafecompatibilityfallbackhandler"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2815,7 +2857,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-gnosissafeproxy"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2827,7 +2869,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-gnosissafeproxyfactory"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2839,7 +2881,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-gpv2allowlistauthentication"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2851,7 +2893,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-gpv2settlement"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2863,7 +2905,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-honeyswaprouter"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2875,7 +2917,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-hookstrampoline"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2887,7 +2929,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-icowwrapper"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2899,7 +2941,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-ierc4626"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2911,7 +2953,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-iswaprpair"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2923,7 +2965,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-iuniswaplikepair"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2935,7 +2977,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-iuniswaplikerouter"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2947,7 +2989,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-iuniswapv3factory"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2959,7 +3001,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-izeroex"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2971,7 +3013,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-liquoricesettlement"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2983,7 +3025,19 @@ dependencies = [
 [[package]]
 name = "cow-contract-mockerc4626wrapper"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
+dependencies = [
+ "alloy-contract",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-sol-types",
+ "anyhow",
+]
+
+[[package]]
+name = "cow-contract-multicall3"
+version = "0.1.0"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -2995,7 +3049,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-nonstandarderc20balances"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -3007,7 +3061,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-pancakerouter"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -3019,7 +3073,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-permit2"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -3031,7 +3085,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-remoteerc20balances"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -3043,7 +3097,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-signatures"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -3055,7 +3109,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-solver"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -3067,7 +3121,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-solver7702delegate"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -3079,7 +3133,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-spardose"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -3091,7 +3145,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-sushiswaprouter"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -3103,7 +3157,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-swapper"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -3115,7 +3169,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-swaprrouter"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -3127,7 +3181,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-testnetuniswapv2router02"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -3139,7 +3193,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-uniswapv2factory"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -3151,7 +3205,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-uniswapv2router02"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -3163,7 +3217,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-uniswapv3pool"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -3175,7 +3229,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-uniswapv3quoterv2"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -3187,7 +3241,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-uniswapv3swaprouterv2"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -3199,7 +3253,7 @@ dependencies = [
 [[package]]
 name = "cow-contract-weth9"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -3331,6 +3385,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "crypto-common"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ce6e4c961d6cd6c9a86db418387425e8bdeaf05b3c8bc1411e6dca4c252f1453"
+dependencies = [
+ "hybrid-array",
+]
+
+[[package]]
+name = "ctutils"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7d5515a3834141de9eafb9717ad39eea8247b5674e6066c404e8c4b365d2a29e"
+dependencies = [
+ "cmov",
+]
+
+[[package]]
 name = "curve25519-dalek"
 version = "4.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3341,8 +3413,10 @@ dependencies = [
  "curve25519-dalek-derive",
  "digest 0.10.7",
  "fiat-crypto",
+ "rand_core 0.6.4",
  "rustc_version 0.4.1",
  "subtle",
+ "zeroize",
 ]
 
 [[package]]
@@ -3353,7 +3427,7 @@ checksum = "f46882e17999c6cc590af592290432be3bce0428cb0d5f8b6715e4dc7b383eb3"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -3387,7 +3461,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "strsim",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -3401,7 +3475,7 @@ dependencies = [
  "quote",
  "serde",
  "strsim",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -3412,7 +3486,7 @@ checksum = "d38308df82d1080de0afee5d069fa14b0326a88c14f15c5ccda35b4a6c414c81"
 dependencies = [
  "darling_core 0.21.3",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -3423,7 +3497,7 @@ checksum = "ac3984ec7bd6cfa798e62b4a642426a5be0e68f9401cfc2a01e3fa9ea2fcdb8d"
 dependencies = [
  "darling_core 0.23.0",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -3449,7 +3523,7 @@ checksum = "d7a1e2f27636f116493b8b860f5546edb47c8d8f8ea73e1d2a20be88e28d1fea"
 [[package]]
 name = "database"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "bigdecimal",
  "chrono",
@@ -3482,6 +3556,12 @@ dependencies = [
  "powerfmt",
  "serde_core",
 ]
+
+[[package]]
+name = "derivation-path"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6e5c37193a1db1d8ed868c03ec7b152175f26160a5b740e5e484143877e0adf0"
 
 [[package]]
 name = "derivative"
@@ -3521,7 +3601,7 @@ dependencies = [
  "convert_case 0.6.0",
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
  "unicode-xid",
 ]
 
@@ -3535,7 +3615,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "rustc_version 0.4.1",
- "syn 2.0.114",
+ "syn 2.0.119",
  "unicode-xid",
 ]
 
@@ -3554,10 +3634,21 @@ version = "0.10.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9ed9a281f7bc9b7576e61468ba615a66a5c8cfdff42420a70aa82701a3b1e292"
 dependencies = [
- "block-buffer",
+ "block-buffer 0.10.4",
  "const-oid",
- "crypto-common",
+ "crypto-common 0.1.7",
  "subtle",
+]
+
+[[package]]
+name = "digest"
+version = "0.11.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f1dd6dbb5841937940781866fa1281a1ff7bd3bf827091440879f9994983d5c2"
+dependencies = [
+ "block-buffer 0.12.1",
+ "crypto-common 0.2.2",
+ "ctutils",
 ]
 
 [[package]]
@@ -3568,7 +3659,7 @@ checksum = "97369cbbc041bc366949bc74d34658d6cda5621039731c6310521892a3a20ae0"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -3625,6 +3716,7 @@ version = "2.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "115531babc129696a58c64a4fef0a8bf9e9698629fb97e9e40767d235cfbcd53"
 dependencies = [
+ "pkcs8",
  "signature",
 ]
 
@@ -3636,9 +3728,24 @@ checksum = "70e796c081cee67dc755e1a36a0a172b897fab85fc3f6bc48307991f64e4eca9"
 dependencies = [
  "curve25519-dalek",
  "ed25519",
- "sha2",
+ "rand_core 0.6.4",
+ "serde",
+ "sha2 0.10.9",
  "signature",
  "subtle",
+ "zeroize",
+]
+
+[[package]]
+name = "ed25519-dalek-bip32"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6b49a684b133c4980d7ee783936af771516011c8cd15f429dbda77245e282f03"
+dependencies = [
+ "derivation-path",
+ "ed25519-dalek",
+ "hmac",
+ "sha2 0.10.9",
 ]
 
 [[package]]
@@ -3650,7 +3757,7 @@ dependencies = [
  "enum-ordinalize",
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -3708,7 +3815,7 @@ checksum = "8ca9601fb2d62598ee17836250842873a413586e5d7ed88b356e38ddbb0ec631"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -3741,7 +3848,7 @@ dependencies = [
 [[package]]
 name = "eth-domain-types"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-eips",
  "alloy-primitives",
@@ -3754,7 +3861,7 @@ dependencies = [
 [[package]]
 name = "ethrpc"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-consensus",
  "alloy-contract",
@@ -3771,6 +3878,7 @@ dependencies = [
  "anyhow",
  "async-trait",
  "const-hex",
+ "contracts",
  "futures",
  "itertools 0.14.0",
  "observe",
@@ -3791,7 +3899,7 @@ dependencies = [
 [[package]]
 name = "event-bus-dto"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "chrono",
  "schemars 1.2.0",
@@ -3802,7 +3910,7 @@ dependencies = [
 [[package]]
 name = "event-indexing"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-eips",
  "alloy-primitives",
@@ -3862,6 +3970,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "feature-probe"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "835a3dc7d1ec9e75e2b5fb4ba75396837112d2060b03f7d43bc1897c7f7211da"
+
+[[package]]
 name = "ff"
 version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3882,6 +3996,40 @@ name = "find-msvc-tools"
 version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8591b0bcc8a98a64310a2fae1bb3e9b8564dd10e381e6e28010fde8e8e8568db"
+
+[[package]]
+name = "five8"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "23f76610e969fa1784327ded240f1e28a3fd9520c9cec93b636fcf62dd37f772"
+dependencies = [
+ "five8_core",
+]
+
+[[package]]
+name = "five8_const"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1a0f1728185f277989ca573a402716ae0beaaea3f76a8ff87ef9dd8fb19436c5"
+dependencies = [
+ "five8_core",
+]
+
+[[package]]
+name = "five8_core"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "059c31d7d36c43fe39d89e55711858b4da8be7eb6dabac23c7289b1a19489406"
+
+[[package]]
+name = "fixed-cache"
+version = "0.1.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2fe63500644ef0269fe6b744e7e5dc5c20b5eebf3d881bc2be53f194636f6583"
+dependencies = [
+ "equivalent",
+ "rapidhash",
+]
 
 [[package]]
 name = "fixed-hash"
@@ -3993,9 +4141,9 @@ dependencies = [
 
 [[package]]
 name = "futures-channel"
-version = "0.3.31"
+version = "0.3.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2dff15bf788c671c1934e366d07e30c1814a8ef514e1af724a602e8a2fbe1b10"
+checksum = "b1f9e3d69d39e4862ffed03ed071a76f9a13ba1d9109d355b0f0aa6b15e393c4"
 dependencies = [
  "futures-core",
  "futures-sink",
@@ -4003,9 +4151,9 @@ dependencies = [
 
 [[package]]
 name = "futures-core"
-version = "0.3.31"
+version = "0.3.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "05f29059c0c2090612e8d742178b0580d2dc940c837851ad723096f87af6663e"
+checksum = "92d699e522242e69e3003b94ecc1f960f3a5e015aa7c5d7486e65ad01dd94f5e"
 
 [[package]]
 name = "futures-executor"
@@ -4043,14 +4191,14 @@ checksum = "162ee34ebcb7c64a8abebc059ce0fee27c2262618d7b60ed8faf72fef13c3650"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
 name = "futures-sink"
-version = "0.3.31"
+version = "0.3.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e575fab7d1e0dcb8d0c7bcf9a63ee213816ab51902e6d244a95819acacf1d4f7"
+checksum = "1944426bf7d03f1d14f708785e4b33efd750b36d48a157b836b3efc15ede8e1d"
 
 [[package]]
 name = "futures-task"
@@ -4085,7 +4233,7 @@ checksum = "42012b0f064e01aa58b545fe3727f90f7dd4020f4a3ea735b50344965f5a57e9"
 [[package]]
 name = "gas-price-estimation"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-eips",
  "alloy-provider",
@@ -4225,6 +4373,12 @@ name = "hashbrown"
 version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "841d1cc9bed7f9236f321df977030373f4a4163ae1a7dbfe1a51a2c1a51d9100"
+
+[[package]]
+name = "hashbrown"
+version = "0.17.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ed5909b6e89a2db4456e54cd5f673791d7eca6732202bbf2a9cc504fe2f9b84a"
 dependencies = [
  "allocator-api2",
  "equivalent",
@@ -4271,9 +4425,9 @@ dependencies = [
 
 [[package]]
 name = "hex-literal"
-version = "0.4.1"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6fe2267d4ed49bc07b63801559be28c718ea06c4738b7a03c94df7386d2cde46"
+checksum = "e712f64ec3850b98572bffac52e2c6f282b29fe6c5fa6d42334b30be438d95c1"
 
 [[package]]
 name = "hickory-net"
@@ -4291,7 +4445,7 @@ dependencies = [
  "idna",
  "ipnet",
  "jni 0.22.4",
- "rand 0.10.1",
+ "rand 0.10.2",
  "thiserror 2.0.18",
  "tinyvec",
  "tokio",
@@ -4311,7 +4465,7 @@ dependencies = [
  "jni 0.22.4",
  "once_cell",
  "prefix-trie",
- "rand 0.10.1",
+ "rand 0.10.2",
  "ring",
  "thiserror 2.0.18",
  "tinyvec",
@@ -4336,7 +4490,7 @@ dependencies = [
  "ndk-context",
  "once_cell",
  "parking_lot",
- "rand 0.10.1",
+ "rand 0.10.2",
  "resolv-conf",
  "smallvec",
  "system-configuration 0.7.0",
@@ -4430,7 +4584,7 @@ dependencies = [
 [[package]]
 name = "http-client"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "clap",
  "configs",
@@ -4464,6 +4618,15 @@ checksum = "57a3db5ea5923d99402c94e9feb261dc5ee9b4efa158b0315f788cf549cc200c"
 dependencies = [
  "humantime",
  "serde",
+]
+
+[[package]]
+name = "hybrid-array"
+version = "0.4.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "707114b52a152fa7bdb290cd7cd5912d9467273b6d74e21b8d81aca1f8533f6b"
+dependencies = [
+ "typenum",
 ]
 
 [[package]]
@@ -4700,7 +4863,7 @@ checksum = "a0eb5a3343abf848c0984fe4604b2b105da9539376e24fc0a3b0007411ae4fd9"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -4866,7 +5029,7 @@ dependencies = [
  "quote",
  "rustc_version 0.4.1",
  "simd_cesu8",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -4894,7 +5057,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "38c0b942f458fe50cdac086d2f946512305e5631e720728f2a61aabcd47a6264"
 dependencies = [
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -4928,7 +5091,8 @@ dependencies = [
  "elliptic-curve",
  "once_cell",
  "serdect",
- "sha2",
+ "sha2 0.10.9",
+ "signature",
 ]
 
 [[package]]
@@ -4938,6 +5102,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ecc2af9a1119c51f12a14607e783cb977bde58bc069ff0c3da1095e635d70654"
 dependencies = [
  "cpufeatures 0.2.17",
+]
+
+[[package]]
+name = "keccak"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d8f198d1db720e4940b5a493201d199d9f24f568f8f746bd13706243a2f71598"
+dependencies = [
+ "cfg-if",
+ "cpufeatures 0.3.0",
 ]
 
 [[package]]
@@ -5007,7 +5181,7 @@ checksum = "df1d3c3b53da64cf5760482273a98e575c651a67eec7f77df96b5b642de8f039"
 [[package]]
 name = "liquidity-sources"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy",
  "anyhow",
@@ -5080,11 +5254,11 @@ dependencies = [
 
 [[package]]
 name = "lru"
-version = "0.16.3"
+version = "0.18.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a1dc47f592c06f33f8e3aea9591776ec7c9f9e4124778ff8a3c3b87159f7e593"
+checksum = "5d2f2f9b4ba7e6b24d95e7e899329d35be83bcded72c8540cdd5368932d1d90a"
 dependencies = [
- "hashbrown 0.16.1",
+ "hashbrown 0.17.1",
 ]
 
 [[package]]
@@ -5095,13 +5269,13 @@ checksum = "112b39cec0b298b6c1999fee3e31427f74f676e4cb9879ed1a121b43661a4154"
 
 [[package]]
 name = "macro-string"
-version = "0.1.4"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1b27834086c65ec3f9387b096d66e99f221cf081c2b738042aa252bcd41204e3"
+checksum = "59a9dbbfc75d2688ed057456ce8a3ee3f48d12eec09229f560f3643b9f275653"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -5204,13 +5378,13 @@ dependencies = [
  "cfg-if",
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
 name = "model"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-primitives",
  "alloy-signer",
@@ -5428,15 +5602,16 @@ version = "0.7.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ff32365de1b6743cb203b710788263c44a03de03802daf96092f2da4fe6ba4d7"
 dependencies = [
+ "proc-macro-crate",
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
 name = "number"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-primitives",
  "anyhow",
@@ -5445,6 +5620,7 @@ dependencies = [
  "ruint",
  "serde",
  "serde_with",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -5473,7 +5649,7 @@ dependencies = [
 [[package]]
 name = "observe"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "async-nats",
  "async-trait",
@@ -5543,7 +5719,7 @@ checksum = "a948666b637a0f465e8564c73e89d4dde00d72d4d473cc972f390fc3dcee7d9c"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -5648,7 +5824,7 @@ dependencies = [
 [[package]]
 name = "order-validation"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -5659,7 +5835,7 @@ dependencies = [
  "hmac",
  "moka",
  "reqwest",
- "sha2",
+ "sha2 0.10.9",
  "thiserror 1.0.69",
  "tokio",
  "tracing",
@@ -5697,7 +5873,7 @@ dependencies = [
  "proc-macro-crate",
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -5734,6 +5910,21 @@ name = "paste"
 version = "1.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
+
+[[package]]
+name = "pastey"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2ee67f1008b1ba2321834326597b8e186293b049a023cdef258527550b9935b4"
+
+[[package]]
+name = "pbkdf2"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "83a0692ec44e4cf1ef28ca317f14f8f07da2d95ec3fa01f86e4467b725e60917"
+dependencies = [
+ "digest 0.10.7",
+]
 
 [[package]]
 name = "pem-rfc7468"
@@ -5787,7 +5978,7 @@ checksum = "6e918e4ff8c4549eb882f14b3a4bc8c8bc93de829416eacf579f1207a8fbf861"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -5917,18 +6108,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "479ca8adacdd7ce8f1fb39ce9ecccbfe93a3f1344b3d0d97f20bc0196208f62b"
 dependencies = [
  "proc-macro2",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
 name = "price-estimation"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy",
  "anyhow",
  "app-data",
  "arc-swap",
+ "async-stream",
  "async-trait",
  "bad-tokens",
  "balance-overrides",
@@ -5995,32 +6187,32 @@ dependencies = [
 ]
 
 [[package]]
-name = "proc-macro-error-attr2"
-version = "2.0.0"
+name = "proc-macro-error-attr3"
+version = "3.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "96de42df36bb9bba5542fe9f1a054b8cc87e172759a1868aa05c1f3acc89dfc5"
+checksum = "82366fd7d8b7a440d66d13418820c69df9b3908bcb1a0476d7f5ce5d12f5a04d"
 dependencies = [
  "proc-macro2",
  "quote",
 ]
 
 [[package]]
-name = "proc-macro-error2"
-version = "2.0.1"
+name = "proc-macro-error3"
+version = "3.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "11ec05c52be0a07b08061f7dd003e7d7092e0472bc731b4af7bb1ef876109802"
+checksum = "b511283ea8a74b4b39447b128c5d00f03a356b7424554b13e298a5550100d9ac"
 dependencies = [
- "proc-macro-error-attr2",
+ "proc-macro-error-attr3",
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.105"
+version = "1.0.107"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "535d180e0ecab6268a3e718bb9fd44db66bbbc256257165fc699dadf70d16fe7"
+checksum = "985e7ec9bb745e6ce6535b544d84d6cd6f7ad8bd711c398938ae983b91a766d9"
 dependencies = [
  "unicode-ident",
 ]
@@ -6058,7 +6250,7 @@ checksum = "710d30cd8d768420cf9d0f1727c2709df928cd509810fcb98dd386580dccf919"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -6067,16 +6259,12 @@ version = "1.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bee689443a2bd0a16ab0348b52ee43e3b2d1b1f931c8aa5c9f8de4c86fbe8c40"
 dependencies = [
- "bit-set",
- "bit-vec",
  "bitflags 2.10.0",
  "num-traits",
  "rand 0.9.4",
  "rand_chacha 0.9.0",
  "rand_xorshift",
  "regex-syntax",
- "rusty-fork",
- "tempfile",
  "unarray",
 ]
 
@@ -6110,7 +6298,7 @@ dependencies = [
  "itertools 0.14.0",
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -6123,7 +6311,7 @@ dependencies = [
  "itertools 0.14.0",
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -6172,10 +6360,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "quick-error"
-version = "1.2.3"
+name = "qstring"
+version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a1d01941d82fa2ab50be1e79e6714289dd7cde78eba4c074bc5a4374f650dfe0"
+checksum = "d464fae65fff2680baf48019211ce37aaec0c78e9264c84a3e484717f965104e"
+dependencies = [
+ "percent-encoding",
+]
 
 [[package]]
 name = "quinn"
@@ -6235,9 +6426,9 @@ dependencies = [
 
 [[package]]
 name = "quote"
-version = "1.0.43"
+version = "1.0.47"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc74d9a594b72ae6656596548f56f667211f8a97b3d4c3d467150794690dc40a"
+checksum = "1fbf4db142a473a8d80c26bbf18454ed458bf8d26c8219c331daecfdbd079001"
 dependencies = [
  "proc-macro2",
 ]
@@ -6285,9 +6476,9 @@ dependencies = [
 
 [[package]]
 name = "rand"
-version = "0.10.1"
+version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d2e8e8bcc7961af1fdac401278c6a831614941f6164ee3bf4ce61b7edb162207"
+checksum = "c7f5fa3a058cd35567ef9bfa5e75732bee0f9e4c55fa90477bef2dfcdbc4be80"
 dependencies = [
  "chacha20",
  "getrandom 0.4.2",
@@ -6361,7 +6552,7 @@ dependencies = [
 [[package]]
 name = "rate-limit"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "anyhow",
  "configs",
@@ -6412,7 +6603,7 @@ checksum = "b7186006dcb21920990093f30e3dea63b7d6e977bf1256be20c3563a5db070da"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -6453,7 +6644,7 @@ checksum = "7a2d987857b319362043e95f5353c0535c1f58eec5336fdfcf626430af7def58"
 [[package]]
 name = "request-sharing"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "futures",
  "observe",
@@ -6748,18 +6939,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b39cdef0fa800fc44525c84ccb54a029961a8215f9619753635a9c0d2538d46d"
 
 [[package]]
-name = "rusty-fork"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc6bf79ff24e648f6da1f8d1f011e9cac26491b619e6b9280f2b47f1774e6ee2"
-dependencies = [
- "fnv",
- "quick-error",
- "tempfile",
- "wait-timeout",
-]
-
-[[package]]
 name = "ryu"
 version = "1.0.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6768,7 +6947,7 @@ checksum = "a50f4cf475b65d88e057964e0e9bb1f0aa9bbb2036dc65c64596b42932536984"
 [[package]]
 name = "s3"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "anyhow",
  "aws-config",
@@ -6833,7 +7012,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "serde_derive_internals",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -6865,8 +7044,19 @@ checksum = "b50c5943d326858130af85e049f2661ba3c78b26589b8ab98e65e80ae44a1252"
 dependencies = [
  "bitcoin_hashes",
  "rand 0.8.5",
- "secp256k1-sys",
+ "secp256k1-sys 0.10.1",
  "serde",
+]
+
+[[package]]
+name = "secp256k1"
+version = "0.31.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2c3c81b43dc2d8877c216a3fccf76677ee1ebccd429566d3e67447290d0c42b2"
+dependencies = [
+ "bitcoin_hashes",
+ "rand 0.9.4",
+ "secp256k1-sys 0.11.0",
 ]
 
 [[package]]
@@ -6874,6 +7064,15 @@ name = "secp256k1-sys"
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d4387882333d3aa8cb20530a17c69a3752e97837832f34f6dccc760e715001d9"
+dependencies = [
+ "cc",
+]
+
+[[package]]
+name = "secp256k1-sys"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dcb913707158fadaf0d8702c2db0e857de66eb003ccfdda5924b5f5ac98efb38"
 dependencies = [
  "cc",
 ]
@@ -6955,14 +7154,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde-big-array"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "11fc7cc2c76d73e0f27ee52abbd64eec84d46f370c88371120433196934e4b7f"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "serde-ext"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-primitives",
  "const-hex",
  "serde",
  "serde_with",
+ "solana-sdk",
+ "url",
+]
+
+[[package]]
+name = "serde_bytes"
+version = "0.11.19"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a5d440709e79d88e51ac01c4b72fc6cb7314017bb7da9eeff678aa94c10e3ea8"
+dependencies = [
+ "serde",
+ "serde_core",
 ]
 
 [[package]]
@@ -6982,7 +7202,7 @@ checksum = "d540f220d3187173da220f885ab66608367b6574e925011a9353e4badda91d79"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -6993,7 +7213,7 @@ checksum = "18d26a20a969b9e3fdf2fc2d9f21eda6c40e2de84c9408bb5d3b05d499aae711"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -7037,7 +7257,7 @@ checksum = "175ee3e80ae9982737ca543e96133087cbd9a485eecc3bc4de9c1a37b47ea59c"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -7089,7 +7309,7 @@ dependencies = [
  "darling 0.21.3",
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -7125,13 +7345,40 @@ dependencies = [
 ]
 
 [[package]]
+name = "sha2"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "446ba717509524cb3f22f17ecc096f10f4822d76ab5c0b9822c5f9c284e825f4"
+dependencies = [
+ "cfg-if",
+ "cpufeatures 0.3.0",
+ "digest 0.11.3",
+]
+
+[[package]]
+name = "sha2-const-stable"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5f179d4e11094a893b82fff208f74d448a7512f99f5a0acbd5c679b705f83ed9"
+
+[[package]]
 name = "sha3"
 version = "0.10.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "75872d278a8f37ef87fa0ddbda7802605cb18344497949862c0d4dcb291eba60"
 dependencies = [
  "digest 0.10.7",
- "keccak",
+ "keccak 0.1.5",
+]
+
+[[package]]
+name = "sha3"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "be176f1a57ce4e3d31c1a166222d9768de5954f811601fb7ca06fc8203905ce1"
+dependencies = [
+ "digest 0.11.3",
+ "keccak 0.2.2",
 ]
 
 [[package]]
@@ -7156,7 +7403,7 @@ dependencies = [
 [[package]]
 name = "shared"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "account-balances",
  "alloy",
@@ -7256,7 +7503,7 @@ dependencies = [
 [[package]]
 name = "signature-validator"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-dyn-abi",
@@ -7301,7 +7548,7 @@ checksum = "e3a9fe34e3e7a50316060351f37187a3f546bce95496156754b601a5fa71b76e"
 [[package]]
 name = "simulator"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-contract",
  "alloy-eips",
@@ -7337,9 +7584,17 @@ dependencies = [
  "serde_json",
  "serde_with",
  "thiserror 1.0.69",
+ "tokio",
+ "tokio-tungstenite 0.28.0",
  "tracing",
  "url",
 ]
+
+[[package]]
+name = "siphasher"
+version = "0.3.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "38b58827f4464d87d377d175e90bf58eb00fd8716ff0a62f80356b5e61555d0d"
 
 [[package]]
 name = "slab"
@@ -7364,6 +7619,962 @@ checksum = "17129e116933cf371d018bb80ae557e889637989d8638274fb25622827b03881"
 dependencies = [
  "libc",
  "windows-sys 0.60.2",
+]
+
+[[package]]
+name = "solana-account"
+version = "4.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2c83d346056532a7ef16177dbb799abf73da080e93eae3de6a901c726ce47fb0"
+dependencies = [
+ "bincode",
+ "serde",
+ "serde_bytes",
+ "serde_derive",
+ "solana-account-info",
+ "solana-clock",
+ "solana-instruction-error",
+ "solana-pubkey 4.3.0",
+ "solana-sdk-ids",
+ "solana-sysvar",
+]
+
+[[package]]
+name = "solana-account-info"
+version = "3.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a9cf16495d9eb53e3d04e72366a33bb1c20c24e78c171d8b8f5978357b63ae95"
+dependencies = [
+ "bincode",
+ "serde_core",
+ "solana-address 2.7.0",
+ "solana-program-error",
+ "solana-program-memory",
+]
+
+[[package]]
+name = "solana-address"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a2ecac8e1b7f74c2baa9e774c42817e3e75b20787134b76cc4d45e8a604488f5"
+dependencies = [
+ "solana-address 2.7.0",
+]
+
+[[package]]
+name = "solana-address"
+version = "2.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "01332a01c0a3098404d55a724c8d9a92aed4a50fe40a7dd0c7a51e29274c14de"
+dependencies = [
+ "borsh",
+ "bytemuck",
+ "bytemuck_derive",
+ "curve25519-dalek",
+ "five8",
+ "five8_const",
+ "rand 0.9.4",
+ "serde",
+ "serde_derive",
+ "sha2-const-stable",
+ "solana-atomic-u64",
+ "solana-define-syscall 5.2.0",
+ "solana-program-error",
+ "solana-sanitize",
+ "solana-sha256-hasher",
+ "wincode",
+]
+
+[[package]]
+name = "solana-atomic-u64"
+version = "3.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "085db4906d89324cef2a30840d59eaecf3d4231c560ec7c9f6614a93c652f501"
+dependencies = [
+ "parking_lot",
+]
+
+[[package]]
+name = "solana-big-mod-exp"
+version = "4.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f05789c4afc39164132db9dcc117218d412ca1f1271d2c629fc6f554c19e5a44"
+dependencies = [
+ "num-bigint",
+ "solana-define-syscall 5.2.0",
+]
+
+[[package]]
+name = "solana-blake3-hasher"
+version = "3.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7116e1d942a2432ca3f514625104757ab8a56233787e95144c93950029e31176"
+dependencies = [
+ "blake3",
+ "solana-define-syscall 4.0.1",
+ "solana-hash 4.6.0",
+]
+
+[[package]]
+name = "solana-borsh"
+version = "3.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c04abbae16f57178a163125805637b8a076175bb5c0002fb04f4792bea901cf7"
+dependencies = [
+ "borsh",
+]
+
+[[package]]
+name = "solana-clock"
+version = "3.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a7708bdb262fd9c257c3a56d4289297b10a3e821b8cba3f7cf42b49c40201ab9"
+dependencies = [
+ "serde",
+ "serde_derive",
+ "solana-get-sysvar",
+ "solana-sdk-ids",
+ "solana-sdk-macro",
+ "solana-sysvar-id",
+]
+
+[[package]]
+name = "solana-cpi"
+version = "3.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4dea26709d867aada85d0d3617db0944215c8bb28d3745b912de7db13a23280c"
+dependencies = [
+ "solana-account-info",
+ "solana-define-syscall 4.0.1",
+ "solana-instruction",
+ "solana-program-error",
+ "solana-pubkey 4.3.0",
+ "solana-stable-layout",
+]
+
+[[package]]
+name = "solana-define-syscall"
+version = "4.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "57e5b1c0bc1d4a4d10c88a4100499d954c09d3fecfae4912c1a074dff68b1738"
+
+[[package]]
+name = "solana-define-syscall"
+version = "5.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bf8209ece2bd9f1450e672858ffc0e5c8c786ff6916d2a862b126dd0128f380f"
+
+[[package]]
+name = "solana-derivation-path"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ff71743072690fdbdfcdc37700ae1cb77485aaad49019473a81aee099b1e0b8c"
+dependencies = [
+ "derivation-path",
+ "qstring",
+ "uriparse",
+]
+
+[[package]]
+name = "solana-ed25519"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ff4c7caf3fe3d70815869a5838ee45b4d2b009eaacea1790ef3cd9b3c89edbbd"
+dependencies = [
+ "cfg-if",
+ "cpufeatures 0.3.0",
+ "curve25519-dalek-derive",
+ "digest 0.11.3",
+ "ed25519",
+ "hashbrown 0.15.5",
+ "rand 0.10.2",
+ "rand_core 0.10.1",
+ "rustc_version 0.4.1",
+ "sha2 0.11.0",
+ "subtle",
+ "zeroize",
+]
+
+[[package]]
+name = "solana-epoch-info"
+version = "3.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e093c84f6ece620a6b10cd036574b0cd51944231ab32d81f80f76d54aba833e6"
+dependencies = [
+ "serde",
+ "serde_derive",
+]
+
+[[package]]
+name = "solana-epoch-rewards"
+version = "3.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0788d74ee15778deecaa15ed1a1e37727ba954f86cbc35225450a1f2b5012969"
+dependencies = [
+ "serde",
+ "serde_derive",
+ "solana-get-sysvar",
+ "solana-hash 4.6.0",
+ "solana-sdk-ids",
+ "solana-sdk-macro",
+ "solana-sysvar-id",
+]
+
+[[package]]
+name = "solana-epoch-rewards-hasher"
+version = "3.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1ee8beac9bff4db9225e57d532d169b0be5e447f1e6601a2f50f27a01bf5518f"
+dependencies = [
+ "siphasher",
+ "solana-address 2.7.0",
+ "solana-hash 4.6.0",
+]
+
+[[package]]
+name = "solana-epoch-schedule"
+version = "3.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a1633cfd10cde127f2caf8f12021b4f8e9a425e7e4eea4326e428c422376d6fd"
+dependencies = [
+ "serde",
+ "serde_derive",
+ "solana-get-sysvar",
+ "solana-program-error",
+ "solana-sdk-ids",
+ "solana-sdk-macro",
+ "solana-sysvar-id",
+]
+
+[[package]]
+name = "solana-epoch-stake"
+version = "3.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "027e6d0b9e7daac5b2ac7c3f9ca1b727861121d9ef05084cf435ff736051e7c2"
+dependencies = [
+ "solana-define-syscall 5.2.0",
+ "solana-pubkey 4.3.0",
+]
+
+[[package]]
+name = "solana-example-mocks"
+version = "4.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0eb265ff95e28eceda117e2e3d2d2a611ecbbfe911dfeeeecd1521814540ffab"
+dependencies = [
+ "serde",
+ "serde_derive",
+ "solana-hash 4.6.0",
+ "solana-instruction",
+ "solana-nonce",
+ "solana-pubkey 4.3.0",
+ "solana-sdk-ids",
+ "solana-system-interface",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "solana-fee-calculator"
+version = "3.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d4bf4f4afb4704212ef1d994ee65bef7293441721639dfd16f0e60996f37be51"
+dependencies = [
+ "log",
+ "serde",
+ "serde_derive",
+]
+
+[[package]]
+name = "solana-fee-structure"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5e2abdb1223eea8ec64136f39cb1ffcf257e00f915c957c35c0dd9e3f4e700b0"
+dependencies = [
+ "serde",
+ "serde_derive",
+]
+
+[[package]]
+name = "solana-get-sysvar"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ef3bc859fc036ed490146793557386cbfae614ebba4adc704c37d94350824ed4"
+dependencies = [
+ "solana-address 2.7.0",
+ "solana-define-syscall 5.2.0",
+ "solana-program-error",
+]
+
+[[package]]
+name = "solana-hard-forks"
+version = "3.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cdb50b2df7a36a2af58ce24bb0229622ac845dcc196e8c23b3ea4a29dd6bee09"
+
+[[package]]
+name = "solana-hash"
+version = "3.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "337c246447142f660f778cf6cb582beba8e28deb05b3b24bfb9ffd7c562e5f41"
+dependencies = [
+ "solana-hash 4.6.0",
+]
+
+[[package]]
+name = "solana-hash"
+version = "4.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0df9b01495ed31100aca97a7f5862d5e19ab1636d60d1a9f02391408dd9dec84"
+dependencies = [
+ "borsh",
+ "bytemuck",
+ "bytemuck_derive",
+ "five8",
+ "serde",
+ "serde_derive",
+ "solana-atomic-u64",
+ "solana-sanitize",
+ "wincode",
+]
+
+[[package]]
+name = "solana-inflation"
+version = "3.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dbf186550ea7438e2708bd0c233f01fe9c3fa45b9b607ff993b650ce60af102e"
+dependencies = [
+ "serde",
+ "serde_derive",
+]
+
+[[package]]
+name = "solana-instruction"
+version = "3.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d70cf6ece1070a66d25e68274f338f29664794669c175223940a298645ef3495"
+dependencies = [
+ "bincode",
+ "borsh",
+ "serde",
+ "serde_derive",
+ "solana-define-syscall 5.2.0",
+ "solana-instruction-error",
+ "solana-pubkey 4.3.0",
+]
+
+[[package]]
+name = "solana-instruction-error"
+version = "2.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e8e7db78c122d02189619490b1fef04a2a042c389662920617c0e6381fdf8fdd"
+dependencies = [
+ "num-traits",
+ "serde",
+ "serde_derive",
+ "solana-program-error",
+]
+
+[[package]]
+name = "solana-instructions-sysvar"
+version = "4.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e38363a181313d607f7a118df2b401bb27b477a0104b09283cbf504f5f0f00cc"
+dependencies = [
+ "bitflags 2.10.0",
+ "solana-account-info",
+ "solana-instruction",
+ "solana-instruction-error",
+ "solana-program-error",
+ "solana-sanitize",
+ "solana-sdk-ids",
+ "solana-serialize-utils",
+ "solana-sysvar-id",
+]
+
+[[package]]
+name = "solana-keccak-hasher"
+version = "3.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ed1c0d16d6fdeba12291a1f068cdf0d479d9bff1141bf44afd7aa9d485f65ef8"
+dependencies = [
+ "sha3 0.10.8",
+ "solana-define-syscall 4.0.1",
+ "solana-hash 4.6.0",
+]
+
+[[package]]
+name = "solana-keypair"
+version = "3.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "263d614c12aa267a3278703175fd6440552ca61bc960b5a02a4482720c53438b"
+dependencies = [
+ "ed25519-dalek",
+ "ed25519-dalek-bip32",
+ "five8",
+ "five8_core",
+ "rand 0.9.4",
+ "solana-address 2.7.0",
+ "solana-derivation-path",
+ "solana-seed-derivable",
+ "solana-seed-phrase",
+ "solana-signature",
+ "solana-signer",
+]
+
+[[package]]
+name = "solana-last-restart-slot"
+version = "3.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5099e736c3c06c451b307a60637d69eb65b3144143ebeed899e2fd1134f4fc35"
+dependencies = [
+ "serde",
+ "serde_derive",
+ "solana-get-sysvar",
+ "solana-sdk-ids",
+ "solana-sdk-macro",
+ "solana-sysvar-id",
+]
+
+[[package]]
+name = "solana-message"
+version = "4.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "188f4df6f4f4d5bd8b9d82aee0f053b6c37826dcd96933f7b59f684b406a7b3c"
+dependencies = [
+ "blake3",
+ "serde",
+ "serde_derive",
+ "solana-address 2.7.0",
+ "solana-hash 4.6.0",
+ "solana-instruction",
+ "solana-sanitize",
+ "solana-sdk-ids",
+ "solana-short-vec",
+ "solana-transaction-error",
+ "wincode",
+]
+
+[[package]]
+name = "solana-msg"
+version = "3.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "726b7cbbc6be6f1c6f29146ac824343b9415133eee8cce156452ad1db93f8008"
+dependencies = [
+ "solana-define-syscall 5.2.0",
+]
+
+[[package]]
+name = "solana-native-token"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ae8dd4c280dca9d046139eb5b7a5ac9ad10403fbd64964c7d7571214950d758f"
+
+[[package]]
+name = "solana-nonce"
+version = "3.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1f13b7ec92de6dd4ef713ed763d22585efa0042cd244bce81997e52077885c47"
+dependencies = [
+ "solana-fee-calculator",
+ "solana-hash 4.6.0",
+ "solana-pubkey 4.3.0",
+ "solana-sha256-hasher",
+]
+
+[[package]]
+name = "solana-offchain-message"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f6e2a1141a673f72a05cf406b99e4b2b8a457792b7c01afa07b3f00d4e2de393"
+dependencies = [
+ "num_enum",
+ "solana-hash 3.1.0",
+ "solana-packet",
+ "solana-pubkey 3.0.0",
+ "solana-sanitize",
+ "solana-sha256-hasher",
+ "solana-signature",
+ "solana-signer",
+]
+
+[[package]]
+name = "solana-packet"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6edf2f25743c95229ac0fdc32f8f5893ef738dbf332c669e9861d33ddb0f469d"
+dependencies = [
+ "bitflags 2.10.0",
+]
+
+[[package]]
+name = "solana-presigner"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0f704eaf825be3180832445b9e4983b875340696e8e7239bf2d535b0f86c14a2"
+dependencies = [
+ "solana-pubkey 3.0.0",
+ "solana-signature",
+ "solana-signer",
+]
+
+[[package]]
+name = "solana-program"
+version = "4.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4c9f2e1b36b5f1c407cff098a383a45890268e848481af32540064986e7397a6"
+dependencies = [
+ "solana-account-info",
+ "solana-big-mod-exp",
+ "solana-blake3-hasher",
+ "solana-borsh",
+ "solana-clock",
+ "solana-cpi",
+ "solana-define-syscall 5.2.0",
+ "solana-epoch-rewards",
+ "solana-epoch-schedule",
+ "solana-epoch-stake",
+ "solana-example-mocks",
+ "solana-fee-calculator",
+ "solana-hash 4.6.0",
+ "solana-instruction",
+ "solana-instruction-error",
+ "solana-instructions-sysvar",
+ "solana-keccak-hasher",
+ "solana-last-restart-slot",
+ "solana-msg",
+ "solana-native-token",
+ "solana-program-entrypoint",
+ "solana-program-error",
+ "solana-program-memory",
+ "solana-program-option",
+ "solana-program-pack",
+ "solana-pubkey 4.3.0",
+ "solana-rent",
+ "solana-sdk-ids",
+ "solana-secp256k1-recover",
+ "solana-serde-varint",
+ "solana-serialize-utils",
+ "solana-sha256-hasher",
+ "solana-short-vec",
+ "solana-slot-hashes",
+ "solana-slot-history",
+ "solana-stable-layout",
+ "solana-sysvar",
+ "solana-sysvar-id",
+]
+
+[[package]]
+name = "solana-program-entrypoint"
+version = "3.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "84c9b0a1ff494e05f503a08b3d51150b73aa639544631e510279d6375f290997"
+dependencies = [
+ "solana-account-info",
+ "solana-define-syscall 4.0.1",
+ "solana-program-error",
+ "solana-pubkey 4.3.0",
+]
+
+[[package]]
+name = "solana-program-error"
+version = "3.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4f04fa578707b3612b095f0c8e19b66a1233f7c42ca8082fcb3b745afcc0add6"
+dependencies = [
+ "borsh",
+ "serde",
+ "serde_derive",
+]
+
+[[package]]
+name = "solana-program-memory"
+version = "3.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4068648649653c2c50546e9a7fb761791b5ab0cda054c771bb5808d3a4b9eb52"
+dependencies = [
+ "solana-define-syscall 4.0.1",
+]
+
+[[package]]
+name = "solana-program-option"
+version = "3.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7a88006a9b8594088cec9027ab77caaaa258a2aaa2083d3f086c44b42e50aeab"
+
+[[package]]
+name = "solana-program-pack"
+version = "3.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3d7701cb15b90667ae1c89ef4ac35a59c61e66ce58ddee13d729472af7f41d59"
+dependencies = [
+ "solana-program-error",
+]
+
+[[package]]
+name = "solana-pubkey"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8909d399deb0851aa524420beeb5646b115fd253ef446e35fe4504c904da3941"
+dependencies = [
+ "solana-address 1.1.0",
+]
+
+[[package]]
+name = "solana-pubkey"
+version = "4.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "10f71b7a414de2ced1071f015834e9be581592d013432adbd06d02e4af11eba9"
+dependencies = [
+ "rand 0.9.4",
+ "solana-address 2.7.0",
+]
+
+[[package]]
+name = "solana-rent"
+version = "4.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dc016b348926395ba01f8288cdf5da25fc30f5a0806028b32d5e5b3147b10bf9"
+dependencies = [
+ "serde",
+ "serde_derive",
+ "solana-get-sysvar",
+ "solana-sdk-ids",
+ "solana-sdk-macro",
+ "solana-sysvar-id",
+]
+
+[[package]]
+name = "solana-sanitize"
+version = "3.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dcf09694a0fc14e5ffb18f9b7b7c0f15ecb6eac5b5610bf76a1853459d19daf9"
+
+[[package]]
+name = "solana-sdk"
+version = "4.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "657e20ea41ba32cad0c493bec60b6d55cc6c30d2c1073b94cfee96dda0d764dd"
+dependencies = [
+ "bincode",
+ "bs58",
+ "serde",
+ "solana-account",
+ "solana-epoch-info",
+ "solana-epoch-rewards-hasher",
+ "solana-fee-structure",
+ "solana-inflation",
+ "solana-keypair",
+ "solana-message",
+ "solana-offchain-message",
+ "solana-presigner",
+ "solana-program",
+ "solana-program-memory",
+ "solana-pubkey 4.3.0",
+ "solana-sanitize",
+ "solana-sdk-ids",
+ "solana-sdk-macro",
+ "solana-seed-derivable",
+ "solana-seed-phrase",
+ "solana-serde",
+ "solana-serde-varint",
+ "solana-short-vec",
+ "solana-shred-version",
+ "solana-signature",
+ "solana-signer",
+ "solana-time-utils",
+ "solana-transaction",
+ "solana-transaction-error",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "solana-sdk-ids"
+version = "3.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "def234c1956ff616d46c9dd953f251fa7096ddbaa6d52b165218de97882b7280"
+dependencies = [
+ "solana-address 2.7.0",
+]
+
+[[package]]
+name = "solana-sdk-macro"
+version = "3.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8765316242300c48242d84a41614cb3388229ec353ba464f6fe62a733e41806f"
+dependencies = [
+ "bs58",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.119",
+]
+
+[[package]]
+name = "solana-secp256k1-recover"
+version = "3.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ce0d2e8d53946f04e789476d6c407e4997b7fb412483df5fc10c075c65cb2edf"
+dependencies = [
+ "k256",
+ "solana-define-syscall 5.2.0",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "solana-seed-derivable"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ff7bdb72758e3bec33ed0e2658a920f1f35dfb9ed576b951d20d63cb61ecd95c"
+dependencies = [
+ "solana-derivation-path",
+]
+
+[[package]]
+name = "solana-seed-phrase"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dc905b200a95f2ea9146e43f2a7181e3aeb55de6bc12afb36462d00a3c7310de"
+dependencies = [
+ "hmac",
+ "pbkdf2",
+ "sha2 0.10.9",
+]
+
+[[package]]
+name = "solana-serde"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "709a93cab694c70f40b279d497639788fc2ccbcf9b4aa32273d4b361322c02dd"
+dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "solana-serde-varint"
+version = "3.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "950e5b83e839dc0f92c66afc124bb8f40e89bc90f0579e8ec5499296d27f54e3"
+dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "solana-serialize-utils"
+version = "3.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "761357b0853c9623bf12c1d2314b3d6160a85b087b84c45224fb85766d22616b"
+dependencies = [
+ "solana-instruction-error",
+ "solana-pubkey 4.3.0",
+ "solana-sanitize",
+]
+
+[[package]]
+name = "solana-sha256-hasher"
+version = "3.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "db7dc3011ea4c0334aaaa7e7128cb390ecf546b28d412e9bf2064680f57f588f"
+dependencies = [
+ "sha2 0.10.9",
+ "solana-define-syscall 4.0.1",
+ "solana-hash 4.6.0",
+]
+
+[[package]]
+name = "solana-short-vec"
+version = "3.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c75782529cc4521114c1ecd71c7e2cdebd41a6fe9844b5d088fd36ef08c57c36"
+dependencies = [
+ "serde_core",
+ "wincode",
+]
+
+[[package]]
+name = "solana-shred-version"
+version = "3.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d6c79722e299d957958bf33695f7cd1ef6724ff55563c60fd9e3e24487cccde2"
+dependencies = [
+ "solana-hard-forks",
+ "solana-hash 4.6.0",
+ "solana-sha256-hasher",
+]
+
+[[package]]
+name = "solana-signature"
+version = "3.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fe45ce95700ac8045e422344b88e273843d70185873cc1cc880ba06dd9fa9002"
+dependencies = [
+ "five8",
+ "rand 0.9.4",
+ "serde",
+ "serde-big-array",
+ "serde_derive",
+ "solana-ed25519",
+ "solana-sanitize",
+ "wincode",
+]
+
+[[package]]
+name = "solana-signer"
+version = "3.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "520bd6021163ee517f4bdc7ae03ded904f97e11320001ba0b3355f45eb14f558"
+dependencies = [
+ "solana-pubkey 4.3.0",
+ "solana-signature",
+ "solana-transaction-error",
+]
+
+[[package]]
+name = "solana-slot-hashes"
+version = "3.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "007d6bc909599eea325c9d09f7ff16ef6166c134876ff47a6a122d693d058dad"
+dependencies = [
+ "serde",
+ "serde_derive",
+ "solana-get-sysvar",
+ "solana-hash 4.6.0",
+ "solana-sdk-ids",
+ "solana-sysvar-id",
+]
+
+[[package]]
+name = "solana-slot-history"
+version = "3.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4560fde841a6f2001aedc33b74fe99840ee3d56a71fe9b98ee332303b8597900"
+dependencies = [
+ "bv",
+ "serde",
+ "serde_derive",
+ "solana-get-sysvar",
+ "solana-sdk-ids",
+ "solana-sysvar-id",
+]
+
+[[package]]
+name = "solana-stable-layout"
+version = "3.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c9f6a291ba063a37780af29e7db14bdd3dc447584d8ba5b3fc4b88e2bbc982fa"
+dependencies = [
+ "solana-instruction",
+ "solana-pubkey 4.3.0",
+]
+
+[[package]]
+name = "solana-stake-history"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c814b4e2570f8c343eb1d4f968ff981bdf518afc3643d070d8e5a28158e85a4b"
+dependencies = [
+ "serde",
+ "serde_derive",
+ "solana-clock",
+ "solana-get-sysvar",
+ "solana-sdk-ids",
+ "solana-sysvar-id",
+]
+
+[[package]]
+name = "solana-system-interface"
+version = "3.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2e2d5311d0584af231c6c2b0503ba1c3aa50118ead4f503ab215ccbdd1ffac57"
+dependencies = [
+ "num-traits",
+ "solana-address 2.7.0",
+ "solana-msg",
+ "solana-program-error",
+]
+
+[[package]]
+name = "solana-sysvar"
+version = "4.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "552f9d54ec9597f5a17469df500a1ac345c262e5a9859938ef5e5541844fdac5"
+dependencies = [
+ "base64",
+ "bincode",
+ "bytemuck",
+ "bytemuck_derive",
+ "lazy_static",
+ "serde",
+ "serde_derive",
+ "solana-account-info",
+ "solana-clock",
+ "solana-define-syscall 5.2.0",
+ "solana-epoch-rewards",
+ "solana-epoch-schedule",
+ "solana-fee-calculator",
+ "solana-get-sysvar",
+ "solana-hash 4.6.0",
+ "solana-instruction",
+ "solana-last-restart-slot",
+ "solana-program-entrypoint",
+ "solana-program-error",
+ "solana-program-memory",
+ "solana-pubkey 4.3.0",
+ "solana-rent",
+ "solana-sdk-ids",
+ "solana-sdk-macro",
+ "solana-slot-hashes",
+ "solana-slot-history",
+ "solana-stake-history",
+ "solana-sysvar-id",
+]
+
+[[package]]
+name = "solana-sysvar-id"
+version = "3.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "17358d1e9a13e5b9c2264d301102126cf11a47fd394cdf3dec174fe7bc96e1de"
+dependencies = [
+ "solana-address 2.7.0",
+ "solana-sdk-ids",
+]
+
+[[package]]
+name = "solana-time-utils"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ced92c60aa76ec4780a9d93f3bd64dfa916e1b998eacc6f1c110f3f444f02c9"
+
+[[package]]
+name = "solana-transaction"
+version = "4.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "444a979f617ef7ed4e01aa228800df52d0af55f533e1840e8d48d468e607885f"
+dependencies = [
+ "serde",
+ "serde_derive",
+ "solana-address 2.7.0",
+ "solana-hash 4.6.0",
+ "solana-instruction",
+ "solana-instruction-error",
+ "solana-message",
+ "solana-sanitize",
+ "solana-sdk-ids",
+ "solana-short-vec",
+ "solana-signature",
+ "solana-signer",
+ "solana-transaction-error",
+ "wincode",
+]
+
+[[package]]
+name = "solana-transaction-error"
+version = "3.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8a37cf28c58b03878d38c38411f0414d3a99a9e3b7e5ebb0f83f3317b2796d18"
+dependencies = [
+ "serde",
+ "serde_derive",
+ "solana-instruction-error",
+ "solana-sanitize",
 ]
 
 [[package]]
@@ -7416,7 +8627,7 @@ dependencies = [
 [[package]]
 name = "solvers-dto"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-primitives",
  "alloy-rpc-types",
@@ -7493,7 +8704,7 @@ dependencies = [
  "percent-encoding",
  "serde",
  "serde_json",
- "sha2",
+ "sha2 0.10.9",
  "smallvec",
  "thiserror 2.0.18",
  "tokio",
@@ -7512,7 +8723,7 @@ dependencies = [
  "quote",
  "sqlx-core",
  "sqlx-macros-core",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -7530,12 +8741,12 @@ dependencies = [
  "quote",
  "serde",
  "serde_json",
- "sha2",
+ "sha2 0.10.9",
  "sqlx-core",
  "sqlx-mysql",
  "sqlx-postgres",
  "sqlx-sqlite",
- "syn 2.0.114",
+ "syn 2.0.119",
  "tokio",
  "url",
 ]
@@ -7575,7 +8786,7 @@ dependencies = [
  "rsa",
  "serde",
  "sha1",
- "sha2",
+ "sha2 0.10.9",
  "smallvec",
  "sqlx-core",
  "stringprep",
@@ -7615,7 +8826,7 @@ dependencies = [
  "rand 0.8.5",
  "serde",
  "serde_json",
- "sha2",
+ "sha2 0.10.9",
  "smallvec",
  "sqlx-core",
  "stringprep",
@@ -7696,7 +8907,7 @@ dependencies = [
  "heck",
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -7718,9 +8929,20 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "2.0.114"
+version = "2.0.119"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d4d107df263a3013ef9b1879b0df87d706ff80f65a86ea879bd9c31f9b307c2a"
+checksum = "872831b642d1a07999a962a351ed35b955ea2cfc8f3862091e2a240a84f17297"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "unicode-ident",
+]
+
+[[package]]
+name = "syn"
+version = "3.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e6275cddf4610d1775e6d1fe9469b2e77d0f39fd98fb7450901b821e0c53649f"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -7729,14 +8951,14 @@ dependencies = [
 
 [[package]]
 name = "syn-solidity"
-version = "1.5.7"
+version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "53f425ae0b12e2f5ae65542e00898d500d4d318b4baf09f40fd0d410454e9947"
+checksum = "083be3061e64d362cbe6ef12cfe1307ba3884326d8856448fe8a120fa2c44ebf"
 dependencies = [
  "paste",
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -7756,7 +8978,7 @@ checksum = "728a70f3dbaf5bab7f0c4b1ac8d7ae5ea60a4b5549c8a5914361c99147a709d2"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -7835,7 +9057,7 @@ checksum = "8f50febec83f5ee1df3015341d8bd429f2d1cc62bcba7ea2076759d315084683"
 [[package]]
 name = "testlib"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-primitives",
  "anyhow",
@@ -7868,7 +9090,7 @@ checksum = "4fee6c4efc90059e10f81e6d42c60a18f76588c3d74cb83a0b242a2b6c7504c1"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -7879,7 +9101,7 @@ checksum = "ebc4ee7f67670e9b64d05fa4253e753e016c6c95ff35b89b7941d6b856dec1d5"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -7990,7 +9212,7 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 [[package]]
 name = "token-info"
 version = "0.1.0"
-source = "git+https://github.com/cowprotocol/services.git?tag=v2.369.0#901a7c11bd42fdb51d509bb35b6d550be381ac6b"
+source = "git+https://github.com/cowprotocol/services.git?branch=dont-capture-generate-code-under-contracts-workspace#c1b5fcc78b34f31e9bb53fdb86ad97058e7aba4f"
 dependencies = [
  "alloy-primitives",
  "anyhow",
@@ -8027,7 +9249,7 @@ checksum = "af407857209536a95c8e56f8231ef2c2e2aff839b22e07a1ffcbc617e9db9fa5"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -8064,7 +9286,23 @@ dependencies = [
  "rustls-pki-types",
  "tokio",
  "tokio-rustls",
- "tungstenite",
+ "tungstenite 0.28.0",
+ "webpki-roots 0.26.11",
+]
+
+[[package]]
+name = "tokio-tungstenite"
+version = "0.29.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8f72a05e828585856dacd553fba484c242c46e391fb0e58917c942ee9202915c"
+dependencies = [
+ "futures-util",
+ "log",
+ "rustls",
+ "rustls-pki-types",
+ "tokio",
+ "tokio-rustls",
+ "tungstenite 0.29.0",
  "webpki-roots 0.26.11",
 ]
 
@@ -8143,7 +9381,7 @@ dependencies = [
  "serde_spanned",
  "toml_datetime 0.6.11",
  "toml_write",
- "winnow",
+ "winnow 0.7.14",
 ]
 
 [[package]]
@@ -8155,7 +9393,7 @@ dependencies = [
  "indexmap 2.13.0",
  "toml_datetime 0.7.5+spec-1.1.0",
  "toml_parser",
- "winnow",
+ "winnow 0.7.14",
 ]
 
 [[package]]
@@ -8164,7 +9402,7 @@ version = "1.0.6+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a3198b4b0a8e11f09dd03e133c0280504d0801269e9afa46362ffde1cbeebf44"
 dependencies = [
- "winnow",
+ "winnow 0.7.14",
 ]
 
 [[package]]
@@ -8296,7 +9534,7 @@ checksum = "7490cfa5ec963746568740651ac6781f701c9c5ea257c58e057f3ba8cf69e8da"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -8404,10 +9642,28 @@ dependencies = [
 ]
 
 [[package]]
-name = "typenum"
-version = "1.19.0"
+name = "tungstenite"
+version = "0.29.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "562d481066bde0658276a35467c4af00bdc6ee726305698a55b86e61d7ad82bb"
+checksum = "6c01152af293afb9c7c2a57e4b559c5620b421f6d133261c60dd2d0cdb38e6b8"
+dependencies = [
+ "bytes",
+ "data-encoding",
+ "http 1.4.0",
+ "httparse",
+ "log",
+ "rand 0.9.4",
+ "rustls",
+ "rustls-pki-types",
+ "sha1",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "typenum"
+version = "1.20.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b6f5e870be6c3b371b77fe0ee0bafb859fa4964b4404c27de1d380043c4dda20"
 
 [[package]]
 name = "ucd-trie"
@@ -8477,6 +9733,16 @@ name = "untrusted"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8ecb6da28b8a351d773b68d5825ac39017e680750f980f3a1a85cd8dd28a47c1"
+
+[[package]]
+name = "uriparse"
+version = "0.6.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0200d0fc04d809396c2ad43f3c95da3582a2556eba8d453c1087f4120ee352ff"
+dependencies = [
+ "fnv",
+ "lazy_static",
+]
 
 [[package]]
 name = "url"
@@ -8549,15 +9815,6 @@ name = "vsimd"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5c3082ca00d5a5ef149bb8b555a72ae84c9c59f7250f013ac822ac2e49b19c64"
-
-[[package]]
-name = "wait-timeout"
-version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "09ac3b126d3914f9849036f826e054cbabdc8519970b8998ddaf3b5bd3c65f11"
-dependencies = [
- "libc",
-]
 
 [[package]]
 name = "walkdir"
@@ -8654,7 +9911,7 @@ dependencies = [
  "bumpalo",
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
  "wasm-bindgen-shared",
 ]
 
@@ -8788,6 +10045,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "wincode"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bfc6339f1ba427bf7ad7c42403b28e524832ba2ddb5eef1bb2cc3b85db6b7b75"
+dependencies = [
+ "pastey",
+ "proc-macro2",
+ "quote",
+ "thiserror 2.0.18",
+ "wincode-derive",
+]
+
+[[package]]
+name = "wincode-derive"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "11d582d9fc9d813264407a9e16bfa16846ccf15ef032f9bbcd700741bdc00255"
+dependencies = [
+ "darling 0.23.0",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.119",
+]
+
+[[package]]
 name = "windows-core"
 version = "0.62.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8808,7 +10090,7 @@ checksum = "053e2e040ab57b9dc951b72c264860db7eb3b0200ba345b4e4c3b14f67855ddf"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -8819,7 +10101,7 @@ checksum = "3f316c4a2570ba26bbec722032c4099d8c8bc095efccdc15688708623367e358"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -9155,6 +10437,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "winnow"
+version = "1.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "23b97319f7b8343df12cc98938e5c3eb436064524c8d2b4e30a1d3a36eecdf81"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
 name = "wit-bindgen"
 version = "0.51.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9184,7 +10475,7 @@ dependencies = [
  "heck",
  "indexmap 2.13.0",
  "prettyplease",
- "syn 2.0.114",
+ "syn 2.0.119",
  "wasm-metadata",
  "wit-bindgen-core",
  "wit-component",
@@ -9200,7 +10491,7 @@ dependencies = [
  "prettyplease",
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
  "wit-bindgen-core",
  "wit-bindgen-rust",
 ]
@@ -9301,7 +10592,7 @@ checksum = "b659052874eb698efe5b9e8cf382204678a0086ebf46982b79d6ca3182927e5d"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
  "synstructure",
 ]
 
@@ -9322,7 +10613,7 @@ checksum = "2c7962b26b0a8685668b671ee4b54d007a67d4eaf05fda79ac0ecf41e32270f1"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -9342,7 +10633,7 @@ checksum = "d71e5d6e06ab090c67b5e44993ec16b72dcbaabc526db883a360057678b48502"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
  "synstructure",
 ]
 
@@ -9363,7 +10654,7 @@ checksum = "85a5b4158499876c763cb03bc4e49185d3cccbabb15b33c627f7884f43db852e"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -9396,7 +10687,7 @@ checksum = "eadce39539ca5cb3985590102671f2567e659fca9666581ad3411d59207951f3"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.114",
+ "syn 2.0.119",
 ]
 
 [[package]]
