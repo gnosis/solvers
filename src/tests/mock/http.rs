@@ -102,8 +102,9 @@ impl Drop for ServerHandle {
         }
 
         let server_panicked = self.assert_failed.load(std::sync::atomic::Ordering::SeqCst);
-        // Panics happening in the server task might not cause the test to fail and only
-        // show up if some assertion fails in the main task. This accomplishes that.
+        // Panics happening in the server task might not cause the test to fail
+        // and only show up if some assertion fails in the main task.
+        // This accomplishes that.
         assert!(!server_panicked);
 
         assert!(
@@ -121,8 +122,8 @@ impl Drop for ServerHandle {
 
 /// Set up an mock external HTTP API.
 pub async fn setup(mut expectations: Vec<Expectation>) -> ServerHandle {
-    // Reverse expectations so test can specify them in natural order while allowing
-    // us to simply `.pop()` the last element.
+    // Reverse expectations so test can specify them in natural order while
+    // allowing us to simply `.pop()` the last element.
     expectations.reverse();
 
     let expectations = Arc::new(Mutex::new(expectations));
@@ -247,7 +248,8 @@ fn post(
             RequestBody::Any => (),
         }
 
-        // If this is a JSON-RPC request, echo the request ID back in the response
+        // If this is a JSON-RPC request, echo the request ID back in the
+        // response
         if let Some(req_id) = req.get("id")
             && let Some(res_obj) = res.as_object_mut()
         {

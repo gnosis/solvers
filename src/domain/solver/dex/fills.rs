@@ -136,8 +136,8 @@ impl Fills {
 
     /// Adjusts the next fill amount that should be tried. Always halves the
     /// last tried amount.
-    // TODO: make use of `price_impact` provided by some APIs to get a more optimal
-    // next try.
+    // TODO: make use of `price_impact` provided by some APIs to get a more
+    // optimal next try.
     pub fn reduce_next_try(&self, uid: order::Uid) {
         self.amounts.lock().unwrap().entry(uid).and_modify(|entry| {
             entry.next_amount /= U256::from(2);

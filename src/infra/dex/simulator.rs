@@ -40,7 +40,8 @@ impl Simulator {
     /// This will return a `None` if the gas simulation is unavailable.
     pub async fn gas(&self, owner: Address, swap: &dex::Swap) -> Result<eth::Gas, Error> {
         if owner == self.settlement {
-            // we can't have both the settlement and swapper contracts at the same address
+            // we can't have both the settlement and swapper contracts at the
+            // same address
             return Err(Error::SettlementContractIsOwner);
         }
 

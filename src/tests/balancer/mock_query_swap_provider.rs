@@ -125,8 +125,9 @@ async fn test_mock_provider_affects_swap_result() {
     }])
     .await;
 
-    // Create a mock provider that returns different amounts than the SOR response
-    // This will help us verify that the mock provider is actually being used
+    // Create a mock provider that returns different amounts than the SOR
+    // response This will help us verify that the mock provider is actually
+    // being used
     let mut mock_provider = MockQuerySwapProvider::new();
     mock_provider.expect_query_swap().returning(|_, _| {
         Ok(OnChainAmounts {

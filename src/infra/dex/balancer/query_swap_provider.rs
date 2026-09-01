@@ -163,7 +163,8 @@ impl OnChainQuerySwapProvider {
                 )
             })?;
 
-        // Get the deltas for token_in and token_out (convert to absolute values)
+        // Get the deltas for token_in and token_out (convert to absolute
+        // values)
         let amount_in =
             eth::U256::from_str_radix(&asset_deltas[token_in_index].abs().to_string(), 10)
                 .map_err(|e| {
@@ -215,7 +216,8 @@ impl OnChainQuerySwapProvider {
         // Execute the appropriate query based on order side
         let result = match order.side {
             order::Side::Sell => {
-                // For sell orders, we know the input amount, query for output amount
+                // For sell orders, we know the input amount, query for output
+                // amount
                 v3_batch_router
                     .query_swap_exact_amount_in(paths_in)
                     .await
@@ -224,7 +226,8 @@ impl OnChainQuerySwapProvider {
                     })?
             }
             order::Side::Buy => {
-                // For buy orders, we know the output amount, query for input amount
+                // For buy orders, we know the output amount, query for input
+                // amount
                 v3_batch_router
                     .query_swap_exact_amount_out(paths_out)
                     .await
