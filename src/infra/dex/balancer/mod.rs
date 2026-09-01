@@ -120,8 +120,8 @@ impl Sor {
             return Err(Error::NotFound);
         }
 
-        // Execute on-chain query if BalancerQueries contract is available to get
-        // up-to-date amounts, otherwise use the SOR quote amounts
+        // Execute on-chain query if BalancerQueries contract is available to
+        // get up-to-date amounts, otherwise use the SOR quote amounts
         let (updated_swap_amount, updated_return_amount) =
             match self.query_swap_provider.query_swap(order, &quote).await {
                 Ok(on_chain_amounts) => {
@@ -164,8 +164,9 @@ impl Sor {
                 )
             }
             dto::ProtocolVersion::V3 => {
-                // In Balancer v3, the spender must be the Permit2 contract, as it's the one
-                // doing the transfer of funds from the settlement
+                // In Balancer v3, the spender must be the Permit2 contract, as
+                // it's the one doing the transfer of funds from
+                // the settlement
                 (
                     self.permit2.address(),
                     self.encode_v3_swap(order, &quote, max_input, slippage)?,
@@ -206,8 +207,9 @@ impl Sor {
             .iter()
             .map(|token| {
                 if *token == quote.token_in {
-                    // Use positive swap limit for sell amounts (that is, maximum
-                    // amount that can be transferred in).
+                    // Use positive swap limit for sell amounts (that is,
+                    // maximum amount that can be
+                    // transferred in).
                     I256::try_from(max_input).unwrap_or_default()
                 } else if *token == quote.token_out {
                     I256::try_from(min_output)
@@ -230,7 +232,8 @@ impl Sor {
         max_input: U256,
         slippage: &dex::Slippage,
     ) -> Result<Vec<dex::Call>, Error> {
-        // Receiving this error indicates that V3 is now supported on the current chain.
+        // Receiving this error indicates that V3 is now supported on the
+        // current chain.
         let Some(v3_batch_router) = &self.v3_batch_router else {
             return Err(Error::DisabledApiVersion(ApiVersion::V3));
         };

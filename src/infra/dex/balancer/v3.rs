@@ -29,8 +29,8 @@ impl Permit2 {
     }
 
     // Creates a interaction call to approve an address
-    // Needed because in Balancer V3 transfers are done via Permit2, so we approve
-    // the balancer v3 router to spend the input tokens
+    // Needed because in Balancer V3 transfers are done via Permit2, so we
+    // approve the balancer v3 router to spend the input tokens
     pub fn create_approval_call(
         &self,
         spender: Address,
@@ -39,12 +39,13 @@ impl Permit2 {
     ) -> dex::Call {
         let to = self.address();
 
-        // expiration = 0 in permit2 means that the tokens are allowed to be spent on
-        // the same block as the approval, this is enough for a settlement
+        // expiration = 0 in permit2 means that the tokens are allowed to be
+        // spent on the same block as the approval, this is enough for a
+        // settlement
         let expiration = U48::ZERO;
 
-        // Transfers are done via Permit2, so we approve the balancer v3 router to spend
-        // the input tokens
+        // Transfers are done via Permit2, so we approve the balancer v3 router
+        // to spend the input tokens
         let calldata = Permit2Contract::Permit2::approveCall {
             token: token_in,
             spender,
@@ -113,7 +114,8 @@ impl Router {
             .map_err(|e| anyhow!("V3 query_swap_exact_amount_in RPC call failed: {e:?}"))?;
 
         // The result is (amounts_out, tokens_out, amounts_in)
-        // For exact amount in, we want the output amount (first element of amounts_out)
+        // For exact amount in, we want the output amount (first element of
+        // amounts_out)
         ensure!(
             !swap_in_return.amountsOut.is_empty(),
             "V3 query_swap_exact_in returned no output amounts"
@@ -136,7 +138,8 @@ impl Router {
             .map_err(|e| anyhow!("V3 query_swap_exact_amount_out RPC call failed: {e:?}"))?;
 
         // The result is (amounts_out, tokens_out, amounts_in)
-        // For exact amount out, we want the input amount (first element of amounts_in)
+        // For exact amount out, we want the input amount (first element of
+        // amounts_in)
         ensure!(
             !swap_out_return.amountsIn.is_empty(),
             "V3 query_swap_exact_out returned no input amounts"

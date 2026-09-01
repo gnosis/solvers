@@ -182,9 +182,9 @@ impl From<util::http::RoundtripError<dto::Error>> for Error {
                 }
             }
             util::http::RoundtripError::Api(err) => {
-                // Unfortunately, AFAIK these codes aren't documented anywhere. These
-                // based on empirical observations of what the API has returned in the
-                // past.
+                // Unfortunately, AFAIK these codes aren't documented anywhere.
+                // These based on empirical observations of what
+                // the API has returned in the past.
                 match err.code {
                     100 => Self::NotFound,
                     429 => Self::RateLimited,

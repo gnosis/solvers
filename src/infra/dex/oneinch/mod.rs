@@ -211,9 +211,9 @@ impl From<util::http::RoundtripError<dto::Error>> for Error {
                 other_err => Self::Http(other_err),
             },
             util::http::RoundtripError::Api(err) => {
-                // Unfortunately, AFAIK these codes aren't documented anywhere. These
-                // based on empirical observations of what the API has returned in the
-                // past.
+                // Unfortunately, AFAIK these codes aren't documented anywhere.
+                // These based on empirical observations of what
+                // the API has returned in the past.
                 match err.status_code {
                     // 403 is returned when the 1inch quote API is forbidden due to legal reason for
                     // a specific address or an artificial address was used in the request.
