@@ -411,7 +411,13 @@ async fn tested_amounts_wrap_around() {
 
     let api = mock::http::setup(fill_attempts).await;
 
-    let engine = tests::SolverEngine::new("balancer", balancer::config(&api.address)).await;
+    // Balancer's on-chain amount query fails for each attempt, so the SOR
+    // amounts are used. None of the swaps satisfy the order, so nothing gets
+    // simulated.
+    let node = mock::http::setup(vec![mock::node::failing_call(); 4]).await;
+
+    let engine =
+        tests::SolverEngine::new("balancer", balancer::config(&api.address, &node.address)).await;
 
     let auction = json!({
         "id": "1",
@@ -800,7 +806,16 @@ async fn insufficient_room_for_surplus_fee() {
     }])
     .await;
 
-    let engine = tests::SolverEngine::new("balancer", balancer::config(&api.address)).await;
+    // Balancer's on-chain amount query fails (the SOR amounts are used), then
+    // the swap gets simulated to determine its gas usage.
+    let node = mock::http::setup(vec![
+        mock::node::failing_call(),
+        mock::node::gas_simulation(88_892),
+    ])
+    .await;
+
+    let engine =
+        tests::SolverEngine::new("balancer", balancer::config(&api.address, &node.address)).await;
 
     let solution = engine
         .solve(json!({
@@ -866,194 +881,5 @@ async fn insufficient_room_for_surplus_fee() {
         json!({
             "solutions": []
         }),
-    );
-}
-
-/// Test that documents how we deal with partially fillable market orders. In
-/// particular, we assume that there is no solver fee to compute and that the
-/// pre-agreed upon "feeAmount" is sufficient. In practice, this isn't expected
-/// to happen, and this test is mostly included to document expected behaviour
-/// in the case of these orders.
-#[tokio::test]
-async fn market() {
-    let api = mock::http::setup(vec![mock::http::Expectation::Post {
-        path: mock::http::Path::Any,
-        req: mock::http::RequestBody::Partial(
-            json!({
-                "query": serde_json::to_value(SWAP_QUERY).unwrap(),
-                "variables": {
-                    "chain": "MAINNET",
-                    "swapAmount": "1",
-                    "swapType": "EXACT_IN",
-                    "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                    "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-                }
-            }),
-            vec!["variables.callDataInput.deadline"],
-        ),
-        res: json!({
-            "data": {
-                "sorGetSwapPaths": {
-                    "tokenAddresses": [
-                        "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                        "0xba100000625a3754423978a60c9317c58a424e3d"
-                    ],
-                    "swaps": [
-                        {
-                            "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820\
-                                db8f56000200000000000000000014",
-                            "assetInIndex": 0,
-                            "assetOutIndex": 1,
-                            "amount": "1000000000000000000",
-                            "userData": "0x",
-                            "returnAmount": "227598784442065388110"
-                        }
-                    ],
-                    "swapAmountRaw": "1000000000000000000",
-                    "returnAmountRaw": "227598784442065388110",
-                    "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                    "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
-                    "protocolVersion": 2,
-                    "paths": [],
-                }
-            }
-        }),
-    }])
-    .await;
-
-    let engine = tests::SolverEngine::new("balancer", balancer::config(&api.address)).await;
-
-    let solution = engine
-        .solve(json!({
-            "id": "1",
-            "tokens": {
-                "0xba100000625a3754423978a60c9317c58a424e3D": {
-                    "decimals": 18,
-                    "symbol": "BAL",
-                    "referencePrice": "4327903683155778",
-                    "availableBalance": "0",
-                    "trusted": true
-                },
-                "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2": {
-                    "decimals": 18,
-                    "symbol": "WETH",
-                    "referencePrice": "1000000000000000000",
-                    "availableBalance": "0",
-                    "trusted": true
-                },
-                "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee": {
-                    "decimals": 18,
-                    "symbol": "ETH",
-                    "referencePrice": "1000000000000000000",
-                    "availableBalance": "0",
-                    "trusted": true
-                },
-            },
-            "orders": [
-                {
-                    "uid": "0x2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a\
-                              2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a\
-                              2a2a2a2a",
-                    "sellToken": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-                    "buyToken": "0xba100000625a3754423978a60c9317c58a424e3D",
-                    "sellAmount": "1000000000000000000",
-                    "buyAmount": "227598784442065388110",
-                    "fullSellAmount": "1000000000000000000",
-                    "fullBuyAmount": "227598784442065388110",
-                    "kind": "sell",
-                    "partiallyFillable": true,
-                    "class": "market",
-                    "sellTokenSource": "erc20",
-                    "buyTokenDestination": "erc20",
-                    "preInteractions": [],
-                    "postInteractions": [],
-                    "owner": "0x5b1e2c2762667331bc91648052f646d1b0d35984",
-                    "validTo": 0,
-                    "appData": "0x0000000000000000000000000000000000000000000000000000000000000000",
-                    "signingScheme": "presign",
-                    "signature": "0x",
-                }
-            ],
-            "liquidity": [],
-            "effectiveGasPrice": "15000000000",
-            "deadline": "2106-01-01T00:00:00.000Z",
-            "surplusCapturingJitOrderOwners": []
-        }))
-        .await
-        .unwrap();
-
-    assert_eq!(
-        solution,
-        json!({
-            "solutions": [{
-                "id": 0,
-                "preInteractions": [],
-                "postInteractions": [],
-                "interactions": [
-                    {
-                        "allowances": [
-                            {
-                                "amount": "1000000000000000000",
-                                "spender": "0xba12222222228d8ba445958a75a0704d566bf2c8",
-                                "token": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-                            }
-                        ],
-                        "callData": "0x945bcec90000000000000000000000000000000000000000000\
-                            00000000000000000000000000000000000000000000000000000000000000\
-                            00000000000000000000120000000000000000000000000000000000000000\
-                            00000000000000000000002200000000000000000000000009008d19f58aab\
-                            d9ed0d60971565aa8510560ab4100000000000000000000000000000000000\
-                            000000000000000000000000000000000000000000000000000009008d19f5\
-                            8aabd9ed0d60971565aa8510560ab410000000000000000000000000000000\
-                            00000000000000000000000000000000000000000000000000000000000000\
-                            00000000000000000000000000000000280800000000000000000000000000\
-                            00000000000000000000000000000000000000000000000000000000000000\
-                            00000000000000000000000000000000000000100000000000000000000000\
-                            000000000000000000000000000000000000000205c6ee304399dbdb9c8ef0\
-                            30ab642b10820db8f560002000000000000000000140000000000000000000\
-                            00000000000000000000000000000000000000000000000000000000000000\
-                            00000000000000000000000000000000000000000000001000000000000000\
-                            0000000000000000000000000000000000de0b6b3a76400000000000000000\
-                            0000000000000000000000000000000000000000000000000a000000000000\
-                            00000000000000000000000000000000000000000000000000000000000000\
-                            00000000000000000000000000000000000000000000000000000020000000\
-                            00000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc200000\
-                            0000000000000000000ba100000625a3754423978a60c9317c58a424e3d000\
-                            00000000000000000000000000000000000000000000000000000000000020\
-                            000000000000000000000000000000000000000000000000de0b6b3a764000\
-                            0fffffffffffffffffffffffffffffffffffffffffffffff3c9049e4e47ca5\
-                            0ec",
-                        "inputs": [
-                            {
-                                "amount": "1000000000000000000",
-                                "token": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-                            }
-                        ],
-                        "internalize": false,
-                        "kind": "custom",
-                        "outputs": [
-                            {
-                                "amount": "227598784442065388110",
-                                "token": "0xba100000625a3754423978a60c9317c58a424e3d"
-                            }
-                        ],
-                        "target": "0xba12222222228d8ba445958a75a0704d566bf2c8",
-                        "value": "0"
-                    }
-                ],
-                "prices": {
-                    "0xba100000625a3754423978a60c9317c58a424e3d": "1000000000000000000",
-                    "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2": "227598784442065388110"
-                },
-                "trades": [
-                    {
-                        "executedAmount": "1000000000000000000",
-                        "kind": "fulfillment",
-                        "order": "0x2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a"
-                    }
-                ],
-                "gas": 195283,
-            }]
-        })
     );
 }

@@ -1,5 +1,5 @@
 //! This test ensures that the Balancer SOR solver properly handles sell and buy
-//! market orders, turning Balancer SOR responses into CoW Protocol solutions.
+//! orders, turning Balancer SOR responses into CoW Protocol solutions.
 
 use {
     crate::tests::{
@@ -53,7 +53,16 @@ async fn sell_v2() {
     }])
     .await;
 
-    let engine = tests::SolverEngine::new("balancer", balancer::config(&api.address)).await;
+    // Balancer's on-chain amount query fails (the SOR amounts are used),
+    // then the swap gets simulated to determine its gas usage.
+    let node = mock::http::setup(vec![
+        mock::node::failing_call(),
+        mock::node::gas_simulation(88_892),
+    ])
+    .await;
+
+    let engine =
+        tests::SolverEngine::new("balancer", balancer::config(&api.address, &node.address)).await;
 
     let solution = engine
         .solve(json!({
@@ -87,7 +96,7 @@ async fn sell_v2() {
                     "fullBuyAmount": "200000000000000000000",
                     "kind": "sell",
                     "partiallyFillable": false,
-                    "class": "market",
+                    "class": "limit",
                     "sellTokenSource": "erc20",
                     "buyTokenDestination": "erc20",
                     "preInteractions": [],
@@ -113,8 +122,8 @@ async fn sell_v2() {
             "solutions": [{
                 "id": 0,
                 "prices": {
-                    "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2": "227598784442065388110",
-                    "0xba100000625a3754423978a60c9317c58a424e3d": "1000000000000000000"
+                    "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2": "226932091840732390283",
+                    "0xba100000625a3754423978a60c9317c58a424e3d": "997070755000000000"
                 },
                 "trades": [
                     {
@@ -122,7 +131,8 @@ async fn sell_v2() {
                         "order": "0x2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a\
                                     2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a\
                                     2a2a2a2a",
-                        "executedAmount": "1000000000000000000"
+                        "executedAmount": "997070755000000000",
+                        "fee": "2929245000000000"
                     }
                 ],
                 "preInteractions": [],
@@ -251,7 +261,16 @@ async fn sell_v3() {
     }])
     .await;
 
-    let engine = tests::SolverEngine::new("balancer", balancer::config(&api.address)).await;
+    // Balancer's on-chain amount query fails (the SOR amounts are used),
+    // then the swap gets simulated to determine its gas usage.
+    let node = mock::http::setup(vec![
+        mock::node::failing_call(),
+        mock::node::gas_simulation(88_892),
+    ])
+    .await;
+
+    let engine =
+        tests::SolverEngine::new("balancer", balancer::config(&api.address, &node.address)).await;
 
     let solution = engine
         .solve(json!({
@@ -285,7 +304,7 @@ async fn sell_v3() {
                     "fullBuyAmount": "200000000000000000000",
                     "kind": "sell",
                     "partiallyFillable": false,
-                    "class": "market",
+                    "class": "limit",
                     "sellTokenSource": "erc20",
                     "buyTokenDestination": "erc20",
                     "preInteractions": [],
@@ -311,8 +330,8 @@ async fn sell_v3() {
             "solutions": [{
                 "id": 0,
                 "prices": {
-                    "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2": "227598784442065388110",
-                    "0xb0415d55f2c87b7f99285848bd341c367feac1ea": "1000000000000000000"
+                    "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2": "226932091840732390283",
+                    "0xb0415d55f2c87b7f99285848bd341c367feac1ea": "997070755000000000"
                 },
                 "trades": [
                     {
@@ -320,7 +339,8 @@ async fn sell_v3() {
                         "order": "0x2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a\
                                     2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a\
                                     2a2a2a2a",
-                        "executedAmount": "1000000000000000000"
+                        "executedAmount": "997070755000000000",
+                        "fee": "2929245000000000"
                     }
                 ],
                 "preInteractions": [],
@@ -430,7 +450,16 @@ async fn buy_v2() {
     }])
     .await;
 
-    let engine = tests::SolverEngine::new("balancer", balancer::config(&api.address)).await;
+    // Balancer's on-chain amount query fails (the SOR amounts are used),
+    // then the swap gets simulated to determine its gas usage.
+    let node = mock::http::setup(vec![
+        mock::node::failing_call(),
+        mock::node::gas_simulation(88_892),
+    ])
+    .await;
+
+    let engine =
+        tests::SolverEngine::new("balancer", balancer::config(&api.address, &node.address)).await;
     let solution = engine
         .solve(json!({
             "id": "1",
@@ -463,7 +492,7 @@ async fn buy_v2() {
                     "fullBuyAmount": "100000000000000000000",
                     "kind": "buy",
                     "partiallyFillable": false,
-                    "class": "market",
+                    "class": "limit",
                     "sellTokenSource": "erc20",
                     "buyTokenDestination": "erc20",
                     "preInteractions": [],
@@ -498,7 +527,8 @@ async fn buy_v2() {
                         "order": "0x2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a\
                                     2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a\
                                     2a2a2a2a",
-                        "executedAmount": "100000000000000000000"
+                        "executedAmount": "100000000000000000000",
+                        "fee": "2929245000000000"
                     }
                 ],
                 "preInteractions": [],

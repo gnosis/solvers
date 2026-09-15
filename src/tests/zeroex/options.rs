@@ -44,9 +44,12 @@ async fn test() {
     }])
     .await;
 
+    // The swap gets simulated to determine its gas usage.
+    let node = mock::http::setup(vec![mock::node::gas_simulation(127_886)]).await;
+
     let config = tests::Config::String(format!(
         r"
-node-url = 'http://localhost:8545'
+node-url = 'http://{}'
 relative-slippage = '0.1'
 [dex]
 chain-id = '1'
@@ -54,7 +57,7 @@ endpoint = 'http://{}/swap/allowance-holder/'
 api-key = 'abc123'
 excluded-sources = ['Uniswap_V2', 'Balancer_V2']
         ",
-        api.address
+        node.address, api.address
     ));
     let engine = tests::SolverEngine::new("zeroex", config).await;
 
@@ -90,7 +93,7 @@ excluded-sources = ['Uniswap_V2', 'Balancer_V2']
                     "fullBuyAmount": "5000000000000000000000",
                     "kind": "sell",
                     "partiallyFillable": false,
-                    "class": "market",
+                    "class": "limit",
                     "sellTokenSource": "erc20",
                     "buyTokenDestination": "erc20",
                     "preInteractions": [],
@@ -116,8 +119,8 @@ excluded-sources = ['Uniswap_V2', 'Balancer_V2']
             "solutions": [{
                 "id": 0,
                 "prices": {
-                    "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2": "5876422636675954000000",
-                    "0xe41d2489571d322189246dafa5ebde1f4699f498": "1000000000000000000",
+                    "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2": "5855771976685166012872",
+                    "0xe41d2489571d322189246dafa5ebde1f4699f498": "996485845000000000",
                 },
                 "trades": [
                     {
@@ -125,7 +128,8 @@ excluded-sources = ['Uniswap_V2', 'Balancer_V2']
                         "order": "0x2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a\
                                     2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a\
                                     2a2a2a2a",
-                        "executedAmount": "1000000000000000000",
+                        "executedAmount": "996485845000000000",
+                        "fee": "3514155000000000",
                     }
                 ],
                 "preInteractions": [],

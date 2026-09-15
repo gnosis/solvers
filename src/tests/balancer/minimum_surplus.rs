@@ -74,9 +74,17 @@ async fn buy_order_insufficient_surplus() {
     }])
     .await;
 
+    // Balancer's on-chain amount query fails, so the SOR amounts are used.
+    // The swap lacks the required surplus, so it is never simulated.
+    let node = mock::http::setup(vec![mock::node::failing_call()]).await;
+
     let engine = tests::SolverEngine::new(
         "balancer",
-        balancer::config_with(&api.address, "relative-minimum-surplus = '0.01'"),
+        balancer::config_with(
+            &api.address,
+            &node.address,
+            "relative-minimum-surplus = '0.01'",
+        ),
     )
     .await;
 
@@ -112,7 +120,7 @@ async fn buy_order_insufficient_surplus() {
                     "fullBuyAmount": "230000000000000000000",
                     "kind": "buy",
                     "partiallyFillable": false,
-                    "class": "market",
+                    "class": "limit",
                     "sellTokenSource": "erc20",
                     "buyTokenDestination": "erc20",
                     "preInteractions": [],
@@ -201,9 +209,21 @@ async fn buy_order_with_sufficient_surplus() {
     }])
     .await;
 
+    // Balancer's on-chain amount query fails (the SOR amounts are used),
+    // then the swap gets simulated to determine its gas usage.
+    let node = mock::http::setup(vec![
+        mock::node::failing_call(),
+        mock::node::gas_simulation(88_892),
+    ])
+    .await;
+
     let engine = tests::SolverEngine::new(
         "balancer",
-        balancer::config_with(&api.address, "relative-minimum-surplus = '0.005'"),
+        balancer::config_with(
+            &api.address,
+            &node.address,
+            "relative-minimum-surplus = '0.005'",
+        ),
     )
     .await;
 
@@ -239,7 +259,7 @@ async fn buy_order_with_sufficient_surplus() {
                     "fullBuyAmount": "230000000000000000000",
                     "kind": "buy",
                     "partiallyFillable": false,
-                    "class": "market",
+                    "class": "limit",
                     "sellTokenSource": "erc20",
                     "buyTokenDestination": "erc20",
                     "preInteractions": [],
@@ -325,9 +345,17 @@ async fn sell_order_insufficient_surplus() {
     }])
     .await;
 
+    // Balancer's on-chain amount query fails, so the SOR amounts are used.
+    // The swap lacks the required surplus, so it is never simulated.
+    let node = mock::http::setup(vec![mock::node::failing_call()]).await;
+
     let engine = tests::SolverEngine::new(
         "balancer",
-        balancer::config_with(&api.address, "relative-minimum-surplus = '0.01'"),
+        balancer::config_with(
+            &api.address,
+            &node.address,
+            "relative-minimum-surplus = '0.01'",
+        ),
     )
     .await;
 
@@ -363,7 +391,7 @@ async fn sell_order_insufficient_surplus() {
                     "fullBuyAmount": "230000000000000000000",
                     "kind": "sell",
                     "partiallyFillable": false,
-                    "class": "market",
+                    "class": "limit",
                     "sellTokenSource": "erc20",
                     "buyTokenDestination": "erc20",
                     "preInteractions": [],
@@ -453,9 +481,21 @@ async fn sell_order_with_sufficient_surplus() {
     }])
     .await;
 
+    // Balancer's on-chain amount query fails (the SOR amounts are used),
+    // then the swap gets simulated to determine its gas usage.
+    let node = mock::http::setup(vec![
+        mock::node::failing_call(),
+        mock::node::gas_simulation(88_892),
+    ])
+    .await;
+
     let engine = tests::SolverEngine::new(
         "balancer",
-        balancer::config_with(&api.address, "relative-minimum-surplus = '0.01'"),
+        balancer::config_with(
+            &api.address,
+            &node.address,
+            "relative-minimum-surplus = '0.01'",
+        ),
     )
     .await;
 
@@ -491,7 +531,7 @@ async fn sell_order_with_sufficient_surplus() {
                     "fullBuyAmount": "230000000000000000000",
                     "kind": "sell",
                     "partiallyFillable": false,
-                    "class": "market",
+                    "class": "limit",
                     "sellTokenSource": "erc20",
                     "buyTokenDestination": "erc20",
                     "preInteractions": [],

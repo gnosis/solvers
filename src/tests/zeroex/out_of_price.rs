@@ -1,7 +1,7 @@
 //! This test verifies that the 0x solver does not generate solutions when the
 //! swap returned from the API does not satisfy an orders limit price.
 //!
-//! The actual test case is a modified version of the [`super::market_order`]
+//! The actual test case is a modified version of the [`super::limit_order`]
 //! test cases with exuberant limit prices.
 
 use {
@@ -13,11 +13,40 @@ use {
 async fn sell() {
     let api = mock::http::setup(vec![mock::http::Expectation::Get {
         path: mock::http::Path::Any,
-        res: json!({}),
+        res: json!({
+            "liquidityAvailable": true,
+            "sellAmount": "1000000000000000000",
+            "buyAmount": "5876422636675954000000",
+            "transaction": {
+                "to": "0xdef1c0ded9bec7f1a1670819833240f027b25eff",
+                "data": "0x6af479b2\
+                       0000000000000000000000000000000000000000000000000000000000000080\
+                       0000000000000000000000000000000000000000000000000de0b6b3a7640000\
+                       00000000000000000000000000000000000000000000013b603a9ce6a341ab60\
+                       0000000000000000000000000000000000000000000000000000000000000000\
+                       000000000000000000000000000000000000000000000000000000000000002b\
+                       c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000bb8e41d2489571d322189\
+                       246dafa5ebde1f4699f498000000000000000000000000000000000000000000\
+                       869584cd0000000000000000000000009008d19f58aabd9ed0d60971565aa851\
+                       0560ab4100000000000000000000000000000000000000000000009c6fd65477\
+                       63f8730a",
+                "gas": "127886",
+            },
+            "issues": {
+                "allowance": {
+                    "spender": "0xdef1c0ded9bec7f1a1670819833240f027b25eff",
+                    "actual": "1000000000000000000",
+                },
+            },
+        }),
     }])
     .await;
 
-    let engine = tests::SolverEngine::new("zeroex", zeroex::config(&api.address)).await;
+    // The swap does not satisfy the order, so it is never simulated.
+    let node = mock::http::setup(vec![]).await;
+
+    let engine =
+        tests::SolverEngine::new("zeroex", zeroex::config(&api.address, &node.address)).await;
 
     let solution = engine
         .solve(json!({
@@ -52,7 +81,7 @@ async fn sell() {
                     "fullBuyAmount": "1000000000000000000000000000000000000",
                     "kind": "sell",
                     "partiallyFillable": false,
-                    "class": "market",
+                    "class": "limit",
                     "sellTokenSource": "erc20",
                     "buyTokenDestination": "erc20",
                     "preInteractions": [],

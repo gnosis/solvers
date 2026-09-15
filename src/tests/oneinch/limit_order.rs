@@ -1,5 +1,5 @@
-//! This test ensures that the 1inch solver properly handles market sell
-//! orders, turning 1inch swap responses into CoW Protocol solutions.
+//! This test ensures that the 1inch solver properly handles sell orders,
+//! turning 1inch swap responses into CoW Protocol solutions.
 
 use {
     crate::tests::{self, mock},
@@ -118,7 +118,11 @@ async fn sell() {
     ])
         .await;
 
-    let engine = tests::SolverEngine::new("oneinch", super::config(&api.address)).await;
+    // The swap gets simulated to determine its gas usage.
+    let node = mock::http::setup(vec![mock::node::gas_simulation(100_000)]).await;
+
+    let engine =
+        tests::SolverEngine::new("oneinch", super::config(&api.address, &node.address)).await;
 
     let solution = engine
         .solve(json!({
@@ -152,7 +156,7 @@ async fn sell() {
                     "fullBuyAmount": "200000000000000000000",
                     "kind": "sell",
                     "partiallyFillable": false,
-                    "class": "market",
+                    "class": "limit",
                     "sellTokenSource": "erc20",
                     "buyTokenDestination": "erc20",
                     "preInteractions": [],
@@ -209,12 +213,13 @@ async fn sell() {
                 }
               ],
               "prices": {
-                "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2": "7849120067437052861364",
-                "0xe41d2489571d322189246dafa5ebde1f4699f498": "1000000000000000000"
+                "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2": "7824820251339476849708",
+                "0xe41d2489571d322189246dafa5ebde1f4699f498": "996904135000000000"
               },
               "trades": [
                 {
-                  "executedAmount": "1000000000000000000",
+                  "executedAmount": "996904135000000000",
+                  "fee": "3095865000000000",
                   "kind": "fulfillment",
                   "order": "0x2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a"
                 }
@@ -270,7 +275,11 @@ async fn buy_not_supported() {
     ])
     .await;
 
-    let engine = tests::SolverEngine::new("oneinch", super::config(&api.address)).await;
+    // Buy orders are not supported, so the node is never queried.
+    let node = mock::http::setup(vec![]).await;
+
+    let engine =
+        tests::SolverEngine::new("oneinch", super::config(&api.address, &node.address)).await;
 
     let solution = engine
         .solve(json!({
@@ -304,7 +313,7 @@ async fn buy_not_supported() {
                     "fullBuyAmount": "200000000000000000000",
                     "kind": "buy",
                     "partiallyFillable": false,
-                    "class": "market",
+                    "class": "limit",
                     "sellTokenSource": "erc20",
                     "buyTokenDestination": "erc20",
                     "preInteractions": [],

@@ -1,7 +1,7 @@
 //! This test verifies that the 1inch solver does not generate solutions when
 //! the swap returned from the API does not satisfy an order's limit price.
 //!
-//! The actual test case is a modified version of the [`super::market_order`]
+//! The actual test case is a modified version of the [`super::limit_order`]
 //! test with an exuberant buy amount.
 
 use {
@@ -121,7 +121,11 @@ async fn sell() {
     ])
     .await;
 
-    let engine = tests::SolverEngine::new("oneinch", super::config(&api.address)).await;
+    // The swap does not satisfy the order, so it is never simulated.
+    let node = mock::http::setup(vec![]).await;
+
+    let engine =
+        tests::SolverEngine::new("oneinch", super::config(&api.address, &node.address)).await;
 
     let solution = engine
         .solve(json!({
@@ -156,7 +160,7 @@ async fn sell() {
                     "fullBuyAmount": "1000000000000000000000000000000000000",
                     "kind": "sell",
                     "partiallyFillable": false,
-                    "class": "market",
+                    "class": "limit",
                     "sellTokenSource": "erc20",
                     "buyTokenDestination": "erc20",
                     "preInteractions": [],

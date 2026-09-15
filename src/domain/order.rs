@@ -12,7 +12,6 @@ pub struct Order {
     pub sell: eth::Asset,
     pub buy: eth::Asset,
     pub side: Side,
-    pub class: Class,
     pub partially_fillable: bool,
 }
 
@@ -20,11 +19,6 @@ impl Order {
     /// Returns the order's owner address.
     pub fn owner(&self) -> eth::Address {
         eth::Address::from_slice(&self.uid.0[32..52])
-    }
-
-    /// Returns `true` if the order expects a solver-computed fee.
-    pub fn solver_determines_fee(&self) -> bool {
-        self.class == Class::Limit
     }
 }
 
@@ -53,11 +47,4 @@ pub enum Side {
     Buy,
     /// An order with a fixed sell amount and a minimum buy amount.
     Sell,
-}
-
-/// The order classification.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Class {
-    Market,
-    Limit,
 }
