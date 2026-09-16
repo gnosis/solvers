@@ -1,5 +1,5 @@
 //! This test ensures that the ParaSwap solver properly handles sell and buy
-//! market orders, turning ParaSwap swap responses into CoW Protocol solutions.
+//! orders, turning ParaSwap swap responses into CoW Protocol solutions.
 
 use {
     crate::tests::{self, mock, paraswap},
@@ -81,7 +81,11 @@ async fn sell() {
     ])
         .await;
 
-    let engine = tests::SolverEngine::new("paraswap", paraswap::config(&api.address)).await;
+    // The swap gets simulated to determine its gas usage.
+    let node = mock::http::setup(vec![mock::node::gas_simulation(242_300)]).await;
+
+    let engine =
+        tests::SolverEngine::new("paraswap", paraswap::config(&api.address, &node.address)).await;
 
     let solution = engine
         .solve(json!({
@@ -115,7 +119,7 @@ async fn sell() {
                     "fullBuyAmount": "200000000000000000000",
                     "kind": "sell",
                     "partiallyFillable": false,
-                    "class": "market",
+                    "class": "limit",
                     "sellTokenSource": "erc20",
                     "buyTokenDestination": "erc20",
                     "preInteractions": [],
@@ -172,12 +176,13 @@ async fn sell() {
                 }
               ],
               "prices": {
-                "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2": "8116136957818361742974",
-                "0xe41d2489571d322189246dafa5ebde1f4699f498": "1000000000000000000"
+                "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2": "8073686599138982107357",
+                "0xe41d2489571d322189246dafa5ebde1f4699f498": "994769635000000000"
               },
               "trades": [
                 {
-                  "executedAmount": "1000000000000000000",
+                  "executedAmount": "994769635000000000",
+                  "fee": "5230365000000000",
                   "kind": "fulfillment",
                   "order": "0x2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a"
                 }
@@ -272,7 +277,11 @@ async fn buy() {
     ])
         .await;
 
-    let engine = tests::SolverEngine::new("paraswap", paraswap::config(&api.address)).await;
+    // The swap gets simulated to determine its gas usage.
+    let node = mock::http::setup(vec![mock::node::gas_simulation(106_935)]).await;
+
+    let engine =
+        tests::SolverEngine::new("paraswap", paraswap::config(&api.address, &node.address)).await;
 
     let solution = engine
         .solve(json!({
@@ -306,7 +315,7 @@ async fn buy() {
                     "fullBuyAmount": "1000000000000000000000",
                     "kind": "buy",
                     "partiallyFillable": false,
-                    "class": "market",
+                    "class": "limit",
                     "sellTokenSource": "erc20",
                     "buyTokenDestination": "erc20",
                     "preInteractions": [],
@@ -369,6 +378,7 @@ async fn buy() {
               "trades": [
                 {
                   "executedAmount": "1000000000000000000000",
+                  "fee": "3199890000000000",
                   "kind": "fulfillment",
                   "order": "0x2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a"
                 }

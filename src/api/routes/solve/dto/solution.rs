@@ -23,7 +23,7 @@ pub fn from_domain(solutions: &[solution::Solution]) -> dto::solution::SolverRes
                         solution::Trade::Fulfillment(trade) => Trade::Fulfillment(Fulfillment {
                             order: OrderUid(trade.order().uid.0),
                             executed_amount: trade.executed().amount,
-                            fee: trade.surplus_fee().map(|fee| fee.amount),
+                            fee: Some(trade.fee().amount),
                         }),
                     })
                     .collect(),

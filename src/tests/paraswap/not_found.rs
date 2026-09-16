@@ -16,7 +16,11 @@ async fn test() {
     }])
     .await;
 
-    let engine = tests::SolverEngine::new("paraswap", paraswap::config(&api.address)).await;
+    // No swap is found, so the node is never queried.
+    let node = mock::http::setup(vec![]).await;
+
+    let engine =
+        tests::SolverEngine::new("paraswap", paraswap::config(&api.address, &node.address)).await;
 
     let solution = engine
         .solve(json!({
@@ -50,7 +54,7 @@ async fn test() {
                     "fullBuyAmount": "200000000000000000000",
                     "kind": "sell",
                     "partiallyFillable": false,
-                    "class": "market",
+                    "class": "limit",
                     "sellTokenSource": "erc20",
                     "buyTokenDestination": "erc20",
                     "preInteractions": [],

@@ -1,5 +1,5 @@
-//! This test ensures that the 0x solver properly handles sell and buy market
-//! orders, turning 0x swap responses into CoW Protocol solutions.
+//! This test ensures that the 0x solver properly handles sell and buy orders,
+//! turning 0x swap responses into CoW Protocol solutions.
 
 use {
     crate::tests::{self, mock, zeroex},
@@ -44,7 +44,11 @@ async fn sell() {
     }])
     .await;
 
-    let engine = tests::SolverEngine::new("zeroex", zeroex::config(&api.address)).await;
+    // The swap gets simulated to determine its gas usage.
+    let node = mock::http::setup(vec![mock::node::gas_simulation(127_886)]).await;
+
+    let engine =
+        tests::SolverEngine::new("zeroex", zeroex::config(&api.address, &node.address)).await;
     let solution = engine
         .solve(json!({
             "id": "1",
@@ -77,7 +81,7 @@ async fn sell() {
                     "fullBuyAmount": "200000000000000000000",
                     "kind": "sell",
                     "partiallyFillable": false,
-                    "class": "market",
+                    "class": "limit",
                     "sellTokenSource": "erc20",
                     "buyTokenDestination": "erc20",
                     "preInteractions": [],
@@ -103,8 +107,8 @@ async fn sell() {
             "solutions": [{
                 "id": 0,
                 "prices": {
-                    "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2": "5876422636675954000000",
-                    "0xe41d2489571d322189246dafa5ebde1f4699f498": "1000000000000000000",
+                    "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2": "5855771976685166012872",
+                    "0xe41d2489571d322189246dafa5ebde1f4699f498": "996485845000000000",
                 },
                 "trades": [
                     {
@@ -112,7 +116,8 @@ async fn sell() {
                         "order": "0x2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a\
                                     2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a\
                                     2a2a2a2a",
-                        "executedAmount": "1000000000000000000",
+                        "executedAmount": "996485845000000000",
+                        "fee": "3514155000000000",
                     }
                 ],
                 "preInteractions": [],

@@ -2,7 +2,7 @@
 //! swap was found for the specified quoted order.
 
 use {
-    crate::tests::{self, balancer},
+    crate::tests::{self, balancer, mock},
     serde_json::json,
     std::{net::SocketAddr, str::FromStr},
 };
@@ -11,7 +11,11 @@ use {
 #[tokio::test]
 async fn test() {
     let api_address = SocketAddr::from_str("127.0.0.1:8080").unwrap();
-    let engine = tests::SolverEngine::new("balancer", balancer::config(&api_address)).await;
+    // No swap is found, so the node is never queried.
+    let node = mock::http::setup(vec![]).await;
+
+    let engine =
+        tests::SolverEngine::new("balancer", balancer::config(&api_address, &node.address)).await;
 
     let solution = engine
         .solve(json!({
@@ -30,7 +34,7 @@ async fn test() {
                     "fullBuyAmount": "100000000000000000000",
                     "kind": "sell",
                     "partiallyFillable": false,
-                    "class": "market",
+                    "class": "limit",
                     "sellTokenSource": "erc20",
                     "buyTokenDestination": "erc20",
                     "preInteractions": [],

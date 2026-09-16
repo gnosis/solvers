@@ -1,7 +1,7 @@
 //! This test verifies that the Balancer SOR solver does not generate solutions
 //! when the swap returned from the API does not satisfy an orders limit price.
 //!
-//! The actual test case is a modified version of the [`super::market_order`]
+//! The actual test case is a modified version of the [`super::limit_order`]
 //! test cases with exuberant limit prices.
 
 use {
@@ -44,16 +44,23 @@ async fn sell() {
                         }
                     ],
                     "swapAmountRaw": "1000000000000000000",
-                    "returnAmount": "227598784442065388110",
+                    "returnAmountRaw": "227598784442065388110",
                     "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
                     "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                    "protocolVersion": 2,
+                    "paths": [],
                 }
             }
         }),
     }])
     .await;
 
-    let engine = tests::SolverEngine::new("balancer", balancer::config(&api.address)).await;
+    // Balancer's on-chain amount query fails, so the SOR amounts are used.
+    // The swap does not satisfy the order, so it is never simulated.
+    let node = mock::http::setup(vec![mock::node::failing_call()]).await;
+
+    let engine =
+        tests::SolverEngine::new("balancer", balancer::config(&api.address, &node.address)).await;
 
     let solution = engine
         .solve(json!({
@@ -88,7 +95,7 @@ async fn sell() {
                     "fullBuyAmount": "1000000000000000000000000000000000000",
                     "kind": "sell",
                     "partiallyFillable": false,
-                    "class": "market",
+                    "class": "limit",
                     "sellTokenSource": "erc20",
                     "buyTokenDestination": "erc20",
                     "preInteractions": [],
@@ -150,13 +157,20 @@ async fn buy() {
                     "returnAmountRaw": "439470293178110675",
                     "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
                     "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                    "protocolVersion": 2,
+                    "paths": [],
                 }
             }
         }),
     }])
     .await;
 
-    let engine = tests::SolverEngine::new("balancer", balancer::config(&api.address)).await;
+    // Balancer's on-chain amount query fails, so the SOR amounts are used.
+    // The swap does not satisfy the order, so it is never simulated.
+    let node = mock::http::setup(vec![mock::node::failing_call()]).await;
+
+    let engine =
+        tests::SolverEngine::new("balancer", balancer::config(&api.address, &node.address)).await;
 
     let solution = engine
         .solve(json!({
@@ -191,7 +205,7 @@ async fn buy() {
                     "fullBuyAmount": "100000000000000000000",
                     "kind": "buy",
                     "partiallyFillable": false,
-                    "class": "market",
+                    "class": "limit",
                     "sellTokenSource": "erc20",
                     "buyTokenDestination": "erc20",
                     "preInteractions": [],

@@ -11,6 +11,9 @@ struct Case {
     input_amount: &'static str,
     output_amount: &'static str,
     side: &'static str,
+    /// Whether the swap satisfies the order's limit price and therefore gets
+    /// simulated before being rejected.
+    simulated: bool,
 }
 
 /// Test that verifies that attempting to settle an order when the DEX swap
@@ -22,26 +25,31 @@ async fn test() {
         input_amount,
         output_amount,
         side,
+        simulated,
     } in [
         Case {
             input_amount: "1000000000000000001",
             output_amount: "227598784442065388110",
             side: "sell",
+            simulated: false,
         },
         Case {
             input_amount: "999999999999999999",
             output_amount: "227598784442065388110",
             side: "sell",
+            simulated: true,
         },
         Case {
             input_amount: "1000000000000000000",
             output_amount: "227598784442065388111",
             side: "buy",
+            simulated: true,
         },
         Case {
             input_amount: "1000000000000000000",
             output_amount: "227598784442065388109",
             side: "buy",
+            simulated: false,
         },
     ] {
         let api = mock::http::setup(vec![mock::http::Expectation::Post {
@@ -68,29 +76,46 @@ async fn test() {
                 vec!["variables.callDataInput.deadline"],
             ),
             res: json!({
-                "tokenAddresses": [
-                    "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                    "0xba100000625a3754423978a60c9317c58a424e3d"
-                ],
-                "swaps": [
-                    {
-                        "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820\
-                            db8f56000200000000000000000014",
-                        "assetInIndex": 0,
-                        "assetOutIndex": 1,
-                        "amount": input_amount,
-                        "userData": "0x",
+                "data": {
+                    "sorGetSwapPaths": {
+                        "tokenAddresses": [
+                            "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                            "0xba100000625a3754423978a60c9317c58a424e3d"
+                        ],
+                        "swaps": [
+                            {
+                                "poolId": "0x5c6ee304399dbdb9c8ef030ab642b10820\
+                                    db8f56000200000000000000000014",
+                                "assetInIndex": 0,
+                                "assetOutIndex": 1,
+                                "amount": if side == "sell" { input_amount } else { output_amount },
+                                "userData": "0x",
+                            }
+                        ],
+                        // For buy orders the SOR reports the exact buy amount as the
+                        // swap amount and the required sell amount as the return amount.
+                        "swapAmountRaw": if side == "sell" { input_amount } else { output_amount },
+                        "returnAmountRaw": if side == "sell" { output_amount } else { input_amount },
+                        "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                        "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                        "protocolVersion": 2,
+                        "paths": [],
                     }
-                ],
-                "swapAmountRaw": input_amount,
-                "returnAmountRaw": output_amount,
-                "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                "tokenOut": "0xba100000625a3754423978a60c9317c58a424e3d",
+                }
             }),
         }])
         .await;
 
-        let engine = tests::SolverEngine::new("balancer", balancer::config(&api.address)).await;
+        // Balancer's on-chain amount query fails, so the SOR amounts are used.
+        let mut node_calls = vec![mock::node::failing_call()];
+        if simulated {
+            node_calls.push(mock::node::gas_simulation(88_892));
+        }
+        let node = mock::http::setup(node_calls).await;
+
+        let engine =
+            tests::SolverEngine::new("balancer", balancer::config(&api.address, &node.address))
+                .await;
 
         let solution = engine
             .solve(json!({
@@ -131,7 +156,7 @@ async fn test() {
                         "fullBuyAmount": "227598784442065388110",
                         "kind": side,
                         "partiallyFillable": false,
-                        "class": "market",
+                        "class": "limit",
                         "sellTokenSource": "erc20",
                         "buyTokenDestination": "erc20",
                         "preInteractions": [],
