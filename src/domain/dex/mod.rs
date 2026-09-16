@@ -116,7 +116,7 @@ impl Swap {
     ) -> Option<solution::Solution> {
         // Only simulate gas in proper auctions, i.e. when the auction has a
         // sell token price that turns the gas cost into a solver fee. Quote
-        // orders are owned by the zero address, so the simulation reverts. 
+        // orders are owned by the zero address, so the simulation reverts.
         // For quotes the gas indicated by the DEX is good enough.
         let gas = if sell_token.is_some() {
             match simulator.gas(order.owner(), &self).await {
