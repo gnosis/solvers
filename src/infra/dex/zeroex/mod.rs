@@ -175,6 +175,9 @@ impl From<util::http::RoundtripError<dto::Error>> for Error {
                         StatusCode::BAD_REQUEST if body.contains("SWAP_VALIDATION_FAILED") => {
                             Self::NotFound
                         }
+                        StatusCode::FORBIDDEN if body.contains("XSTOCKS_NOT_AUTHORIZED") => {
+                            Self::UnavailableForLegalReasons
+                        }
                         _ => Self::Http(err),
                     }
                 } else {
