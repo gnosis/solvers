@@ -99,9 +99,4 @@ impl Deadline {
             .to_std()
             .ok()
     }
-
-    /// Returns a new deadline with the specified duration subtracted.
-    pub fn reduce(self, duration: chrono::Duration) -> Self {
-        Self(self.0 - duration)
-    }
 }
