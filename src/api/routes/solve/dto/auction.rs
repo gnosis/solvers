@@ -10,8 +10,8 @@ use {
 pub fn to_domain(auction: &Auction) -> Result<auction::Auction, Error> {
     Ok(auction::Auction {
         id: match auction.id {
-            Some(id) => auction::Id::Solve(id),
-            None => auction::Id::Quote,
+            Id::Auction(id) => auction::Id::Solve(id),
+            Id::Quote { .. } => auction::Id::Quote,
         },
         tokens: auction::Tokens(
             auction
