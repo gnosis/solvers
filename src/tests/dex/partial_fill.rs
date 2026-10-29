@@ -127,7 +127,8 @@ async fn tested_amounts_adjust_depending_on_response() {
                 }
             }),
         },
-        // After a successful response we try the next time with a bigger amount.
+        // After a successful response we try the next time with a bigger
+        // amount.
         mock::http::Expectation::Post {
             path: mock::http::Path::Any,
             req: inner_request("2"),
