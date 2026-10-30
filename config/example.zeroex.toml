@@ -7,7 +7,7 @@ relative-slippage = "0.001" # Percentage in the [0, 1] range
 api-key = "$YOUR_API_KEY"
 
 # Specify chain ID
-chain-id = 1
+chain-id = "1"
 
 # Optionally specify a custom 0x API endpoint
 # endpoint = "https://gated.api.0x.org/swap/allowance-holder/"
