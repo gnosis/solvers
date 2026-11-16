@@ -2,9 +2,6 @@ name: Update CoW Dependencies
 
 on:
   workflow_dispatch:
-  schedule:
-    # At 00:00 on Wednesday
-    - cron: "0 0 * * 3"
 
 jobs:
   update-dependencies:
